@@ -1,0 +1,58 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+    {% load group_tags %}
+
+  {% block title %} Update instructor {% endblock title %}
+
+
+{% block content %}
+
+<div class="card card-body mt-2 padding">
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-auto">
+                {{ form_user.first_name|as_crispy_field }}
+                {{ form_user.last_name|as_crispy_field  }}
+                {{ form_user.email|as_crispy_field }}
+                {{ form_profile.phone_number|as_crispy_field }}
+                {{ form_user.username|as_crispy_field }}
+            </div>
+            <div class="col-sm-auto">
+
+            <div class="card">
+                {% if user|in_group:"instructor" %}
+                    <p><input class = "ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" checked> Instructor</p>
+                {% else %}
+                    <p><input class = "ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" > Instructor</p>
+                {% endif %}
+
+                 {% if user|in_group:"vocational_coordinator" %}
+                    <p><input class = "ml-2" type="checkbox" id="vocational_coordiantor" name="vocational_coordinator" label = "Vocational Coordinator" checked> Vocational Coordinator</p>
+                 {% else %}
+                     <p><input class = "ml-2" type="checkbox" id="vocational_coordiantor" name="vocational_coordinator" label = "Vocational Coordinator"> Vocational Coordinator</p>
+                {% endif %}
+
+                {% if user|in_group:"school_admin" %}
+                    <p><input class = "ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin" checked> School Admin</p>
+                {% else %}
+                    <p><input class = "ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin"> School Admin</p>
+                {% endif %}
+            </div>
+            <br>
+                {{ form_user.is_active|as_crispy_field }}
+                <br>
+             <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Update"/>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<script>
+
+</script>
+
+{% endblock content %}

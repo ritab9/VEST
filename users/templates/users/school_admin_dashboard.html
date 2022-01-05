@@ -1,0 +1,77 @@
+{%  extends 'base.html' %}
+  {% load static %}
+
+
+  {% block title %} School Admin {% endblock title %}
+
+
+{% block content %}
+
+    <table class="table-sm">
+        <thead>
+        <tr>
+            <th>School Admin(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for a in school_admin %}
+            <tr>
+                <td>{{ a }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+
+        <thead>
+        <tr>
+            <th>Vocational Coordinator(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for v in vocational_coordinator %}
+            <tr>
+                <td>{{ v }}</td>
+            </tr>
+        {% endfor %}
+
+
+        </tbody>
+
+        <thead>
+        <tr>
+            <th>Instructor(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for i in instructor %}
+            <tr>
+                <td>{{ i }}</td>
+            </tr>
+        {% endfor %}
+
+        <thead>
+        <tr>
+            <th>Student(s)</th><th>Parent(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for s in student %}
+            <tr>
+                <td>{{ s }}</td>
+                {% for p in s.parent_set.all %}
+                    <td>
+                    <tr> p </tr>
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+
+
+        </tbody>
+
+    </table>
+
+{% endblock %}

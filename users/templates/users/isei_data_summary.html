@@ -1,0 +1,35 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+
+  {% block title %} Admin {% endblock title %}
+
+
+{% block content %}
+
+    <table class="table col-sm-3">
+        <thead>
+            <tr>
+                <th> School</th> <th>School Administrator</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in school %}
+                <tr>
+                    <th>{{ s.name}}</th>
+                    <th>
+                        {% for a in school_admin %}
+                            {% if a.school == s %}
+                                <p>{{ a.user.first_name }} {{ a.user.last_name }}</p><br>
+                            {% endif %}
+                        {% endfor %}
+                    </th>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+
+
+{% endblock %}

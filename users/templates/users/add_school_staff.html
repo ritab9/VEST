@@ -1,0 +1,67 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+
+  {% block title %} Admin {% endblock title %}
+
+
+{% block content %}
+    <div id="id_school_abbreviation" style=" display: none"> {{ school.abbreviation }} </div>
+    <div id="id_school_id" style=" display: none"> {{ school.id }} </div>
+
+<div class="card card-body mt-2 padding">
+<!-- registering instructor -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-auto">
+                {{ form.first_name|as_crispy_field }}
+                {{ form.last_name|as_crispy_field  }}
+                {{ form.email|as_crispy_field }}
+                <br>
+                Phone number
+                 <p><input type="text" id="phone_number" name="phone_number" label = "Phone Number"></p>
+
+                <div class="card">
+                    <p>Check all that apply:</p>
+                    <p><input class = "ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor"> Instructor</p>
+                    <p><input class = "ml-2" type="checkbox" id="vocational_coordinator" name="vocational_coordinator" label = "Vocational Coordinator"> Vocational Coordinator</p>
+                    <p><input class = "ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin"> School Admin</p>
+                </div>
+
+            </div>
+            <div class="col-sm-auto">
+                {{ form.username|as_crispy_field }}
+                <p id="id_username_info" class="spanred">Default username is: Firstname.Lastname</p>
+                {{ form.password1|as_crispy_field }}
+                {{ form.password2|as_crispy_field }}
+                <p id="id_password_info" class="spanred">Default password is: VEST_{{ school.abbreviation }}_{{ school.id }}</p>
+            </div>
+        </div>
+        <input class="btn btn-ISEIblue3" type="submit" value ="Register"/>
+    </form>
+</div>
+
+<script>
+
+    window.onload = function() {
+      /* $('id_password_info').style.display = none; */
+    };
+
+    $('#id_email').focusout (function() {
+        var first_name = $('#id_first_name').val();
+        var last_name = $('#id_last_name').val();
+        var s_a = $('#id_school_abbreviation').text();
+        var s_id = $('#id_school_id').text();
+
+        $('#id_username').val(first_name + "." + last_name);
+        $('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
+        $('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
+        alert("VEST" + "_" + s_a + "_" + s_id);
+
+    });
+
+
+</script>
+
+{% endblock content %}

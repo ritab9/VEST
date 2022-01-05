@@ -1,0 +1,34 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+
+  {% block title %} Admin {% endblock title %}
+
+
+{% block content %}
+
+<!-- registering user -->
+    <form method="POST">
+        {% csrf_token %}
+                <p> School </p>
+                <select name="school_dropdown">
+                    <option value="none">------</option>
+                    {% for s in school %}
+                        <option value="{{ s.id }}">{{s}}</option>
+                    {% endfor %}
+                </select>
+
+        {{form|crispy}}
+
+
+            <p>Phone number</p>
+             <p><input type="text" id="phone_number" name="phone_number" label = "Phone Number"></p>
+
+        <br>
+
+
+        <input type="submit" value ="Register"/>
+    </form>
+
+
+{% endblock %}

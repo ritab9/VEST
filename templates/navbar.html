@@ -1,0 +1,74 @@
+{% load static %}
+
+{% load group_tags %}
+
+<nav class ="navbar navbar-expand-md navbar-dark bg-ISEIblue3">
+    <img src="{% static 'appfiles/VestLogoBLK.png' %}" width="120" height="60" alt="VEST Logo">
+     <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="nav navbar-nav">
+                    {% if user.is_authenticated %}
+<!-- ISEI Admin Links -->
+                        {% if request.user|in_group:"isei_admin"%}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'isei_admin_dashboard' %}">Home </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'isei_data_summary'%}">Data Summary </a>
+                            </li>
+
+                            <li class="nav-item dropdown ">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Data Management
+                              </a>
+                              <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown">
+                                  <li>
+                                    <a class="nav-link" href="{% url 'add_school' %}"> Add School</a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" href="{% url 'add_school_admin' %}"> Add School Admin </a>
+                                </li>
+
+                              </ul>
+                            </li>
+
+                        {% endif %}
+
+<!-- School Admin Links -->
+                        {% if request.user|in_group:"school_admin" %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'school_admin_dashboard' request.user.schooladmin.school.id %}">Dashboard </a>
+                            </li>
+                            <li class="nav-item dropdown ">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                User Management
+                              </a>
+                              <ul class="dropdown-menu bg-ISEIblue3 mr-0" aria-labelledby="navbarDropdown">
+                                  <li>
+                                    <a class="nav-link float-right" href="{% url 'manage_school_staff' request.user.schooladmin.school.id %}"> School Staff</a>
+                                </li>
+                                <li>
+                                    <a class="nav-link float-right" href="{% url 'manage_students' request.user.schooladmin.school.id %}"> Students and Parents </a>
+                                </li>
+
+                              </ul>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+
+
+
+{% if user.is_authenticated and user.is_active%}
+      <span class ="name-msg"> {{request.user.first_name}} {{request.user.last_name}}
+          <br>
+      <a href="{% url 'logout' %}" style =" color:#FFFFFF">Logout</a> </span>
+{% endif %}
+
+     </div>
+</nav>

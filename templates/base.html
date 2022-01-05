@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" >
+
+    {% load static %}
+        <!-- modified bootstrap scss -->
+        <Link rel="stylesheet" href="{% static "scss/custom.css" %}">
+
+        {#other CSS formating #}
+        <Link rel="stylesheet" href="{% static "css/base.css" %}">
+
+        {# font awesome for icons #}
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+
+        {# icon that appears in the tab along with the title #}
+         <link rel="shortcut icon" type="image/png" href="{% static 'appfiles/favicon.ico' %}">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    {% block head_css %}
+
+    {% endblock head_css %}
+
+
+    <title>{% block title %}Home {% endblock title %} | VEST</title>
+
+
+</head>
+
+
+<body>
+    <div class="content">
+    {# Navigation Menu #}
+        <header>
+            {% include 'navbar.html' %}
+        </header>
+    <div class="container-fluid">
+    {# The Document Body #}
+        <div class="site_content" style="padding-bottom: 100px;">
+            {% block content %}
+                if you see this, something is wrong!
+            {% endblock content %}
+        </div>
+    </div>
+
+
+</body>
+
+
+
+    {% block footer_javascript %}
+
+    {% endblock footer_javascript %}
+
+    <footer class="footer noprint" >
+            <div class="row card mt-3">
+                   <div class="mr-3 ml-3" style="text-align: center">
+                       <i>ISEI</i> Education Association || P.O. Box 491, Collegedale, TN 37315, USA || info@isei.life
+                       <p class="span80"> Copyright @2022 <i>ISEI</i> Education Association</p>
+                   </div>
+            </div>
+    </footer>
+
+</html>

@@ -1,0 +1,44 @@
+{%  extends 'base.html' %}
+  {% load static %}
+
+
+  {% block title %} Manage Staff {% endblock title %}
+
+
+{% block content %}
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th><th>Role</th>
+            <th>Email</th> <th>Phone Number</th><th>Status</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for i in staff %}
+            <tr>
+                <td>{{ i }}</td>
+                    <td>{% for g in i.groups.all %} {{ g }}<br> {% endfor%}</td>
+                <td>{{ i.email }}</td>
+                <td>
+                    {% for p in i.profile_set.all %}
+                        {{ p.phone_number }}
+                     {% endfor %}
+                </td>
+                <td> {% if i.is_active %} <div class="spangreen">Active</div>
+                    {% else %} Inactive {% endif %}
+                </td>
+                <td>
+                    <a class = "btn btn-sm iseiblue3" href="{% url 'update_school_staff' i.id  %}">Update</a>
+                    <a class ="btn btn-sm spanred" href="{% url 'delete_school_staff' i.id  %}">Delete</a></td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a class = "btn btn-sm btn-ISEIblue3 mt-5" href="{% url 'add_school_staff' school.id  %} " > Add New Staff</a>
+
+
+{% endblock %}
