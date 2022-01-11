@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import School, Profile
+from .models import School, Profile, Student
 
 class CreateUserForm(UserCreationForm):
     first_name = forms.CharField()
@@ -27,4 +27,9 @@ class UserForm(forms.ModelForm):
 class ProfileForm (forms.ModelForm):
     class Meta:
         model = Profile
-        fields =['phone_number',]
+        fields =['phone_number', 'school']
+
+class StudentForm (forms.ModelForm):
+    class Meta:
+        model = Student
+        fields =['birthday', 'graduation_year', ]

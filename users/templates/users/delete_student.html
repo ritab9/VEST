@@ -1,0 +1,33 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+    {% load group_tags %}
+
+  {% block title %} Update instructor {% endblock title %}
+
+
+{% block content %}
+
+<div class="card card-body mt-2 padding">
+
+    <form action="{% url 'delete_school_staff' user.id %}"  method="POST">
+        {% csrf_token %}
+        <p> Are you sure you want to delete <i>{{user.first_name}} {{ user.last_name }}</i> as staff at your school? <br>
+            The operation can not be undone!
+            Only do this if there are no grades submitted by this staff member.<br>
+            If the staff is no longer works at your school, but has been an instructor in the past,
+            <a class = "btn btn-sm bg-iseiblue3" href="{% url 'update_school_staff' user.id  %}">Update</a>
+            the user's status to inactive, by unchecking the <i><b>Active</b></i> checkbox.
+           </p>
+
+        <a class="btn btn-sm btn-warning" href="{%  url 'manage_school_staff' school.id %}">Cancel</a>
+        <input class="btn btn-sm btn-danger" type='submit' value ='Confirm'>
+
+    </form>
+</div>
+
+<script>
+
+</script>
+
+{% endblock content %}

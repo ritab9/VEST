@@ -19,7 +19,7 @@ class Country(models.Model):
 class School(models.Model):
     name = models.CharField(max_length=50, help_text='Enter the name of the school', unique=True, blank=False,
                             null=False)
-    abbreviation = models.CharField(max_length=4, default=" ", help_text=' Enter the abbreviation for this school')
+    abbreviation = models.CharField(max_length=4, default=" ", help_text=' Enter the abbreviation for this school', unique= True)
     ordering = ['name']
     foundation = models.BooleanField(default=False)
 
@@ -39,26 +39,26 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name + " Profile"
 
-class Instructor(models.Model):
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
-    #school = models.ForeignKey(School, null = True, blank = True, on_delete= models.CASCADE)
-
-    def __str__(self):
-        return self.user.first_name +" " + self.user.last_name
-
-class SchoolAdmin(models.Model):
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
-    #school = models.ForeignKey(School, null = True, blank = True, on_delete= models.CASCADE)
-
-    def __str__(self):
-        return self.user.first_name +" " + self.user.last_name
-
-class VocationalCoordinator(models.Model):
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
-    #school = models.ForeignKey(School, null = True, blank = True, on_delete= models.CASCADE)
-
-    def __str__(self):
-        return self.user.first_name +" " + self.user.last_name
+# class Instructor(models.Model):
+#     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+#     #school = models.ForeignKey(School, null = True, blank = True, on_delete= models.CASCADE)
+#
+#     def __str__(self):
+#         return self.user.first_name +" " + self.user.last_name
+#
+# class SchoolAdmin(models.Model):
+#     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+#     #school = models.ForeignKey(School, null = True, blank = True, on_delete= models.CASCADE)
+#
+#     def __str__(self):
+#         return self.user.first_name +" " + self.user.last_name
+#
+# class VocationalCoordinator(models.Model):
+#     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+#     #school = models.ForeignKey(School, null = True, blank = True, on_delete= models.CASCADE)
+#
+#     def __str__(self):
+#         return self.user.first_name +" " + self.user.last_name
 
 
 class Student(models.Model):
@@ -67,16 +67,16 @@ class Student(models.Model):
 
     #school = models.ForeignKey(School, on_delete=models.CASCADE, null=False, blank=False)
     graduation_year = models.PositiveSmallIntegerField(validators=[MinValueValidator(2022), MaxValueValidator(2100)])
-
+    parent = models.ManyToManyField(User, related_name="Children",blank=True)
     def __str__(self):
-        return self.user +"(" + self.school + ")"
+        return self.user.last_name + ", " + self.user.first_name
 
 
-class Parent(models.Model):
-    user=models.OneToOneField(User, on_delete= models.CASCADE)
-    student = models.ManyToManyField(Student)
-    def __str__(self):
-        return self.user
+#class Parent(models.Model):
+#    user=models.OneToOneField(User, on_delete= models.CASCADE)
+#    student = models.ManyToManyField(Student)
+#    def __str__(self):
+#        return self.user
 
 
 class Address(models.Model):

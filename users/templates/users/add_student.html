@@ -2,7 +2,7 @@
     {% load static %}
     {% load crispy_forms_tags %}
 
-  {% block title %} Add Staff {% endblock title %}
+  {% block title %} Add Student {% endblock title %}
 
 
 
@@ -22,28 +22,29 @@
         {% csrf_token %}
         <div class="row">
             <div class="col-sm-auto">
-                {{ form.first_name|as_crispy_field }}
-                {{ form.last_name|as_crispy_field  }}
-                {{ form.email|as_crispy_field }}
+                {{ form_user.first_name|as_crispy_field }}
+                {{ form_user.last_name|as_crispy_field  }}
+                {{ form_user.email|as_crispy_field }}
+                {{ form_student.birthday|as_crispy_field }}
+                {{ form_student.graduation_year|as_crispy_field }}
                 <br>
-                Phone number
-                 <p><input type="text" id="phone_number" name="phone_number" label = "Phone Number"></p>
-
-                <div class="card">
-                    <p>Check all that apply:</p>
-                    <p><input class = "ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor"> Instructor</p>
-                    <p><input class = "ml-2" type="checkbox" id="vocational_coordinator" name="vocational_coordinator" label = "Vocational Coordinator"> Vocational Coordinator</p>
-                    <p><input class = "ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin"> School Admin</p>
-                </div>
-
             </div>
+
+            <!--
+            <div class="col-sm-auto">
+                 { { form_student.parent|as_crispy_field }}
+            </div> -->
+
             <div class="col-sm-auto">
                 Default Username: <p>{{ school.abbreviation }}_<input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
                 </p>
-                <div style="display: none">{{ form.username|as_crispy_field }}</div>
-                <!-- <p id="id_username_info" class="spanred"></p> -->
-                {{ form.password1|as_crispy_field }}
-                {{ form.password2|as_crispy_field }}
+                <!-- { { form_user.username|as_crispy_field }}
+                <div class="spanred">Username:</div> <input type="text" name="username" maxlength="150" autofocus="" class="textinput textInput" required="" id="id_username">
+                <p id="id_username_info" class="spanred"></p> -->
+                <div style="display: none">
+                    {{ form_user.username|as_crispy_field }}</div>
+                {{ form_user.password1|as_crispy_field }}
+                {{ form_user.password2|as_crispy_field }}
                 <p id="id_password_info" class="spanred"></p>
             </div>
         </div>
@@ -62,12 +63,13 @@
     $('#id_last_name').focusout (function() {
         var first_name = $('#id_first_name').val();
         var last_name = $('#id_last_name').val();
-        var s_a =  $.trim($('#id_school_abbreviation').text());
+        var s_a = $.trim($('#id_school_abbreviation').text());
         var s_id = $('#id_school_id').text();
 
         $('#id_default_username').val(first_name + last_name);
-        $('#id_username').val(s_a+"_"+ first_name + last_name);
-        /* document.getElementById('id_username_info').innerHTML = "Default Username: " +  first_name + "." + last_name ; */
+        $('#id_username').val(s_a +"_"+first_name + last_name);
+
+        /* document.getElementById('id_username_info').innerHTML = "Default Username: " +  first_name + last_name ; */
         $('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
         $('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
         document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a + "_" + s_id ;

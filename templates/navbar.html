@@ -41,7 +41,7 @@
 <!-- School Admin Links -->
                         {% if request.user|in_group:"school_admin" %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'school_admin_dashboard' request.user.schooladmin.school.id %}">Dashboard </a>
+                                <a class="nav-link" href="{% url 'school_admin_dashboard' request.user.profile.school.id %}">Dashboard </a>
                             </li>
                             <li class="nav-item dropdown ">
                               <a class="nav-link dropdown-toggle p-3" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -49,10 +49,10 @@
                               </a>
                               <ul class="dropdown-menu bg-ISEIblue3 mr-0" aria-labelledby="navbarDropdown">
                                   <li>
-                                    <a class="nav-link float-right" href="{% url 'manage_school_staff' request.user.schooladmin.school.id %}"> School Staff</a>
+                                    <a class="nav-link float-right" href="{% url 'manage_school_staff' request.user.profile.school.id %}"> School Staff</a>
                                 </li>
                                 <li>
-                                    <a class="nav-link float-right" href="{% url 'manage_students' request.user.schooladmin.school.id %}"> Students and Parents </a>
+                                    <a class="nav-link float-right" href="{% url 'manage_students' request.user.profile.school.id %}"> Students and Parents </a>
                                 </li>
 
                               </ul>

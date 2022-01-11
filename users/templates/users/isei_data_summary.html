@@ -19,8 +19,8 @@
                     <th>{{ s.name}}</th>
                     <th>
                         {% for a in school_admin %}
-                            {% if a.school == s %}
-                                <p>{{ a.user.first_name }} {{ a.user.last_name }}</p><br>
+                            {% if a.profile.school == s %}
+                                <p>{{ a.first_name }} {{ a.last_name }}</p><br>
                             {% endif %}
                         {% endfor %}
                     </th>

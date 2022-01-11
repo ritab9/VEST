@@ -7,28 +7,66 @@
 
 {% block content %}
 
-<!-- registering user -->
+<!-- registering school_admin -->
     <form method="POST">
         {% csrf_token %}
                 <p> School </p>
-                <select name="school_dropdown">
+                <select id="id_school_dropdown" name="school_dropdown">
                     <option value="none">------</option>
                     {% for s in school %}
-                        <option value="{{ s.id }}">{{s}}</option>
+                        <option id="{{ s.id }}" value="{{ s.abbreviation }}" >{{s}}</option>
                     {% endfor %}
                 </select>
 
-        {{form|crispy}}
+             <div class="row">
+            <div class="col-sm-auto">
+                {{ form.first_name|as_crispy_field }}
+                {{ form.last_name|as_crispy_field  }}
+                {{ form.email|as_crispy_field }}
+                <br>
+                Phone number
+                 <p><input type="text" id="phone_number" name="phone_number" label = "Phone Number"></p>
 
-
-            <p>Phone number</p>
-             <p><input type="text" id="phone_number" name="phone_number" label = "Phone Number"></p>
-
-        <br>
-
-
+            </div>
+            <div class="col-sm-auto">
+                <div class="col-sm-auto">
+                Default Username:
+                 <div class="row">
+                    <div id="id_school_abbreviation_username"></div>_
+                    <input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
+                 </div>
+                    <div style="display: block">{{ form.username|as_crispy_field }}</div>
+                <!-- <p id="id_username_info" class="spanred"></p> -->
+                {{ form.password1|as_crispy_field }}
+                {{ form.password2|as_crispy_field }}
+                <p id="id_password_info" class="spanred"></p>
+            </div>
+        </div>
+             </div>
         <input type="submit" value ="Register"/>
     </form>
 
+
+<script>
+
+    $('#id_last_name').focusout (function() {
+        var first_name = $('#id_first_name').val();
+        var last_name = $('#id_last_name').val();
+        var dd = document.getElementById('id_school_dropdown');
+        /* var s_a = $.trim($('#id_school_dropdown :selected').val()); */
+        var s_id = dd.options[dd.selectedIndex].id;
+        var s_a = dd.options[dd.selectedIndex].value;
+
+
+        $('#id_default_username').val(first_name + last_name);
+        $('#id_username').val(s_a+"_"+first_name + last_name);
+        document.getElementById('id_school_abbreviation_username').innerHTML =  $.trim(s_a);
+        $('#id_password1').val("VEST" + "_" + s_a +"_"+s_id );
+        $('#id_password2').val("VEST" + "_" + s_a +"_"+s_id);
+        document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a +"_"+s_id  ;
+    });
+
+
+</script>
 
 {% endblock %}

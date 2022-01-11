@@ -32,12 +32,18 @@ urlpatterns = [
     path('add_school_admin/', views.add_school_admin, name='add_school_admin'),
 
 #school admin paths
-    path('school_admin_dashboard/<str:schoolID>/', views.school_admin_dashboard, name='school_admin_dashboard'),
-    path('manage_school_staff/<str:schoolID>/', views.manage_school_staff, name='manage_school_staff'),
-    path('manage_students/<str:schoolID>/', views.manage_students, name='manage_students'),
+    path('school_admin_dashboard/<str:schoolid>/', views.school_admin_dashboard, name='school_admin_dashboard'),
+    
+    path('manage_school_staff/<str:schoolid>/', views.manage_school_staff, name='manage_school_staff'),
+    path('manage_inactive_school_staff/<str:schoolid>/', views.manage_inactive_school_staff, name='manage_inactive_school_staff'),
+    path('add_school_staff/<str:schoolid>/', views.add_school_staff, name='add_school_staff'),
+    path('update_school_staff/<str:userid>/', views.update_school_staff, name='update_school_staff'),
+    path('delete_school_staff/<str:userid>/', views.delete_school_staff, name='delete_school_staff'),
 
-    path('add_school_staff/<str:schoolID>/', views.add_school_staff, name='add_school_staff'),
+    path('manage_students/<str:schoolid>/', views.manage_students, name='manage_students'),
+    path('manage_inactive_students/<str:schoolid>/', views.manage_inactive_students, name='manage_inactive_students'),
+    path('add_student/<str:schoolid>/', views.add_student, name='add_student'),
+    path('update_student/<str:userid>/', views.update_student, name='update_student'),
+    path('delete_student/<str:userid>/', views.delete_student, name='delete_student'),
 
-    path('update_school_staff/<str:userID>/', views.update_school_staff, name='update_school_staff'),
-    path('delete_school_staff/<str:userID>/', views.delete_school_staff, name='delete_school_staff'),
 ]

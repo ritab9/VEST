@@ -27,22 +27,27 @@ class ProfileInline(admin.StackedInline):
     can_delete = True
     extra = 0
 
-class InstructorInline(admin.StackedInline):
-    model = Instructor
-    can_delete = True
-    extra = 0
-class VocationalCoordinatorInline(admin.StackedInline):
-    model = VocationalCoordinator
-    can_delete = True
-    extra = 0
-class SchoolAdminInline(admin.StackedInline):
-    model = SchoolAdmin
-    can_delete = True
-    extra = 0
+# class InstructorInline(admin.StackedInline):
+#     model = Instructor
+#     can_delete = True
+#     extra = 0
+# class VocationalCoordinatorInline(admin.StackedInline):
+#     model = VocationalCoordinator
+#     can_delete = True
+#     extra = 0
+# class SchoolAdminInline(admin.StackedInline):
+#     model = SchoolAdmin
+#     can_delete = True
+#     extra = 0
+
+class StudentInline(admin.StackedInline):
+    model=Student
+    can_delete=True
+    extra=0
 
 class UserAdmin(AuthUserAdmin):
     model = User
-    inlines = [ProfileInline, InstructorInline, VocationalCoordinatorInline, SchoolAdminInline]
+    inlines = [ProfileInline, StudentInline,]
     list_display = ('username', 'first_name', 'last_name', 'id','group', 'is_active')
     list_editable = ('is_active',)
 
@@ -59,36 +64,37 @@ class UserAdmin(AuthUserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
-class UserInline(admin.StackedInline):
-    model = User
-    can_delete = True
 
-@admin.register(Instructor)
-class Instructor(admin.ModelAdmin):
-    #inlines = [UserInline]
-    #list_display = ('name', 'school',)
-    #list_editable = ('school', )
-    #list_display_links = ('name',)
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.filter(user__is_active = True)
+@admin.register(Student)
+class Student(admin.ModelAdmin):
+    model= Student
 
-@admin.register(SchoolAdmin)
-class SchoolAdmin(admin.ModelAdmin):
-    #inlines = [UserInline]
-    #list_display = ('name', 'school',)
-    #list_editable = ('school', )
-    #list_display_links = ('name',)
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.filter(user__is_active = True)
-
-@admin.register(VocationalCoordinator)
-class VocationalCoodrinator(admin.ModelAdmin):
-    #inlines = [UserInline]
-    #list_display = ('name', 'school',)
-    #list_editable = ('school', )
-    #list_display_links = ('name',)
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.filter(user__is_active = True)
+# @admin.register(Instructor)
+# class Instructor(admin.ModelAdmin):
+#     #inlines = [UserInline]
+#     #list_display = ('name', 'school',)
+#     #list_editable = ('school', )
+#     #list_display_links = ('name',)
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         return qs.filter(user__is_active = True)
+#
+# @admin.register(SchoolAdmin)
+# class SchoolAdmin(admin.ModelAdmin):
+#     #inlines = [UserInline]
+#     #list_display = ('name', 'school',)
+#     #list_editable = ('school', )
+#     #list_display_links = ('name',)
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         return qs.filter(user__is_active = True)
+#
+# @admin.register(VocationalCoordinator)
+# class VocationalCoordinator(admin.ModelAdmin):
+#     #inlines = [UserInline]
+#     #list_display = ('name', 'school',)
+#     #list_editable = ('school', )
+#     #list_display_links = ('name',)
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         return qs.filter(user__is_active = True)
