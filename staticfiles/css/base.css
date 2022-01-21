@@ -1,0 +1,169 @@
+/* to mark some elements for not printing */
+
+.color1-bg { background-color: #FBF8BE;}
+.color1-text { color: #FBF8BE; }
+
+.color2-bg { color: #084B7F; }
+.color2-bg { color: #084B7F; }
+
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #084B7F;
+  color: #084B7F;
+  text-align: center;
+}
+
+
+@media print {
+    .noprint {
+        visibility: hidden;
+    }
+}
+
+/* Name in Navbar */
+.name-msg{
+    font-size: 1rem;
+    color: #FBF8BE;
+    margin-right: 20px;
+  }
+
+
+/* used with JS to show/hide elements in reoort table*/
+.approvaltable .table{}
+.enablebtn .btn{}
+.approvebtn .btn{}
+.denybtn .btn{}
+
+
+/* defined some text and coloring resizing spans */
+.spangreen {
+    color:green;
+}
+
+.spanyellow{
+    color: #f1a542;
+}
+
+.spanred {
+   color: red;
+}
+
+.spanblue{
+      color: #053A64; /*ISEI blue*/
+}
+
+.span80{
+    font-size: 80%;
+}
+
+.span80red {
+    color: red;
+    font-size: 80%;
+}
+
+.span80blue {
+    color: #053A64; /*ISEI blue*/
+    font-size: 80%;
+}
+
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-number {
+width: 5px;
+}
+
+.error {
+    color:red;
+    font-weight: normal;
+}
+
+.error input, .error select {
+    border: 2px red solid;
+}
+
+
+/* the next four are necessary to keep the footer on the bottom of the page
+html, body {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: #EFEFEF;
+}
+.content {
+  flex: 1 0 auto;
+}
+.footer {
+  flex-shrink: 0;
+}
+
+ */
+
+/* if any changes made here please check login and register templates */
+a,h1,h2,h5,h6 {
+    color: #084574;
+ }
+
+/* login and register */
+.user_card {
+      width: 350px;
+      margin-top: 5%;
+      margin-bottom: auto;
+      background: #FFFFFF;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      padding: 10px;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      border-radius: 5px;
+
+    }
+
+.form_container {
+      margin-top: 20px;
+    }
+
+#form-title {
+    color: #053A64;
+}
+.login_container {
+      padding: 0 2rem;
+    }
+.input-group-text {
+    background: #0B61A4 !important;
+    color: white !important;
+    border: 0 !important;
+    border-radius: 0.25rem 0 0 0.25rem !important;
+    }
+
+.input_user,
+.input_pass:focus {
+      box-shadow: none !important;
+      outline: 0 !important;
+    }
+
+/* */
+
+/* to remove increment bars from number boxes*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type='number'] {
+    -moz-appearance:textfield; /* Firefox */
+}
+
