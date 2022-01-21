@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'vocational',
 
     'crispy_forms',
+    'django_filters',
     'jquery',
 
 ]
@@ -154,3 +155,6 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 #logout users when they close browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+#allow login to inactive users (basically getting a message that their account is inactive)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.AllowAllUsersModelBackend', )

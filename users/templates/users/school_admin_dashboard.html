@@ -7,7 +7,7 @@
 
 {% block content %}
 
-    <table class="table-sm">
+    <table class="table-sm table-striped">
         <thead>
         <tr>
             <th>School Admin(s)</th>
@@ -17,7 +17,7 @@
         <tbody>
         {% for a in school_admin %}
             <tr>
-                <td>{{ a }}</td>
+                <td>{{ a.profile}}</td>
             </tr>
         {% endfor %}
         </tbody>
@@ -31,7 +31,7 @@
         <tbody>
         {% for v in vocational_coordinator %}
             <tr>
-                <td>{{ v }}</td>
+                <td>{{ v.profile}}</td>
             </tr>
         {% endfor %}
 
@@ -47,7 +47,7 @@
         <tbody>
         {% for i in instructor %}
             <tr>
-                <td>{{ i }}</td>
+                <td>{{ i.profile}}</td>
             </tr>
         {% endfor %}
 
@@ -60,12 +60,10 @@
         <tbody>
         {% for s in student %}
             <tr>
-                <td>{{ s }}</td>
-                {% for p in s.parent_set.all %}
-                    <td>
-                    <tr> p </tr>
-                    </td>
-                {% endfor %}
+                <td>{{ s.profile }}</td>
+                <td>{% for p in s.student.parent.all %}
+                    {{ p.profile }}<br>
+                {% endfor %}</td>
             </tr>
         {% endfor %}
 

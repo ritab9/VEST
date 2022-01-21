@@ -20,8 +20,14 @@
             the user's status to inactive, by unchecking the <i><b>Active</b></i> checkbox.
            </p>
 
-        <a class="btn btn-sm btn-warning" href="{%  url 'manage_school_staff' school.id %}">Cancel</a>
+        <!-- <a class="btn btn-sm btn-warning" href="{ %  url 'manage_school_staff' school.id %}">Cancel</a>
+        <input type="hidden" name="next" value="{ { request.path }}"> -->
+        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()"> Cancel </a>
         <input class="btn btn-sm btn-danger" type='submit' value ='Confirm'>
+
+        {%  if is_parent %}
+            <p><i>{{user.first_name}} {{ user.last_name }}</i> will be deleted as a staff but will remain in the system as a parent. </p>
+        {% endif %}
 
     </form>
 </div>

@@ -1,4 +1,7 @@
-/* to mark some elements for not printing */
+
+.table-nostriped tbody tr:nth-of-type(odd) {
+  background-color: transparent;
+}
 
 .color1-bg { background-color: #FBF8BE;}
 .color1-text { color: #FBF8BE; }
@@ -6,6 +9,10 @@
 .color2-bg { color: #084B7F; }
 .color2-bg { color: #084B7F; }
 
+.moveimage{
+    position: relative;
+    top:200px;
+}
 
 .footer {
   position: fixed;

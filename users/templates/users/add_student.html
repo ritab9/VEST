@@ -2,84 +2,92 @@
     {% load static %}
     {% load crispy_forms_tags %}
 
-  {% block title %} Add Student {% endblock title %}
-
+    {% block title %} Add Student {% endblock title %}
 
 
 {% block content %}
-    <div id="id_school_abbreviation" style=" display: none"> {{ school.abbreviation }} </div>
-    <div id="id_school_id" style=" display: none"> {{ school.id }} </div>
-
-    {% if existing_user %}
-        <p>This username already exists in the system. Is this a new user, or are you trying to add:</p>
-
-    {% else %}
 
 
-<div class="card card-body mt-2 padding">
-<!-- registering instructor -->
-    <form method="POST">
-        {% csrf_token %}
-        <div class="row">
-            <div class="col-sm-auto">
-                {{ form_user.first_name|as_crispy_field }}
-                {{ form_user.last_name|as_crispy_field  }}
-                {{ form_user.email|as_crispy_field }}
-                {{ form_student.birthday|as_crispy_field }}
-                {{ form_student.graduation_year|as_crispy_field }}
-                <br>
+<!-- registering student -->
+    <form method="POST" >
+        <div class="card card-body mt-2 mb-2 padding">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-sm-auto">
+
+                    <label for="id_first_name" class="control-label requiredField">
+                        First name<span class="asteriskField">*</span>
+                    </label>
+                    <div class="controls">
+                            <input type="text" name="first_name" class="textinput textInput" required="" id="id_first_name" autofocus>
+                    </div>
+                    {{ form_user.last_name|as_crispy_field  }}
+                    {{ form_user.email|as_crispy_field }}
+                    {{ form_student.graduation_year|as_crispy_field }}
+                    {{ form_student.birthday|as_crispy_field }}
+                    {{ form_student.gender|as_crispy_field }}
+                </div>
+
+                <div class="col-sm-auto">
+                    <div>Edit Username:
+                        <div class="mt-2 mb-3"> {{ school.abbreviation }}_<input type="text"  id="id_default_username" name="default_username" label = "Default Username" style="border-color: #FFFFFF"></div>
+                    </div>
+                    <div style="pointer-events: none" > {{ form_user.username|as_crispy_field }}</div>
+                    <div>Password*</div>{{ form_user.password1 }}<br>
+                    {{ form_user.password2|as_crispy_field }}
+                    <p id="id_password_info" class="spanred"></p>
+                    <button type="button" id="id_generate_button" onclick=generate() class="btn-sm span80" style="float:bottom">Generate Username and Password</button><br><br>
+
+                </div>
+
             </div>
 
-            <!--
-            <div class="col-sm-auto">
-                 { { form_student.parent|as_crispy_field }}
-            </div> -->
-
-            <div class="col-sm-auto">
-                Default Username: <p>{{ school.abbreviation }}_<input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
-                </p>
-                <!-- { { form_user.username|as_crispy_field }}
-                <div class="spanred">Username:</div> <input type="text" name="username" maxlength="150" autofocus="" class="textinput textInput" required="" id="id_username">
-                <p id="id_username_info" class="spanred"></p> -->
-                <div style="display: none">
-                    {{ form_user.username|as_crispy_field }}</div>
-                {{ form_user.password1|as_crispy_field }}
-                {{ form_user.password2|as_crispy_field }}
-                <p id="id_password_info" class="spanred"></p>
-            </div>
         </div>
-        <input class="btn btn-ISEIblue3" type="submit" value ="Register"/>
-    </form>
-</div>
+            <input class="btn-sm btn-ISEIblue3" type="submit" name="save_back" value ="Save"/>
+            <input class="btn-sm btn-ISEIblue3" type="submit" name="save_new" value ="Save and add another "/>
+            <input class="btn-sm btn-ISEIblue3" type="submit" name="save_add_parent" value ="Save and add parents "/>
 
-    {% endif %}
+            <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style="float:right"> Cancel </a>
 
-<script>
+        </form>
 
-    window.onload = function() {
-      /* $('id_password_info').style.display = none; */
-    };
 
-    $('#id_last_name').focusout (function() {
-        var first_name = $('#id_first_name').val();
-        var last_name = $('#id_last_name').val();
-        var s_a = $.trim($('#id_school_abbreviation').text());
-        var s_id = $('#id_school_id').text();
+    <script type="text/javascript">
+        window.onload = function(){
+            document.getElementById('id_username').tabIndex ="-1";
+        };
 
-        $('#id_default_username').val(first_name + last_name);
-        $('#id_username').val(s_a +"_"+first_name + last_name);
+         /* $('#id_last_name').focusout (function() { */
+         function generate() {
+            var first_name = $('#id_first_name').val();
+            var last_name = $('#id_last_name').val();
+            var s_a = "{{school.abbreviation}}";
+            var s_id ="{{ school.id }}";
 
-        /* document.getElementById('id_username_info').innerHTML = "Default Username: " +  first_name + last_name ; */
-        $('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
-        $('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
-        document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a + "_" + s_id ;
-    });
+            $('#id_default_username').val(first_name + last_name);
+            $('#id_username').val(s_a +"_"+first_name + last_name);
 
-    $('#id_default_username').focusout (function(){
-        var s_a = $.trim($('#id_school_abbreviation').text());
-        var p_u = $('#id_default_username').val();
-        $('#id_username').val(s_a+"_"+p_u).trim();
-    });
+            $('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
+            $('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
+            document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a + "_" + s_id ;
+        };
+
+        $('#id_last_name').focusout (function() {
+            generate();
+            var first_name = $('#id_first_name').val();
+            var last_name = $('#id_last_name').val();
+            var s_a = "{{school.abbreviation}}";
+            $('#id_email').val(first_name + last_name + "@" + s_a + ".org");
+
+
+        });
+
+
+        $('#id_default_username').focusout (function(){
+            var s_a = "{{school.abbreviation}}";
+            var p_u = $('#id_default_username').val();
+            $('#id_username').val(s_a+"_"+p_u);
+        });
 
 
 </script>

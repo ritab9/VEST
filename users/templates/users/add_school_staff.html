@@ -7,14 +7,6 @@
 
 
 {% block content %}
-    <div id="id_school_abbreviation" style=" display: none"> {{ school.abbreviation }} </div>
-    <div id="id_school_id" style=" display: none"> {{ school.id }} </div>
-
-    {% if existing_user %}
-        <p>This username already exists in the system. Is this a new user, or are you trying to add:</p>
-
-    {% else %}
-
 
 <div class="card card-body mt-2 padding">
 <!-- registering instructor -->
@@ -31,52 +23,70 @@
 
                 <div class="card">
                     <p>Check all that apply:</p>
-                    <p><input class = "ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor"> Instructor</p>
-                    <p><input class = "ml-2" type="checkbox" id="vocational_coordinator" name="vocational_coordinator" label = "Vocational Coordinator"> Vocational Coordinator</p>
-                    <p><input class = "ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin"> School Admin</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" required> Instructor</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="vocational_coordinator" name="vocational_coordinator" label = "Vocational Coordinator" required> Vocational Coordinator</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin" required> School Admin</p>
                 </div>
 
             </div>
             <div class="col-sm-auto">
-                Default Username: <p>{{ school.abbreviation }}_<input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
+                Edit Username: <p>{{ school.abbreviation }}_<input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
                 </p>
-                <div style="display: none">{{ form.username|as_crispy_field }}</div>
+                <div style="pointer-events: none">{{ form.username|as_crispy_field }}</div>
                 <!-- <p id="id_username_info" class="spanred"></p> -->
                 {{ form.password1|as_crispy_field }}
                 {{ form.password2|as_crispy_field }}
                 <p id="id_password_info" class="spanred"></p>
+                <button type="button" id="id_generate_button" onclick=generate() class="btn-sm btn-ISEIblue3 span80">Generate Default Username and Password</button><br><br>
             </div>
         </div>
         <input class="btn btn-ISEIblue3" type="submit" value ="Register"/>
     </form>
 </div>
-
-    {% endif %}
-
 <script>
 
-    window.onload = function() {
-      /* $('id_password_info').style.display = none; */
+    $(document).ready(function(){
+    var checkboxes = $('.checkboxes');
+    checkboxes.change(function(){
+        if($('.checkboxes:checked').length>0) {
+            checkboxes.removeAttr('required');
+        } else {
+            checkboxes.attr('required', 'required');
+        }
+        });
+    });
+
+    window.onload = function(){
+        document.getElementById('id_username').tabIndex ="-1";
     };
 
-    $('#id_last_name').focusout (function() {
+    /* $('#id_last_name').focusout (function() { */
+    function generate() {
         var first_name = $('#id_first_name').val();
         var last_name = $('#id_last_name').val();
-        var s_a =  $.trim($('#id_school_abbreviation').text());
-        var s_id = $('#id_school_id').text();
+        var s_a = "{{school.abbreviation}}";
+        var s_id ="{{ school.id }}";
 
         $('#id_default_username').val(first_name + last_name);
         $('#id_username').val(s_a+"_"+ first_name + last_name);
-        /* document.getElementById('id_username_info').innerHTML = "Default Username: " +  first_name + "." + last_name ; */
         $('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
         $('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
         document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a + "_" + s_id ;
+    };
+
+    $('#id_last_name').focusout (function() {
+        generate();
+        var first_name = $('#id_first_name').val();
+        var last_name = $('#id_last_name').val();
+        var s_a = "{{school.abbreviation}}";
+        $('#id_email').val(first_name + last_name + "@" + s_a + ".org");
+
     });
 
     $('#id_default_username').focusout (function(){
-        var s_a = $.trim($('#id_school_abbreviation').text());
+        var s_a = "{{school.abbreviation}}";
         var p_u = $('#id_default_username').val();
-        $('#id_username').val(s_a+"_"+p_u).trim();
+        $('#id_username').val(s_a+"_"+p_u);
     });
 
 

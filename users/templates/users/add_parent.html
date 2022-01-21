@@ -1,0 +1,91 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+
+  {% block title %} Add Parent {% endblock title %}
+
+
+{% block content %}
+
+    <h6 class="mt-3">  Add parent for: {{ student }} </h6>
+
+<div class="row">
+<div class="card card-body mt-2 padding col-sm-auto">
+<!-- registering parent -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-auto">
+                <label for="id_first_name" class="control-label requiredField">
+                        First name<span class="asteriskField">*</span>
+                </label>
+                <div class="controls">
+                        <input type="text" name="first_name" class="textinput textInput" required="" id="id_first_name" autofocus>
+                </div>
+                {{ form.last_name|as_crispy_field  }}
+                {{ form.email|as_crispy_field }}
+                <br>
+                Phone number
+                 <p><input type="text" id="phone_number" name="phone_number" label = "Phone Number"></p>
+                <button type="button" id="id_generate_button" onclick=generate() class="btn-sm span80">Generate Default Username and Password</button><br><br>
+
+
+            </div>
+            <div class="col-sm-auto">
+                Edit Username: <p>{{ school.abbreviation }}_<input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
+                </p>
+                <div style="pointer-events: none" >{{ form.username|as_crispy_field }}</div>
+                <p id="id_username_info" class="spanred"></p>
+                <div>Password*</div>{{ form.password1 }}<br>
+                {{ form.password2|as_crispy_field }}
+                <p id="id_password_info" class="spanred"></p>
+            </div>
+        </div>
+        <input class="btn btn-sm btn-ISEIblue3" type="submit" name="save_back" value ="Save"/>
+        <input class="btn btn-sm btn-ISEIblue3" type="submit" name="save_new" value ="Save and add another"/>
+
+    </form>
+</div>
+
+    <div class="col col-sm-auto">
+        <a class="btn btn-sm btn-ISEIblue3 mb-3" href="{% url "add_parent_from_list" userid "parent" %}">Select parents from existing parent list</a>
+        <br>
+        <a class="btn btn-sm btn-ISEIblue3" href="{% url "add_parent_from_list" userid "staff" %}">Select parents from existing staff list</a>
+    </div>
+
+</div>
+
+<script>
+    window.onload = function(){
+        document.getElementById('id_username').tabIndex ="-1";
+    }
+
+    /*$('#id_last_name').focusout (function() { */
+    function generate() {
+        var first_name = $('#id_first_name').val();
+        var last_name = $('#id_last_name').val();
+        var s_a =  "{{ school.abbreviation }}";
+        var s_id = "{{ school.id }}";
+
+        $('#id_default_username').val(first_name + last_name);
+        $('#id_username').val(s_a+"_"+ first_name + last_name);
+        /* document.getElementById('id_username_info').innerHTML = "Default Username: " +  first_name + "." + last_name ; */
+        $('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
+        $('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
+        document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a + "_" + s_id ;
+    };
+
+     $('#id_last_name').focusout (function() {
+            generate();
+        });
+
+    $('#id_default_username').focusout (function(){
+        var s_a = "{{ school.abbreviation }}";
+        var p_u = $('#id_default_username').val();
+        $('#id_username').val(s_a+"_"+p_u);
+    });
+
+
+</script>
+
+{% endblock content %}

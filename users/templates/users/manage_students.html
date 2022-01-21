@@ -6,47 +6,77 @@
 
 
 {% block content %}
+
 <p>
     {% if active == True %}
         <a class = "btn btn-sm btn-ISEIblue3 mt-3 mb-3" href="{% url 'add_student' school.id  %} " > Add New Student</a>
-        <a class = "btn btn-sm btn-ISEIblue3 mt-3 mb-3" href="{% url 'manage_inactive_students' school.id %} " style="float:right"> Manage Students</a>
+        <a class = "btn btn-sm btn-ISEIblue3 mt-3 mb-3" href="{% url 'mark_inactive_students' school.id %} " > Mark Inactive Students</a>
+        <a class = "btn btn-sm btn-ISEIblue3 mt-3 mb-3" href="{% url 'manage_inactive_students' school.id %} " style="float:right"> Manage Inactive Students</a>
     {% else %}
         <a class = "btn btn-sm btn-ISEIblue3 mt-3 mb-3" href="{% url 'manage_students' school.id  %}" style="float: right"> Manage Active Students </a>
     {% endif %}
 </p>
 
 
+<div class="row">
+    <div class="card card-body">
+        <form method="get">
+                {{ student_filter.form}}
+            <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
+            <a href="{%  url 'manage_students' school.id %}">Clear all filters</a>
+        </form>
+    </div>
+</div>
 
     <table class="table table-striped">
         <thead class="thead-dark">
-        <tr>
-            <th>Name</th><th>Username</th>
-            <th>Email</th> <th>Birthday</th><th>Graduation Year</th>
-            <th>Parents</th><th></th><th></th>
+        <tr><th></th>
+            <th>Name <div class="span80">Username</div></th>
+            <th>Email</th> <th>Birthday</th><th>Grad Year</th><th>Gender</th>
+            <th>Parents</th><th></th>
         </tr>
         </thead>
 
         <tbody>
         {% for s in student %}
             <tr>
-                <td>{{ s.user.last_name }}, {{ s.user.first_name }}</td>
-                <td>{{ s.user.username }}</td>
+                <td>
+                    <a class = "btn btn-sm iseiblue3 span80" href="{% url 'update_student' s.user.id  %}">Update</a>
+                </td>
+                <td>{{ s.user.last_name }}, {{ s.user.first_name }}
+                    <p class="span80">{{ s.user.username }}</p></td>
                 <td>{{ s.user.email }}</td>
                 <td>{{ s.birthday }}</td>
                 <td>{{ s.graduation_year }}</td>
+                <td>{{ s.get_gender_display }}</td>
+                <td>
+                    <table class="table-sm table-nostriped table-borderless" >
+                        {% for p in s.parent.all %}
+                            <tr>
+                                <td>{{ p.last_name }}, {{ p.first_name }}<br></td>
+                                <td>{{ p.email }}</td> <td>{{ p.profile.phone_number }}</td>
+                                <td><a class="text-ISEIblue" href="{% url 'update_parent' p.id %}">Update</a></td>
+                                <td><a class ="spanred" href="{% url 'delete_parent' p.id s.id %}">Delete</a></td>
 
-                <td> {% for p in s.parent.all %}
-                        {{ p.last_name }}, {{ p.first_name }}
-                    {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </table>
                 </td>
                 <td>
-                    <a class = "btn btn-sm iseiblue3" href="{% url 'update_student' s.id  %}">Update</a>
-                    <a class ="btn btn-sm spanred" href="{% url 'delete_student' s.id  %}">Delete</a></td>
-
+                    <div class="dropdown">
+                        <a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Add Parents
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item span80" href="{% url 'add_parent' s.user.id %} ">Add new parent/guardian</a>
+                            <a class="dropdown-item span80" href="{% url "add_parent_from_list" s.user.id "parent" %}">Add from existing parent list</a>
+                            <a class="dropdown-item span80" href="{% url "add_parent_from_list" s.user.id "staff" %}">Add from existing staff list</a>
+                        </div>
+                    </div>
+                </td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
 
 {% endblock %}

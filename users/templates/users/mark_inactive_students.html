@@ -1,0 +1,58 @@
+{%  extends 'base.html' %}
+  {% load static %}
+
+
+  {% block title %} Manage Students {% endblock title %}
+
+
+{% block content %}
+
+
+
+<div class="col mt-2 mb-2">
+        <form method="get">
+                {{ student_filter.form}}
+            <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
+            <a href="{%  url 'mark_inactive_students' school.id %}">Clear all filters</a>
+        </form>
+</div>
+
+
+    <form action="" method="POST" name ="mark_inactive_students">
+        {% csrf_token %}
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Name </th><th>Grad Year</th><th>Gender</th>
+                    <th>Active</th><th>Delete</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {{ student_formset.management_data }}
+                {{ student_formset.management_form }}
+
+                {% for form in student_formset %}
+                    {{ form.non_field_errors }}
+                    <tr>
+                        <td>{{ form.instance.last_name }}, {{ form.instance.first_name }}</td>
+                        <td>{{ form.instance.student.graduation_year }}</td>
+                        <td>{{ form.instance.student.get_gender_display }}</td>
+                        <td> {{ form.is_active }}{{ form.is_active.errors }}</td>
+                        <td>{{ form.DELETE }}{{ from.DELETE.errors }}</td>
+                    </tr>
+                    {% for hidden in form.hidden_fields %} {{ hidden }} {% endfor %}
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+
+            <input class="btn-ISEIblue3" type="submit" value="Submit Changes" name="submit_changes" >
+        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style="float:right"> Cancel </a>
+
+
+
+    </form>
+
+{% endblock %}

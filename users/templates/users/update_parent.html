@@ -3,13 +3,13 @@
     {% load crispy_forms_tags %}
     {% load group_tags %}
 
-  {% block title %} Update Student {% endblock title %}
+  {% block title %} Update instructor {% endblock title %}
 
 
 {% block content %}
 
 <div class="card card-body mt-2 padding">
-<!-- update student -->
+
     <form method="POST">
         {% csrf_token %}
         <div class="row">
@@ -17,27 +17,16 @@
                 {{ form_user.first_name|as_crispy_field }}
                 {{ form_user.last_name|as_crispy_field  }}
                 {{ form_user.email|as_crispy_field }}
-            </div>
-            <div class="col-sm-auto">
-                {{ form_student.gender|as_crispy_field }}
-                {{ form_student.birthday|as_crispy_field }}
-                {{ form_student.graduation_year|as_crispy_field }}
+                {{ form_profile.phone_number|as_crispy_field }}
+
             </div>
             <div class="col-sm-auto">
                 {{ form_user.username|as_crispy_field }}
-                <div class="mb-3">
-                    <label for="id_is_active" class="control-label ">
-                        Active <span class="asteriskField">*</span>
-                    </label>
-                    {{ form_user.is_active}} Uncheck if user is no longer a student at this school.
-                </div>
+                <input type="hidden" name="next" value="{{ request.path }}">
              <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Update"/>
-                <a class ="btn btn-sm spanred" href="{% url 'delete_student' user.id  %}">Delete</a>
-
             </div>
         </div>
     </form>
-
 </div>
 
 <script>

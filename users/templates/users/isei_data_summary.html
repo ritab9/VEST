@@ -17,13 +17,19 @@
             {% for s in school %}
                 <tr>
                     <th>{{ s.name}}</th>
-                    <th>
+                    <td>
                         {% for a in school_admin %}
                             {% if a.profile.school == s %}
-                                <p>{{ a.first_name }} {{ a.last_name }}</p><br>
+                            <table class="table-sm table-borderless">
+                                <tr>
+                                    <td>{{ a.first_name }} {{ a.last_name }}</td>
+                                    <td><a class = "btn btn-sm iseiblue3" href="{% url 'update_school_staff' a.id  %}">Update</a></td>
+                                    <td><a class ="btn btn-sm spanred" href="{% url 'delete_school_staff' a.id  %}">Delete</a></td>
+                                </tr>
+                            </table>
                             {% endif %}
                         {% endfor %}
-                    </th>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

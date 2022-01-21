@@ -35,7 +35,7 @@
                     <div id="id_school_abbreviation_username"></div>_
                     <input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
                  </div>
-                    <div style="display: block">{{ form.username|as_crispy_field }}</div>
+                    <div style="pointer-events: none">{{ form.username|as_crispy_field }}</div>
                 <!-- <p id="id_username_info" class="spanred"></p> -->
                 {{ form.password1|as_crispy_field }}
                 {{ form.password2|as_crispy_field }}
@@ -43,11 +43,22 @@
             </div>
         </div>
              </div>
-        <input type="submit" value ="Register"/>
+        <input class="btn-sm btn-ISEIblue3" type="submit" value ="Register"/>
     </form>
 
 
 <script>
+
+    window.onload = function(){
+        document.getElementById('id_username').tabIndex ="-1";
+    };
+
+    $('#id_school_dropdown').change (function() {
+        var dd = document.getElementById('id_school_dropdown');
+        var s_a = dd.options[dd.selectedIndex].value;
+        document.getElementById('id_school_abbreviation_username').innerHTML =  $.trim(s_a);
+
+    });
 
     $('#id_last_name').focusout (function() {
         var first_name = $('#id_first_name').val();

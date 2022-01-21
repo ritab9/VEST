@@ -68,6 +68,12 @@ admin.site.register(User, UserAdmin)
 @admin.register(Student)
 class Student(admin.ModelAdmin):
     model= Student
+    list_display = ('user','graduation_year', 'birthday', 'gender', 'is_active' )
+    list_editable = ('gender', 'graduation_year')
+
+    def is_active(self, obj):
+        return obj.user.is_active
+
 
 # @admin.register(Instructor)
 # class Instructor(admin.ModelAdmin):

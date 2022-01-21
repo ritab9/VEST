@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
 
+    path('crash/', views.crash, name='crash'),
 #login paths
     path('', views.logoutuser, name='logout'),
     path('login/', views.loginuser, name='login'),
@@ -45,5 +46,14 @@ urlpatterns = [
     path('add_student/<str:schoolid>/', views.add_student, name='add_student'),
     path('update_student/<str:userid>/', views.update_student, name='update_student'),
     path('delete_student/<str:userid>/', views.delete_student, name='delete_student'),
+    path('mark_inactive_students/<str:schoolid>/', views.mark_inactive_students, name='mark_inactive_students'),
+
+    #path('manage_parents/<str:schoolid>/', views.manage_parents, name='manage_parents'),
+    #path('manage_inactive_parents/<str:schoolid>/', views.manage_inactive_parents, name='manage_inactive_parents'),
+    path('add_parent/<str:userid>/', views.add_parent, name='add_parent'),
+    path('update_parent/<str:userid>/', views.update_parent, name='update_parent'),
+    path('delete_parent/<str:userid>/<str:studentid>/', views.delete_parent, name='delete_parent'),
+
+    path('add_parent_from_list/<str:userid>/<str:list>/', views.add_parent_from_list, name='add_parent_from_list'),
 
 ]

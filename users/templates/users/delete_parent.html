@@ -1,0 +1,46 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+    {% load group_tags %}
+
+  {% block title %} Update instructor {% endblock title %}
+
+
+{% block content %}
+
+<div class="card card-body mt-2 padding">
+
+    <form action=" "  method="POST">
+        {% csrf_token %}
+       What would you like to do?
+        <div class="card">
+                {% if user|in_group:"instructor" or user|in_group:"vocational_coordinator" or user|in_group:"school_admin" %}
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="delete_user" name="delete_user" > Delete <i>{{ user.first_name }} {{ user.last_name }}</i>'s parent and staff accounts. Only do this if <i>{{ user.first_name }} {{ user.last_name }}</i> has no recorded activity in the system. </p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="remove_parent_keep_staff" name="remove_parent_keep_staff" > Remove <i>{{ user.first_name }} {{ user.last_name }}</i> as parent from <i>{{ student.user.first_name }} {{ student.user.last_name }}</i> but maintain as parent if there are other children, and maintain as staff.</p>
+                {% else %}
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="delete_user" name="delete_user" > Delete <i>{{ user.first_name }} {{ user.last_name }}</i>'s parent account.</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="remove_parent" name="remove_parent" > Remove <i>{{ user.first_name }} {{ user.last_name }}</i> as parent from <i>{{ student.user.first_name }} {{ student.user.last_name }}</i> but maintain as parent if there are other children. Account will be deleted if there are no other children.</p>
+                {% endif %}
+        </div>
+
+        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()"> Cancel </a>
+        <input class="btn btn-sm btn-danger" type='submit' value ='Confirm'>
+
+    </form>
+</div>
+
+<script>
+    $(document).ready(function(){
+        var checkboxes = $('.checkboxes');
+        checkboxes.change(function(){
+            if($('.checkboxes:checked').length>0) {
+                checkboxes.removeAttr('required');
+            } else {
+                checkboxes.attr('required', 'required');
+            }
+        });
+    });
+
+</script>
+
+{% endblock content %}

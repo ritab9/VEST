@@ -24,34 +24,60 @@
 
             <div class="card">
                 {% if user|in_group:"instructor" %}
-                    <p><input class = "ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" checked> Instructor</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" checked> Instructor</p>
                 {% else %}
-                    <p><input class = "ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" > Instructor</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" > Instructor</p>
                 {% endif %}
 
                  {% if user|in_group:"vocational_coordinator" %}
-                    <p><input class = "ml-2" type="checkbox" id="vocational_coordiantor" name="vocational_coordinator" label = "Vocational Coordinator" checked> Vocational Coordinator</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="vocational_coordiantor" name="vocational_coordinator" label = "Vocational Coordinator" checked> Vocational Coordinator</p>
                  {% else %}
-                     <p><input class = "ml-2" type="checkbox" id="vocational_coordiantor" name="vocational_coordinator" label = "Vocational Coordinator"> Vocational Coordinator</p>
+                     <p><input class = "checkboxes ml-2" type="checkbox" id="vocational_coordiantor" name="vocational_coordinator" label = "Vocational Coordinator"> Vocational Coordinator</p>
                 {% endif %}
 
                 {% if user|in_group:"school_admin" %}
-                    <p><input class = "ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin" checked> School Admin</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin" checked> School Admin</p>
                 {% else %}
-                    <p><input class = "ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin"> School Admin</p>
+                    <p><input class = "checkboxes ml-2" type="checkbox" id="school_admin" name="school_admin" label = "School Admin"> School Admin</p>
+                {% endif %}
+
+                {% if user|in_group:"inactive_staff" %}
+                    <p><input class = "checkbox ml-2" type="checkbox" id="inactive_staff" name="inactive_staff" label = "Inactive Staff" checked> Inactive Staff</p>
+                {% else %}
+                    <p><input class = "checkbox ml-2" type="checkbox" id="inactive_staff" name="inactive_staff" label = "Inactive Staff"> Inactive Staff</p>
                 {% endif %}
             </div>
             <br>
-                {{ form_user.is_active|as_crispy_field }}
                 <br>
+
+                <input type="hidden" name="next" value="{{ request.path }}">
              <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Update"/>
+                <a class ="btn btn-sm spanred" href="{% url 'delete_school_staff' user.id  %}">Delete</a></td>
             </div>
         </div>
-
     </form>
 </div>
 
 <script>
+    $(document).ready(function(){
+        var checkboxes = $('.checkboxes');
+        checkboxes.change(function(){
+            if($('.checkboxes:checked').length>0) {
+                $('#inactive_staff').prop('checked', false);
+            } else {
+                $('#inactive_staff').prop('checked', true);
+            }
+        });
+
+        $('#inactive_staff').change(function() {
+            if (document.getElementById('inactive_staff').checked) {
+                $('.checkboxes').prop('checked', false);
+            } else {
+                $('.checkboxes').prop('checked', true);
+            };
+        });
+    });
+
 
 </script>
 

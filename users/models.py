@@ -33,11 +33,11 @@ class School(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
-    school = models.ForeignKey(School, null = True, blank = True, on_delete= models.CASCADE)
+    school = models.ForeignKey(School, null = True, blank = True, on_delete= models.PROTECT)
 
 
     def __str__(self):
-        return self.user.first_name + " " + self.user.last_name + " Profile"
+        return self.user.last_name + ", " + self.user.first_name
 
 # class Instructor(models.Model):
 #     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
@@ -64,19 +64,15 @@ class Profile(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     birthday = models.DateField()
-
-    #school = models.ForeignKey(School, on_delete=models.CASCADE, null=False, blank=False)
+    CHOICES = (
+        ('f', 'Female'),
+        ('m', 'Male'),
+    )
+    gender = models.CharField(max_length=1, choices=CHOICES, null=False, blank=False, default = 'f')
     graduation_year = models.PositiveSmallIntegerField(validators=[MinValueValidator(2022), MaxValueValidator(2100)])
-    parent = models.ManyToManyField(User, related_name="Children",blank=True)
+    parent = models.ManyToManyField(User, related_name="children", blank=True)
     def __str__(self):
         return self.user.last_name + ", " + self.user.first_name
-
-
-#class Parent(models.Model):
-#    user=models.OneToOneField(User, on_delete= models.CASCADE)
-#    student = models.ManyToManyField(Student)
-#    def __str__(self):
-#        return self.user
 
 
 class Address(models.Model):
