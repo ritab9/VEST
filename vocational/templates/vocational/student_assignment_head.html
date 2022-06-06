@@ -1,0 +1,19 @@
+{% load static %}
+
+<div class="row">
+    <div class="dropdown">
+      <button class="btn btn-sm btn-ISEIblue3 dropdown-toggle mt-3 mb-3 ml-3" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Add Assignments for new quarter
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          {% for q in new_quarter %}
+            <a class="dropdown-item dropdown-menu-sm-left" href="{% url "manage_student_assignment" schoolid q.id %} ">{{ q.school_year }}, {{ q }}</a>
+          {% endfor %}
+      </div>
+    </div>
+    <a class="btn btn-ISEIblue3 btn-sm mt-3 mb-3 ml-3" href="{% url "student_assignment" schoolid %} ">Assignments</a>
+    <a class="btn btn-ISEIblue3 btn-sm mt-3 mb-3 ml-3" href="{% url "student_assignment_student_filter" schoolid %} ">Filter by student</a>
+    <a class="btn btn-ISEIblue3 btn-sm mt-3 mb-3 ml-3" href="{% url "student_assignment_department_filter" schoolid %} ">Filter by department</a>
+
+</div>
+

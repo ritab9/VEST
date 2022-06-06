@@ -1,0 +1,57 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Departments {% endblock title %}
+
+
+{% block content %}
+    <!--Add new Assignments Dropdown -->
+       {% include 'vocational/student_assignment_head.html' %}
+
+
+    <div class="row">
+
+        <div class="col-sm-auto">
+<!-- filter -->
+            <form method="get">
+                {{ student_filter.form }}
+                <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
+                <a href="{%  url 'student_assignment' schoolid %}">Clear all filters</a>
+            </form>
+<!-- filtered data -->
+            <div class = "row mt-3">
+
+                <div class="col-sm-auto">
+                    <table class="table" style="width: auto">
+                        <thead>
+                            <tr>
+                                <th> Student</th>
+                                <th> Graduation year</th>
+                                <th> Vocational Assignments</th>
+                            </tr>
+                        </thead>
+                       <tbody>
+                            {% for i in student %}
+                                <tr>
+                                   <td>{{ i.user.last_name }}, {{ i.user.first_name }} </td>
+                                    <td> {{ i.graduation_year }}, {{ i.grade_level }}</td>
+                                   <td>
+                                    <table class="table-borderless">
+                                    {%  for a in i.student_assignment.all %}
+                                          <tr>
+                                            <td>{{ a.quarter.school_year }}, {{ a.quarter }}</td>
+                                            <td> {{ a.department }}</td>
+                                          </tr>
+                                    {% endfor %}<br>
+                                    </table></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

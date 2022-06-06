@@ -1,0 +1,57 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Departments {% endblock title %}
+
+
+{% block content %}
+    <!--Add new Assignments Dropdown -->
+    {% include 'vocational/student_assignment_head.html' %}
+
+    <div class="row">
+
+        <div class="col-sm-auto">
+<!-- filter -->
+            <form method="get">
+                {{ department_filter.form }}
+                <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
+                <a href="{%  url 'student_assignment' schoolid %}">Clear all filters</a>
+            </form>
+<!-- filtered data -->
+            <div class = "row mt-3">
+
+                <div class="col-sm-auto">
+                    <table class="table" style="width: auto">
+
+                       <tbody>
+                            {% for d in department %}
+                                <tr>
+                                   <td>{{ d }} </td>
+                                   <td>
+                                    <table class="table-borderless">
+                                    {%  for a in d.studentassignment_set.all %}
+                                          <tr>
+                                              <td>{{ a.quarter.school_year }}, {{ a.quarter }}<br>
+                                                     <a href="{% url "manage_student_assignment" schoolid a.quarter.id %} ">Manage Assignments</a>
+                                              </td>
+                                               <td> <table class="table-borderless">
+                                                      {% for s in a.student.all %}
+                                                          {{ s.user.last_name }}, {{ s.user.first_name }} <br>
+                                                      {% endfor %}
+                                                  </table>
+                                               </td>
+                                              </td>
+                                          </tr>
+                                    {% endfor %}
+                                    </table></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

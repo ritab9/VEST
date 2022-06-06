@@ -24,10 +24,8 @@ environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
-
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -83,12 +81,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'VEST.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 
-#DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+# DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 DEVELOPMENT_MODE = True
 if DEVELOPMENT_MODE is True:
     DATABASES = {
@@ -97,9 +94,9 @@ if DEVELOPMENT_MODE is True:
             'NAME': os.getenv('DATABASE_NAME'),
             'USER': os.getenv('DATABASE_USER'),
             'PASSWORD': os.getenv('DATABASE_PASS'),
-            'HOST': os.getenv('DATABASE_HOST',''),
-            'PORT': os.getenv('DATABASE_PORT',''),
-            #'OPTIONS': {'sslmode': 'require'}, #uncomment for digitalocean database
+            'HOST': os.getenv('DATABASE_HOST', ''),
+            'PORT': os.getenv('DATABASE_PORT', ''),
+            # 'OPTIONS': {'sslmode': 'require'}, #uncomment for digitalocean database
         }
     }
 elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
@@ -108,8 +105,6 @@ elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
     DATABASES = {
         "default": dj_database_url.parse(os.environ.get("DATABASE_URL")),
     }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -129,7 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -137,7 +131,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -153,8 +146,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGOUT_REDIRECT_URL = '/login/'
 
-#logout users when they close browser
+# logout users when they close browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-#allow login to inactive users (basically getting a message that their account is inactive)
-AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.AllowAllUsersModelBackend', )
+# allow login to inactive users (basically getting a message that their account is inactive)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.AllowAllUsersModelBackend',)

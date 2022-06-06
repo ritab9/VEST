@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
-
+from .models import *
+from vocational.models import VocationalStatus
 
 # Register your models here.
 @admin.register(Country)
@@ -64,15 +64,24 @@ class UserAdmin(AuthUserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
+class VocationalStatusInline(admin.StackedInline):
+    model=VocationalStatus
+    can_delete=True
+    extra=0
+
 
 @admin.register(Student)
 class Student(admin.ModelAdmin):
     model= Student
-    list_display = ('user','graduation_year', 'birthday', 'gender', 'is_active' )
+    inlines = [VocationalStatusInline,]
+    list_display = ('user','graduation_year', 'birthday', 'gender', 'is_active', "vocational_level")
     list_editable = ('gender', 'graduation_year')
 
     def is_active(self, obj):
         return obj.user.is_active
+
+    def vocational_level(self, obj):
+        return obj.vocationalstatus.vocational_level
 
 
 # @admin.register(Instructor)

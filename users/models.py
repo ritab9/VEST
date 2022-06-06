@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
-
+import datetime
 
 class Country(models.Model):
     name = models.CharField(max_length=25, unique = True)
@@ -60,7 +60,6 @@ class Profile(models.Model):
 #     def __str__(self):
 #         return self.user.first_name +" " + self.user.last_name
 
-
 class Student(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     birthday = models.DateField()
@@ -69,11 +68,34 @@ class Student(models.Model):
         ('m', 'Male'),
     )
     gender = models.CharField(max_length=1, choices=CHOICES, null=False, blank=False, default = 'f')
-    graduation_year = models.PositiveSmallIntegerField(validators=[MinValueValidator(2022), MaxValueValidator(2100)])
+    graduation_year = models.PositiveSmallIntegerField(validators=[MinValueValidator(2020), MaxValueValidator(2100)])
     parent = models.ManyToManyField(User, related_name="children", blank=True)
+
+    def grade_level(self):
+        years_to_grad = self.graduation_year - datetime.date.today().year
+        if datetime.date.today().month < 7:
+            years_to_grad = years_to_grad + 1
+        if years_to_grad == 1:
+            return "Senior"
+        elif years_to_grad ==2:
+            return "Junior"
+        elif years_to_grad ==3:
+            return "Sophomore"
+        elif years_to_grad ==4:
+            return "Freshman"
+        elif years_to_grad < 1:
+            return "Graduated"
+        else:
+            return "Not in highschool yet"
+
+    def name(self):
+        return self.user.first_name + " " + self.user.last_name
+
+    class Meta:
+        ordering = ('user__last_name', 'user__first_name')
+
     def __str__(self):
         return self.user.last_name + ", " + self.user.first_name
-
 
 class Address(models.Model):
     address_1 = models.CharField(verbose_name="address", max_length=128)

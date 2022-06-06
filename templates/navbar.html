@@ -2,7 +2,7 @@
 {% load group_tags %}
 
 
-<nav class ="navbar navbar-expand-md navbar-dark bg-ISEIblue3">
+<nav class ="navbar navbar-expand-md navbar-dark bg-ISEIblue3 noprint">
     <img src="{% static 'appfiles/VestLogoBLK.png' %}" width="120" height="60" alt="VEST Logo">
      <div class="container-fluid">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,19 +22,20 @@
                             </li>
 
                             <li class="nav-item dropdown isei_admin">
-                              <a class="nav-link dropdown-toggle p-3" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="iseiadminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Data Management
                               </a>
                               <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown">
                                   <li>
-                                    <a class="nav-link" href="{% url 'add_school' %}"> Add School</a>
+                                    <a class="nav-link float-right" href="{% url 'add_school' %}"> Add School</a>
                                 </li>
                                 <li>
-                                    <a class="nav-link" href="{% url 'add_school_admin' %}"> Add School Admin </a>
+                                    <a class="nav-link float-right" href="{% url 'add_school_admin' %}"> Add School Admin </a>
                                 </li>
-
                               </ul>
                             </li>
+
+
                         {% endif %}
 
 <!-- School Admin Links -->
@@ -43,32 +44,74 @@
                             <li class="nav-item school_admin">
                                 <a class="nav-link" href="{% url 'school_admin_dashboard' request.user.profile.school.id %}">Dashboard </a>
                             </li>
+
                             <li class="nav-item dropdown school_admin ">
-                              <a class="nav-link dropdown-toggle p-3" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminUserMangementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 User Management
                               </a>
-                              <ul class="dropdown-menu bg-ISEIblue3 mr-0 school_admin" aria-labelledby="navbarDropdown">
+                              <ul class="dropdown-menu bg-ISEIblue3 ml-0 school_admin" aria-labelledby="navbarDropdown">
                                   <li>
-                                    <a class="nav-link float-right" href="{% url 'manage_school_staff' request.user.profile.school.id %}"> School Staff</a>
+                                    <a class="nav-link float-left" href="{% url 'manage_school_staff' request.user.profile.school.id %}"> School Staff</a>
                                 </li>
                                 <li>
-                                    <a class="nav-link float-right" href="{% url 'manage_students' request.user.profile.school.id %}"> Students and Parents </a>
+                                    <a class="nav-link float-left" href="{% url 'manage_students' request.user.profile.school.id %}"> Students/Parents </a>
                                 </li>
 
                               </ul>
                             </li>
+
+
+                            <li>
+                                <a class="nav-link school_admin" href="{% url 'school_year' request.user.profile.school.id %}"> School Year </a>
+                            </li>
+
                         {% endif %}
 
                         {% if request.user|in_group:"vocational_coordinator" %}
                             <li class="nav-item vocational_coordinator">
                                 <a class="nav-link" href="">Vocational Coordinator Links</a>
                             </li>
+                            <li class="nav-item dropdown vocational_coordinator">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Data Management
+                              </a>
+                              <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
+                                  <li>
+                                      <a class="nav-link " href="{% url 'department_list' request.user.profile.school.id %}"> Departments </a>
+                                  </li>
+                                  <li>
+                                    <a class="nav-link" href="{% url 'skill_list' request.user.profile.school.id %}"> Skills</a>
+                                  </li>
+                                  <li>
+                                    <a class="nav-link" href="{% url 'instructor_assignment' request.user.profile.school.id %}">Instructor Assignment</a>
+                                  </li>
+                                  <li>
+                                    <a class="nav-link" href="{% url 'student_assignment' request.user.profile.school.id %}">Student Assignment</a>
+                                  </li>
+                              </ul>
+                            </li>
+
                         {% endif %}
+
 
                         {% if request.user|in_group:"instructor" %}
                             <li class="nav-item instructor">
                                 <a class="nav-link" href="">Instructor Links</a>
                             </li>
+                            <li class="nav-item dropdown instructor">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Grades
+                              </a>
+                              <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
+                                  <li>
+                                      <a class="nav-link " href="{% url 'grade_list' request.user.profile.school.id %}"> Grade List </a>
+                                  </li>
+                                  <li>
+                                    <a class="nav-link" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
+                                  </li>
+                              </ul>
+                            </li>
+
                         {% endif %}
 
                         {% if request.user|in_group:"parent" %}
@@ -92,7 +135,7 @@
 {% if user.is_authenticated and user.is_active%}
     <span>
     <div class="col">
-        <span class ="name-msg"> {{request.user.first_name}} {{request.user.last_name}} </span>
+        <span class ="name-msg text-light"> {{request.user.first_name}} {{request.user.last_name}} </span>
         {% if request.user|in_more_groups %}
             <select class="bg-ISEIblue3 text-light" id="id_group" name="group">
                 {% for g in request.user.groups.all %}
@@ -120,8 +163,13 @@
         if (g_i) {
             var selItem = sessionStorage.getItem("SelItem")
             $('#id_group').val(selItem);
+            /* alert($('#id_group').val()); */
             if (!$('#id_group').val()) {
-                document.getElementById('id_group').selectedIndex = "0";
+                if (document.getElementById('id_group')) {
+                    document.getElementById('id_group').selectedIndex = "0";
+                    /* alert($('#id_group').val()); */
+                    selItem = $('#id_group').val();
+                }
             };
             navbar_refresh(selItem);
         }

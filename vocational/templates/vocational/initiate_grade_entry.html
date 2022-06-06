@@ -1,0 +1,53 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Grades {% endblock title %}
+
+
+{% block content %}
+
+  <div class ="card card-body border-0 col-sm-auto">
+      <form method="POST">
+      {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-auto">
+          <table class="table-sm">
+                <thead>
+                    <th>Quarter</th><th>Department</th><th>Grade Type</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <select class="form-select" id="id_quarter" name="quarter" >
+                                {% for q in active_quarter %}
+                                    <option value="{{ q.id }}">{{ q }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select" name="department">
+                                {% for d in department %}
+                                    <option value="{{d.id}}"> {{d}} </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select" name="type">
+                                <option value="F">Formative</option>
+                                <option value="S">Summative</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+          </table>
+        </div>
+            <div class="col-sm-auto mt-4">
+              <button class="btn btn-ISEIblue3 btn-sm" type="submit">Grade Entry </button>
+            </div>
+        </div>
+    </form>
+  </div>
+
+
+{% endblock %}

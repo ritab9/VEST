@@ -1,26 +1,25 @@
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
-# from django.http import HttpResponseRedirect
 # from django.db.models import Q
 from django.forms import modelformset_factory
 
 from .decorators import unauthenticated_user, allowed_users
-
-from .models import *
 from .forms import *
 from .functions import *
 from .filters import *
 
-#landing page for everyone. Introduced it to allow for role transition
+
+# landing page for everyone. Introduced it to allow for role transition
+@login_required(login_url='login')
 def crash(request):
     return render(request, 'users/crash.html')
+
 
 # Login / Logout
 @unauthenticated_user
 def loginuser(request):
-
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -43,7 +42,8 @@ def loginuser(request):
                     else:
                         messages.info(request, 'User not assigned to a group. Please contact the site administrator.')
                 else:
-                    messages.info(request, 'This account is not currently active. Please contact the site administrator.')
+                    messages.info(request,
+                                  'This account is not currently active. Please contact the site administrator.')
         else:
             messages.info(request, 'Username OR password is incorrect')
     context = dict()
@@ -56,6 +56,7 @@ def logoutuser(request):
 
 
 # ISEI Admin Views
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin'])
 def isei_admin_dashboard(request):
     context = dict()
@@ -71,6 +72,7 @@ def isei_data_summary(request):
     return render(request, 'users/isei_data_summary.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin'])
 def add_school(request):
     if request.method == 'POST':
@@ -85,6 +87,7 @@ def add_school(request):
     return render(request, 'users/add_school.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin'])
 def add_school_admin(request):
     school = School.objects.all().order_by("name")
@@ -111,6 +114,7 @@ def add_school_admin(request):
 
 
 # School Admin Views
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def school_admin_dashboard(request, schoolid):
     school = School.objects.get(id=schoolid)
@@ -127,6 +131,7 @@ def school_admin_dashboard(request, schoolid):
 
 
 # School staff Administration
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def manage_school_staff(request, schoolid):
     school = School.objects.get(id=schoolid)
@@ -136,6 +141,7 @@ def manage_school_staff(request, schoolid):
     return render(request, 'users/manage_school_staff.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def manage_inactive_school_staff(request, schoolid):
     school = School.objects.get(id=schoolid)
@@ -145,6 +151,7 @@ def manage_inactive_school_staff(request, schoolid):
     return render(request, 'users/manage_school_staff.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def add_school_staff(request, schoolid):
     school = School.objects.get(id=schoolid)
@@ -174,6 +181,7 @@ def add_school_staff(request, schoolid):
     return render(request, 'users/add_school_staff.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def update_school_staff(request, userid):
     user = User.objects.get(id=userid)
@@ -185,7 +193,7 @@ def update_school_staff(request, userid):
         form_profile = ProfileForm(request.POST, instance=profile)
         if form_user.is_valid() and form_profile.is_valid():
             user = form_user.save()
-            profile = form_profile.save()
+            form_profile.save()
 
         group = Group.objects.get(name='instructor')
         if request.POST.get('instructor'):
@@ -209,14 +217,14 @@ def update_school_staff(request, userid):
         if request.POST.get('inactive_staff'):
             user.groups.add(group)
             if not user.groups.filter(name='parent').exists():
-                user.is_active= False
+                user.is_active = False
                 user.save()
         else:
             user.groups.remove(group)
             user.is_active = True
             user.save()
 
-        if request.user.groups.filter(name="isei_admin"):
+        if request.user.groups.filter(name="isei_admin").exists():
             return redirect('isei_data_summary')
         else:
             if request.user.groups.filter(name='inactive_staff').exists():
@@ -235,6 +243,7 @@ def update_school_staff(request, userid):
     return render(request, 'users/update_school_staff.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def delete_school_staff(request, userid):
     user = User.objects.get(id=userid)
@@ -247,7 +256,7 @@ def delete_school_staff(request, userid):
 
     if request.method == 'POST':
         if user.groups.filter(name="parent"):
-            group = Group.objects.filter(name__in=['school_admin','instructor','vocational_coordinator'])
+            group = Group.objects.filter(name__in=['school_admin', 'instructor', 'vocational_coordinator'])
             for g in group:
                 user.groups.remove(g)
         else:
@@ -262,6 +271,7 @@ def delete_school_staff(request, userid):
 
 
 # Student Data Administration
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def manage_students(request, schoolid):
     school = School.objects.get(id=schoolid)
@@ -271,51 +281,55 @@ def manage_students(request, schoolid):
     student_filter = StudentFilter(request.GET, queryset=student)
     student = student_filter.qs
 
-    context = dict(school=school, student=student, active=True, student_filter = student_filter)
+    context = dict(school=school, student=student, active=True, student_filter=student_filter)
     return render(request, 'users/manage_students.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def manage_inactive_students(request, schoolid):
     school = School.objects.get(id=schoolid)
 
     student = Student.objects.filter(user__profile__school=school, user__is_active=False,
                                      user__groups__name="student").order_by('graduation_year', 'user__last_name')
+    student_filter = StudentFilter(request.GET, queryset=student)
+    student = student_filter.qs
 
-    context = dict(school=school, student=student, active=False)
+    context = dict(school=school, student=student, active=False, student_filter=student_filter)
     return render(request, 'users/manage_students.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def mark_inactive_students(request, schoolid):
     school = School.objects.get(id=schoolid)
 
-    student = User.objects.filter(profile__school=school, is_active=True, groups__name="student").order_by('student__graduation_year', 'last_name')
+    student = User.objects.filter(profile__school=school, is_active=True, groups__name="student").order_by(
+        'student__graduation_year', 'last_name')
     student_filter = StudentUserFilter(request.GET, queryset=student)
     student = student_filter.qs
 
-    StudentFormset = modelformset_factory(User, fields = ('is_active',), extra=0, can_delete=True)
-    student_formset = StudentFormset (queryset=student)
+    studentformset = modelformset_factory(User, fields=('is_active',), extra=0, can_delete=True)
+    student_formset = studentformset(queryset=student)
 
-    if request.method=='POST':
-        student_formset = StudentFormset(request.POST,)
+    if request.method == 'POST':
+        student_formset = studentformset(request.POST, )
         if student_formset.is_valid():
             student_formset.save()
             return redirect('manage_students', school.id)
 
-
-    context = dict(school=school, student=student, student_formset = student_formset, student_filter=student_filter)
+    context = dict(school=school, student=student, student_formset=student_formset, student_filter=student_filter)
     return render(request, 'users/mark_inactive_students.html', context)
 
 
-
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def add_student(request, schoolid):
     school = School.objects.get(id=schoolid)
     # add new student
     if request.method == 'POST':
         form_user = CreateUserForm(request.POST)
-        form_student = StudentForm (request.POST)
+        form_student = StudentForm(request.POST)
         if form_user.is_valid() and form_student.is_valid():
             new_user = form_user.save()
             new_student = form_student.save()
@@ -323,7 +337,7 @@ def add_student(request, schoolid):
             new_student.save()
             group = Group.objects.get(name='student')
             new_user.groups.add(group)
-            profile = Profile.objects.create(user=new_user, school=school)
+            Profile.objects.create(user=new_user, school=school)
             # email_student()
 
             if request.POST.get("save_back"):
@@ -337,25 +351,26 @@ def add_student(request, schoolid):
         form_user = CreateUserForm()
         form_student = StudentForm()
 
-    context = dict(form_user=form_user, form_student = form_student,
+    context = dict(form_user=form_user, form_student=form_student,
                    school=school)
     return render(request, 'users/add_student.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def update_student(request, userid):
     user = User.objects.get(id=userid)
-    #profile = Profile.objects.get(user=user)
+    # profile = Profile.objects.get(user=user)
     student = Student.objects.get(user=user)
     school = School.objects.get(id=user.profile.school.id)
 
     if request.method == 'POST':
         form_user = UserFormStudent(request.POST, instance=user)
         form_student = StudentForm(request.POST, instance=student)
-        #form_profile = ProfileForm(request.POST, instance=profile)
+        # form_profile = ProfileForm(request.POST, instance=profile)
         if form_user.is_valid() and form_student.is_valid():
             user = form_user.save()
-            #form_profile.save()
+            # form_profile.save()
             form_student.save()
             if user.is_active:
                 return redirect('manage_students', school.id)
@@ -364,30 +379,35 @@ def update_student(request, userid):
 
     else:
         form_user = UserFormStudent(instance=user)
-        #form_profile = ProfileForm(instance=profile)
+        # form_profile = ProfileForm(instance=profile)
         form_student = StudentForm(instance=student)
 
-    context = dict(form_user=form_user, user=user, form_student =form_student,
+    context = dict(form_user=form_user, user=user, form_student=form_student,
                    school=school)
 
     return render(request, 'users/update_student.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def delete_student(request, userid):
     user = User.objects.get(id=userid)
     profile = Profile.objects.get(user=user)
-    #student = Student.objects.get(user=user)
     school = profile.school
-    #parent = student.parent
 
-    #TODO should I delete parents along with students?
-    # if yes, need to check if the students has other parents, or is a staff at the school
     if request.method == 'POST':
-        #g = Group.objects.get(name='parent')
-        #for p in parent:
-        #    g.user_set.remove(p)
+        parent = user.student.parent.all()
+        g = Group.objects.get(name='parent')
+        for p in parent:
+            if has_other_children(p, user) or is_active_school_staff(p):
+                if not has_other_children(p, user):
+                    p.groups.remove(g)
+                    # not a parent, remove from parent group, keep p as user because if is staff
+            else:
+                # is neither a parent nor a school staff. Delete p
+                p.delete()
         user.delete()
+
         return redirect('manage_students', school.id)
 
     context = dict(user=user, school=school)
@@ -396,11 +416,11 @@ def delete_student(request, userid):
 
 # Parent Data Administration
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def add_parent(request, userid):
-
-    student = Student.objects.get(user__id = userid)
-    school = School.objects.get(id =student.user.profile.school.id)
+    student = Student.objects.get(user__id=userid)
+    school = School.objects.get(id=student.user.profile.school.id)
     # add new parent
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
@@ -417,39 +437,40 @@ def add_parent(request, userid):
             if request.POST.get("save_new"):
                 form = CreateUserForm()
     else:
-        form= CreateUserForm()
+        form = CreateUserForm()
 
     context = dict(form=form, school=school, student=student, userid=userid)
     return render(request, 'users/add_parent.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
-def add_parent_from_list(request, userid, list):
-
-    student = Student.objects.get(user__id = userid)
-    school = School.objects.get(id =student.user.profile.school.id)
+def add_parent_from_list(request, userid, listtype):
+    student = Student.objects.get(user__id=userid)
+    school = School.objects.get(id=student.user.profile.school.id)
 
     if request.method == 'POST':
         parent_id = request.POST.getlist('parent')
-        g=Group.objects.get(name='parent')
+        g = Group.objects.get(name='parent')
         for p in parent_id:
-            parent= User.objects.get(id=p)
+            parent = User.objects.get(id=p)
             student.parent.add(parent)
             parent.groups.add(g)
 
         return redirect('manage_students', school.id)
 
     else:
-        if list == "parent":
+        if listtype == "parent":
             parent_list = User.objects.filter(groups__name="parent", profile__school=school).order_by('last_name')
-        elif list=="staff":
-            parent_list = User.objects.filter(groups__name__in=["instructor", "vocational_coordinator", "school_admin"], profile__school=school).order_by('last_name').distinct()
+        elif listtype == "staff":
+            parent_list = User.objects.filter(groups__name__in=["instructor", "vocational_coordinator", "school_admin"],
+                                              profile__school=school).order_by('last_name').distinct()
 
-    context = dict(school=school, student=student, parent_list= parent_list)
+    context = dict(school=school, student=student, parent_list=parent_list)
     return render(request, 'users/add_parent_from_list.html', context)
 
 
-
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def update_parent(request, userid):
     user = User.objects.get(id=userid)
@@ -460,8 +481,8 @@ def update_parent(request, userid):
         form_user = UserForm(request.POST, instance=user)
         form_profile = ProfileForm(request.POST, instance=profile)
         if form_user.is_valid() and form_profile.is_valid():
-            user = form_user.save()
-            profile = form_profile.save()
+            form_user.save()
+            form_profile.save()
             return redirect('manage_students', school.id)
     else:
         form_user = UserForm(instance=user)
@@ -469,11 +490,12 @@ def update_parent(request, userid):
 
     context = dict(form_user=form_user, user=user,
                    form_profile=form_profile,
-                   school=school,)
+                   school=school, )
 
     return render(request, 'users/update_parent.html', context)
 
 
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def delete_parent(request, userid, studentid):
     user = User.objects.get(id=userid)
@@ -485,12 +507,12 @@ def delete_parent(request, userid, studentid):
             user.delete()
         elif request.POST.get('remove_parent_keep_staff'):
             student.parent.remove(user)
-            if has_children(user) == False:
+            if has_children(user) is False:
                 group = Group.objects.get(name='parent')
                 user.groups.remove(group)
         elif request.POST.get('remove_parent'):
             student.parent.remove(user)
-            if has_children(user) == False:
+            if has_children(user) is False:
                 user.delete()
 
         return redirect('manage_students', school.id)

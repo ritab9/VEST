@@ -1,0 +1,49 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} {{ department }} Skills {% endblock title %}
+
+
+{% block content %}
+
+
+<form method = "POST">
+	{% csrf_token %}
+
+    <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save">
+
+    <div class="col-sm-auto">
+    <table class="table" style="width: auto">
+        <thead>
+            <tr>
+                <th>{{ department }} Skill </th>
+                <th>Description</th><th>Level</th><th>Code</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ skill_formset.management_data }}
+            {{ skill_formset.management_form }}
+            {% for form in skill_formset %}
+                {{ form.errors }}
+                {{ form.non_field_errors }}
+                <tr>
+                    <td>{{ form.name }}</td>
+                    <td>{{ form.description}}</td>
+                    <td>{{ form.level}}</td>
+                    <td>{{ form.code}}</td>
+                    <td>{{ form.DELETE|as_crispy_field }} </td>
+                </tr>
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Save and add more">
+    </div>
+</form>
+
+
+
+{% endblock %}

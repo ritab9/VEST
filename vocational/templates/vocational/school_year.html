@@ -1,0 +1,35 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} School Year {% endblock title %}
+
+
+{% block content %}
+
+    <div class="col-sm-auto">
+    <table class="table" style="width: auto">
+        <thead><th>School Year</th><th></th><th>Quarters</th><th></th>
+        <th><a class="btn btn-sm btn-ISEIblue3" href="{% url 'add_school_year' schoolid %}">Add New School Year</a></th>
+        </thead>
+        <tbody>
+            {% for s in school_year %}
+                <tr>
+                    <td>{{ s.name }} </td>
+                    <td>{{ s.start_date }}-{{ s.end_date }}</td>
+                    <td>
+                        {% for q in s.quarter_set.all %}
+                            {{ q }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>{% for q in s.quarter_set.all %}
+                            {{ q.start_date }}-{{ q.end_date }}<br>
+                        {% endfor %}</td>
+                    <td><a href="{% url 'manage_school_year' schoolid s.id  %}">Manage School Year</a></td>
+                </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+    </div>
+{% endblock %}

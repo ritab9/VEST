@@ -1,4 +1,7 @@
-/* to mark some elements for not printing */
+
+.table-nostriped tbody tr:nth-of-type(odd) {
+  background-color: transparent;
+}
 
 .color1-bg { background-color: #FBF8BE;}
 .color1-text { color: #FBF8BE; }
@@ -6,6 +9,10 @@
 .color2-bg { color: #084B7F; }
 .color2-bg { color: #084B7F; }
 
+.moveimage{
+    position: relative;
+    top:200px;
+}
 
 .footer {
   position: fixed;
@@ -16,7 +23,6 @@
   color: #084B7F;
   text-align: center;
 }
-
 
 @media print {
     .noprint {
@@ -141,7 +147,7 @@ a,h1,h2,h5,h6 {
       padding: 0 2rem;
     }
 .input-group-text {
-    background: #0B61A4 !important;
+    background: #053A64 !important;
     color: white !important;
     border: 0 !important;
     border-radius: 0.25rem 0 0 0.25rem !important;

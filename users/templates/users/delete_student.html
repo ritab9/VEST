@@ -10,7 +10,7 @@
 
 <div class="card card-body mt-2 padding">
 
-    <form action="{% url 'delete_school_staff' user.id %}"  method="POST">
+    <form action="{% url 'delete_student' user.id %}"  method="POST">
         {% csrf_token %}
         <p> Are you sure you want to delete <i>{{user.first_name}} {{ user.last_name }}</i>? <br>
             The operation can not be undone and all data connected with this student will be lost.

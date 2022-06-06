@@ -1,0 +1,34 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Departments {% endblock title %}
+
+
+{% block content %}
+
+    <table class="table" style="width: auto">
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th> </th>
+                <th>
+                    <a href="{% url "manage_department" schoolid %}">Edit</a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for d in department %}
+                <tr>
+                    <td>{{ d.name }}</td>
+                    <td>{% if d.is_active %} <span class = "spangreen"> Active</span>
+                    {% else %} <span class ="spanred" > Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

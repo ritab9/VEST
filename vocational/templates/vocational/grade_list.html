@@ -1,0 +1,34 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Grades {% endblock title %}
+
+
+{% block content %}
+<!--filter -->
+    <div class="row noprint">
+        <div class="card card-body">
+            <form method="get" id="filterForm" onchange="this.form.submit()">
+                    {{ filter.form}}
+               <!-- <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp; -->
+                <a href="{%  url 'grade_list' schoolid %}">Clear all filters</a>
+            </form>
+        </div>
+    </div>
+
+   {% include "vocational/grades.html" %}
+
+    <script>
+
+    $('input').on("change", function() {
+            $('#filterForm').submit();
+        });
+    $('select').on("change", function() {
+            $('#filterForm').submit();
+        });
+
+
+    </script>
+
+{% endblock %}

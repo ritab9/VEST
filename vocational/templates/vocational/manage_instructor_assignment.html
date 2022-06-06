@@ -1,0 +1,48 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Departments {% endblock title %}
+
+
+{% block content %}
+
+
+<form method = "POST">
+	{% csrf_token %}
+
+    <div class="col-sm-auto">
+    <table class="table" style="width: auto">
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>Instructor</th>
+                <th>
+                    <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ instructor_formset.management_data }}
+            {{ instructor_formset.management_form }}
+            {% for form in instructor_formset %}
+                {{ form.errors }}
+                {{ form.non_field_errors }}
+                <tr>
+                    <td>{{ form.department }}</td>
+                    <td>{{ form.instructor|as_crispy_field}}</td>
+                    <td>{{ form.DELETE|as_crispy_field }} </td>
+                </tr>
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Save and add more">
+    </div>
+</form>
+
+
+
+{% endblock %}

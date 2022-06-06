@@ -1,5 +1,4 @@
 from django.urls import path
-from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 
@@ -54,6 +53,6 @@ urlpatterns = [
     path('update_parent/<str:userid>/', views.update_parent, name='update_parent'),
     path('delete_parent/<str:userid>/<str:studentid>/', views.delete_parent, name='delete_parent'),
 
-    path('add_parent_from_list/<str:userid>/<str:list>/', views.add_parent_from_list, name='add_parent_from_list'),
+    path('add_parent_from_list/<str:userid>/<str:listtype>/', views.add_parent_from_list, name='add_parent_from_list'),
 
 ]

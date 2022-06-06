@@ -1,0 +1,28 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Departments {% endblock title %}
+
+
+{% block content %}
+    <div class="col-sm-auto">
+    <table class="table" style="width: auto">
+        <thead><th>Department</th><th>Skills</th><th></th></thead>
+        <tbody>
+            {% for d in department %}
+                <tr>
+                    <td>{{ d.name }}</td>
+                    <td>
+                        {% for s in d.vocationalskill_set.all %}
+                            {{ s }} <br>
+                        {% endfor %}
+                    </td>
+                    <td><a href="{% url 'manage_skill' d.id  %}">Manage Skills </a></td>
+                </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+    </div>
+{% endblock %}
