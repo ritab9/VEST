@@ -8,16 +8,22 @@
 {% block content %}
     <div class="col-sm-auto">
     <table class="table" style="width: auto">
-        <thead><th>Department</th><th>Skills</th><th></th></thead>
+        <thead><th>Department</th><th  style="text-align: center">Skills / Weight</th><th></th></thead>
         <tbody>
             {% for d in department %}
                 <tr>
                     <td>{{ d.name }}</td>
                     <td>
+                    <table class="table-sm table-borderless">
                         {% for s in d.vocationalskill_set.all %}
-                            {{ s }} <br>
+                            <tr>
+                                <td>{{ s }}</td>
+                                <td> {{ s.weight }}</td>
+                            </tr>
                         {% endfor %}
+                    </table>
                     </td>
+
                     <td><a href="{% url 'manage_skill' d.id  %}">Manage Skills </a></td>
                 </tr>
             {% endfor %}

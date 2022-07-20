@@ -37,7 +37,7 @@ class Profile(models.Model):
 
 
     def __str__(self):
-        return self.user.last_name + ", " + self.user.first_name
+        return self.user.first_name + " " + self.user.last_name
 
 # class Instructor(models.Model):
 #     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
@@ -76,13 +76,13 @@ class Student(models.Model):
         if datetime.date.today().month < 7:
             years_to_grad = years_to_grad + 1
         if years_to_grad == 1:
-            return "Senior"
+            return "Senior (12)"
         elif years_to_grad ==2:
-            return "Junior"
+            return "Junior (11)"
         elif years_to_grad ==3:
-            return "Sophomore"
+            return "Sophomore (10)"
         elif years_to_grad ==4:
-            return "Freshman"
+            return "Freshman (9)"
         elif years_to_grad < 1:
             return "Graduated"
         else:
@@ -95,7 +95,7 @@ class Student(models.Model):
         ordering = ('user__last_name', 'user__first_name')
 
     def __str__(self):
-        return self.user.last_name + ", " + self.user.first_name
+        return self.user.first_name + " " + self.user.last_name
 
 class Address(models.Model):
     address_1 = models.CharField(verbose_name="address", max_length=128)

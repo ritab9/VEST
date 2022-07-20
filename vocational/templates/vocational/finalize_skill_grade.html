@@ -1,0 +1,92 @@
+{%  extends 'base.html' %}
+{% load i18n %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Add Skill Grade {% endblock title %}
+
+{% block content %}
+    <div class = "row mt-3">
+    <div class="col-sm-auto">
+        <table class="table-sm mb-3">
+            <td>
+            <tbody>
+                <tr><th scope="row">Quarter</th><td>{{ grade.quarter }}</td></tr>
+                <tr><th scope="row">Department</th><td>{{ grade.department }}</td></tr>
+                <tr><th scope="row">Instructor</th><td>{{ grade.instructor.last_name }}, {{ grade.instructor.first_name }}</td></tr>
+            </tbody>
+            </td>
+            <td>
+                <tr><th scope="row">Student</th><td>{{ grade.student.user.last_name }}, {{ grade.student.user.first_name }}</td></tr>
+                <tr><th scope="row">Level</th><td>{{ grade.level }}</td></tr>
+            </td>
+        </table>
+
+        <a class ="btn btn-sm btn-danger" onclick="history.back()" style=""> Cancel to mean delete this grade </a>
+    </div>
+
+    <div class="col-sm-auto mt-2">
+        <form method = "POST">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-sm-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Indicator</th>
+                                <th>Grade (1-5)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ indicator_formset.management_data }}
+                            {{ indicator_formset.management_form }}
+                            {% for form in indicator_formset %}
+                                {{ form.non_field_errors }}
+                                <tr>
+                                    <td>{{ form.instance.skill.name }}</td>
+                                    <td>{{ form.value}}{{ form.value.errors}}</td>
+                                </tr>
+                                {% for hidden in form.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if grade.type == "F" %}
+                    <div class="col-sm-auto">
+                        {{ formative_comments_form|crispy }}
+                    </div>
+                {% endif %}
+            </div>
+            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save and continue">
+        </form>
+    </div>
+
+<script>
+    /* Ajax to get level and indicators after student is selected
+    $(document).ready(function () {
+         //catch the form's submit event
+        $("#id_student").change(function () {
+            //create an AJAX call
+              $.ajax({
+                  data: $(this).serialize(), //get the form data
+                  url: "{ % url "get_level" %}",
+                  //on success
+                  success: function(response){
+                     document.getElementById('id_level').value = response.level_id;
+                  },
+                  //on error
+                  error: function(response) {
+                      alert(response.errors);
+                  },
+              });
+              return false;
+        });
+    }); */
+
+</script>
+
+
+{% endblock %}

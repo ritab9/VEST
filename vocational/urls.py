@@ -32,8 +32,13 @@ urlpatterns = [
 
     path('initiate_grade_entry/<int:schoolid>/', views.initiate_grade_entry, name='initiate_grade_entry'),
     path('add_grade/<int:quarterid>/<str:type>/<int:departmentid>/<int:instructorid>/', views.add_grade, name='add_grade'),
+    path('add_skills_grade/<int:quarterid>/<int:departmentid>/<int:instructorid>/', views.add_skill_grade, name='add_skill_grade'),
+
     #AJAX to get the level that belongs to that student
     path('get_level', views.get_level, name='get_level'),
-    path('finalize_grade/<int:gradeid>/', views.finalize_grade, name="finalize_grade")
+    path('finalize_grade/<int:gradeid>/', views.finalize_grade, name="finalize_grade"),
+    path('finalize_skill_grade/<int:gradeid>/', views.finalize_skill_grade, name="finalize_skill_grade"),
+
+    path('student_vocational_info/<int:studentid>/', views.student_vocational_info, name="student_vocational_info")
 
 ]

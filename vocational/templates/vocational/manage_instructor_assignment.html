@@ -29,9 +29,16 @@
                 {{ form.errors }}
                 {{ form.non_field_errors }}
                 <tr>
-                    <td>{{ form.department }}</td>
-                    <td>{{ form.instructor|as_crispy_field}}</td>
-                    <td>{{ form.DELETE|as_crispy_field }} </td>
+                    <td>{{ form.department }}<br>
+                    {{ form.DELETE|as_crispy_field }}
+                    </td>
+                    <td>
+                         <ul style="-webkit-column-count: 10; -moz-column-count: 10; column-count: 10; list-style-type:none">
+                        {% for i in form.instructor %}
+                            <li> {{ i }} </li>
+                         {% endfor %}
+                        </ul>
+                    </td>
                 </tr>
                 {% for hidden in form.hidden_fields %}
                     {{ hidden }}

@@ -9,22 +9,28 @@
 
     <div class="col-sm-auto">
     <table class="table" style="width: auto">
-        <thead><th>School Year</th><th></th><th>Quarters</th><th></th>
+        <thead><th>School Year</th>
+        <th>Quarters</th><th></th><th></th>
         <th><a class="btn btn-sm btn-ISEIblue3" href="{% url 'add_school_year' schoolid %}">Add New School Year</a></th>
         </thead>
         <tbody>
             {% for s in school_year %}
                 <tr>
-                    <td>{{ s.name }} </td>
-                    <td>{{ s.start_date }}-{{ s.end_date }}</td>
+                    <td><b>{{ s.name }}</b><br>
+                        {% if s.active %} <span class="spangreen"> Active </span>
+                        {% else %} <span class="spanred"> Inactive </span> {% endif %}
+                        <br> {{ s.start_date }} - {{ s.end_date }}</td>
                     <td>
-                        {% for q in s.quarter_set.all %}
-                            {{ q }}<br>
-                        {% endfor %}
+                        <table class="table-sm table-borderless">
+                            {% for q in s.quarter_set.all %}
+                                <tr>
+                                    <td> {{ q.get_name_display }} </td><td> </td>
+                                    <td style="text-align: right"> {{ q.start_date }} -</td>
+                                    <td>{{ q.end_date }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
                     </td>
-                    <td>{% for q in s.quarter_set.all %}
-                            {{ q.start_date }}-{{ q.end_date }}<br>
-                        {% endfor %}</td>
                     <td><a href="{% url 'manage_school_year' schoolid s.id  %}">Manage School Year</a></td>
                 </tr>
             {% endfor %}

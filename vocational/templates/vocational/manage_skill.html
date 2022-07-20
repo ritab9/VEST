@@ -18,7 +18,9 @@
         <thead>
             <tr>
                 <th>{{ department }} Skill </th>
-                <th>Description</th><th>Level</th><th>Code</th><th></th>
+                <th>Description</th>
+                <th> Weight </th>
+                <td>Level</td><td>Code</td><td></td>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +32,7 @@
                 <tr>
                     <td>{{ form.name }}</td>
                     <td>{{ form.description}}</td>
+                    <td>{{ form.weight }}</td>
                     <td>{{ form.level}}</td>
                     <td>{{ form.code}}</td>
                     <td>{{ form.DELETE|as_crispy_field }} </td>

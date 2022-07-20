@@ -12,15 +12,15 @@
 <form method = "POST">
 	{% csrf_token %}
 
-    <div class="col-sm-auto">
+    <div class="row ml-3">
+        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save" style="float: right">
+    </div>
+
     <table class="table" style="width: auto">
         <thead>
             <tr>
                 <th>Department</th>
                 <th>Student</th>
-                <th>
-                    <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save">
-                </th>
             </tr>
         </thead>
         <tbody>
@@ -30,9 +30,21 @@
                 {{ form.errors }}
                 {{ form.non_field_errors }}
                 <tr>
-                    <td>{{ form.department }}</td>
-                    <td>{{ form.student|as_crispy_field}}</td>
-                    <td>{{ form.DELETE|as_crispy_field }} </td>
+                    <td>{{ form.department }}
+                    {{ form.DELETE|as_crispy_field }}
+                    </td>
+                    <td>
+                        <ul style="-webkit-column-count: 10; -moz-column-count: 10; column-count: 10; list-style-type:none">
+                        {% for s in form.student %}
+                            <li> {{ s }}
+                                <a href="{% url 'student_vocational_info' s.data.value %}"
+                                   target="popup" class="mypopup" >
+                                    <i class="fa-solid fa-circle-info"></i></a>
+
+                            </li>
+                         {% endfor %}
+                        </ul>
+                    </td>
                 </tr>
                 {% for hidden in form.hidden_fields %}
                     {{ hidden }}
@@ -44,6 +56,14 @@
     </div>
 </form>
 
+<script>
+    $("a.mypopup").on("click", function() {
+        var ppp = $(this).prop('href');
+        console.log(ppp);
+        window.open(ppp, "popup", "toolbar=no,scrollbars=yes, resizable=yes,width=600,height=600");
 
+});
+
+</script>
 
 {% endblock %}

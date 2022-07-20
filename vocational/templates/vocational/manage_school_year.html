@@ -11,7 +11,15 @@
 <form method = "POST">
 	{% csrf_token %}
 
-                {{ school_year }}
+    <div class="row mt-2 mb-2">
+        <div class="col-sm-auto"> {{ school_year }} </div>
+        {% if school_year.active %}   <div class="col-sm-auto spangreen">Active </div>
+        {% else %}
+            <div class="col-sm-auto spanred"> Inactive
+            <input class = "btn span80" name="active" type= "submit" value = "Make active">
+            </div>
+        {% endif %}
+    </div>
 
     <div class="col-sm-auto">
     <table class="table" style="width: auto">

@@ -1,0 +1,43 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+
+  {% block title %} Add staff {% endblock title %}
+
+
+{% block head_css %}
+
+{% endblock head_css %}
+
+
+{% block content %}
+
+<div class="row">
+<div class=" mt-2 padding col-sm-auto">
+<!-- selecting staff from parent list -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-auto">
+                <select size="20" id="id_parent" name="parent">
+                 <option  value="" selected="selected">--------</option>
+                    {% for p in parent_list %}
+                        <option value="{{p.id}}">{{p.profile}}</option>
+                     {% endfor %}
+                </select>
+            </div>
+            <div class = "col-sm-auto">
+                <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Add as staff"/>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+</div>
+
+<script>
+
+</script>
+
+{% endblock content %}

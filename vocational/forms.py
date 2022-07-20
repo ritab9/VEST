@@ -40,9 +40,12 @@ class InstructorAssignmentForm(forms.ModelForm):
         model = InstructorAssignment
         fields = ('department', 'instructor')
 
+    instructor = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
+
 
 InstructorAssignmentFormSet = modelformset_factory(InstructorAssignment, form=InstructorAssignmentForm,
                                                    can_delete= True, can_order=True, extra=5)
+
 
 class StudentAssignmentForm(forms.ModelForm):
     def __init__(self, school, *args, **kwargs):
@@ -52,7 +55,11 @@ class StudentAssignmentForm(forms.ModelForm):
 
     class Meta:
         model = StudentAssignment
-        fields = ('department', 'student')
+        fields = ('department', 'student', )
+
+
+    student = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
+
 
 StudentAssignmentFormSet = inlineformset_factory(Quarter, StudentAssignment, form=StudentAssignmentForm,
                                                    can_delete= True, can_order=True, extra=5)
@@ -84,3 +91,18 @@ IndicatorFormativeGradeFormSet = inlineformset_factory(EthicsGrade, IndicatorFor
 class FormativeCommentsForm(forms.Form):
     commendation = forms.CharField(widget=forms.Textarea(attrs={'rows': 6, 'cols': 30}))
     recommendation = forms.CharField(widget=forms.Textarea(attrs={'rows': 6, 'cols': 30}))
+
+class SkillGradeInstructorForm(forms.ModelForm):
+    class Meta:
+        model = SkillGrade
+        fields = ('student','level')
+
+class IndicatorSkillGradeForm(forms.ModelForm):
+    class Meta:
+        model = IndicatorSkillGrade
+        fields = ('value',)
+        widgets = {
+            'value':forms.Textarea(attrs={'rows':1, 'cols':3}),
+        }
+
+IndicatorSkillGradeFormSet = inlineformset_factory(SkillGrade, IndicatorSkillGrade, form = IndicatorSkillGradeForm, extra=10)

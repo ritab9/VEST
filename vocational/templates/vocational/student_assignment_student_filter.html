@@ -40,7 +40,7 @@
                                     <table class="table-borderless">
                                     {%  for a in i.student_assignment.all %}
                                           <tr>
-                                            <td>{{ a.quarter.school_year }}, {{ a.quarter }}</td>
+                                            <td>{{ a.quarter }}</td>
                                             <td> {{ a.department }}</td>
                                           </tr>
                                     {% endfor %}<br>

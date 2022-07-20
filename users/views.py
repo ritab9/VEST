@@ -9,7 +9,8 @@ from .decorators import unauthenticated_user, allowed_users
 from .forms import *
 from .functions import *
 from .filters import *
-
+import datetime
+from vocational.models import SchoolYear
 
 # landing page for everyone. Introduced it to allow for role transition
 @login_required(login_url='login')
@@ -183,6 +184,20 @@ def add_school_staff(request, schoolid):
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def add_staff_from_parent_list(request, schoolid):
+    school = School.objects.get(id=schoolid)
+
+    if request.method == 'POST':
+        user_id = request.POST.get('parent')
+        return redirect('update_school_staff', user_id)
+    else:
+        parent_list = User.objects.filter(Q(groups__name="parent"), ~Q(groups__name ="staff"),Q(profile__school=school)).order_by('last_name')
+    context = dict(school=school, parent_list=parent_list)
+    return render(request, 'users/add_staff_from_parent_list.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def update_school_staff(request, userid):
     user = User.objects.get(id=userid)
     profile = Profile.objects.get(user=user)
@@ -318,9 +333,39 @@ def mark_inactive_students(request, schoolid):
             student_formset.save()
             return redirect('manage_students', school.id)
 
-    context = dict(school=school, student=student, student_formset=student_formset, student_filter=student_filter)
+    grads_only=False
+
+    context = dict(school=school, grads_only=grads_only, student=student, student_formset=student_formset, student_filter=student_filter)
     return render(request, 'users/mark_inactive_students.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def graduate_students(request, schoolid):
+    school = School.objects.get(id=schoolid)
+    school_year = SchoolYear.objects.get(school=school, active=True)
+
+    all_student = User.objects.filter(profile__school=school, is_active=True, groups__name="student").order_by(
+        'student__graduation_year', 'last_name')
+    print(all_student)
+    student = all_student.filter(student__graduation_year__lte=datetime.date.today().year)
+    print(student)
+    for s in student:
+        s.is_active= False
+        s.save()
+
+    studentformset = modelformset_factory(User, fields=('is_active',), extra=0, can_delete=True)
+    student_formset = studentformset(queryset=student)
+
+    if request.method == 'POST':
+        student_formset = studentformset(request.POST, )
+        if student_formset.is_valid():
+            student_formset.save()
+            return redirect('manage_students', school.id)
+
+    grads_only=True
+
+    context = dict(school=school, student=student, student_formset=student_formset, grads_only=grads_only)
+    return render(request, 'users/mark_inactive_students.html', context)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])

@@ -43,13 +43,16 @@ def add_school_year(request, schoolid):
 def manage_school_year(request, schoolid, schoolyearid):
     schoolyear = SchoolYear.objects.get(id=schoolyearid)
 
-    if request.method == "POST":
+    if request.method == "POST" and request.POST.get("save"):
         quarter_formset = QuarterFormSet(request.POST, instance=schoolyear)
         if quarter_formset.is_valid():
             quarter_formset.save()
             return redirect('school_year', schoolid)
-    else:
-        quarter_formset = QuarterFormSet(instance=schoolyear)
+    elif request.method =="POST" and request.POST.get("active"):
+        schoolyear.active = True
+        schoolyear.save()
+
+    quarter_formset = QuarterFormSet(instance=schoolyear)
 
     context = dict(quarter_formset=quarter_formset, school_year=schoolyear, schoolid=schoolid,
                    schoolyearid=schoolyearid)
@@ -114,7 +117,7 @@ def skill_list(request, schoolid):
 def manage_skill(request, departmentid):
     department = Department.objects.get(id=departmentid)
     schoolid = School.objects.get(id=department.school.id).id
-    SkillFormSet = inlineformset_factory(Department, VocationalSkill, fields=('name', 'description', 'level', 'code'),
+    SkillFormSet = inlineformset_factory(Department, VocationalSkill, fields=('name', 'description', 'weight', 'level', 'code'),
                                          extra=3, can_delete=True)
 
     if request.method == "POST":
@@ -232,6 +235,9 @@ def manage_student_assignment(request, schoolid, quarterid):
         student_formset = StudentAssignmentFormSet(instance=quarter, initial=[{'school': school, }],
                                                    form_kwargs={'school': school})
 
+
+
+
     context = dict(student_formset=student_formset, quarter=quarter)
     return render(request, 'vocational/manage_student_assignment.html', context)
 
@@ -253,10 +259,13 @@ def grade_list(request, schoolid):
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
 def initiate_grade_entry(request, schoolid):
     if request.method == 'POST':
-        deparmentid = request.POST.get('department')
+        departmentid = request.POST.get('department')
         quarterid = request.POST.get('quarter')
         type = request.POST.get('type')
-        return redirect('add_grade', quarterid, type, deparmentid, request.user.id)
+        if type=="K":
+            return redirect('add_skill_grade', quarterid, departmentid, request.user.id)
+        else:
+            return redirect('add_grade', quarterid, type, departmentid, request.user.id)
 
     assignments = InstructorAssignment.objects.filter(instructor__id=request.user.id)
     department = Department.objects.filter(school__id=schoolid, is_active=True, instructorassignment__in=assignments)
@@ -265,7 +274,7 @@ def initiate_grade_entry(request, schoolid):
     # new_quarter = Quarter.objects.filter(school_year__school_id=schoolid, school_year__active=True).exclude(
     #    id__in=grades.values_list('quarter', flat=True)).order_by('name
     active_quarter = Quarter.objects.filter(school_year__school_id=schoolid, school_year__active=True).order_by('name')
-    print(active_quarter)
+
     context = dict(active_quarter=active_quarter, department=department)
     return render(request, 'vocational/initiate_grade_entry.html', context)
 
@@ -293,10 +302,39 @@ def add_grade(request, quarterid, type, departmentid, instructorid):
         else:
             print("Not valid")
 
-    grades=EthicsGrade.objects.filter()
+    #grades=EthicsGrade.objects.filter()
 
     context = dict(grade_form=grade_form, grade=grade)
     return render(request, 'vocational/add_grade.html', context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
+def add_skill_grade(request, quarterid, departmentid, instructorid):
+    quarter = Quarter.objects.get(id=quarterid)
+    instructor = User.objects.get(id=instructorid)
+    department = Department.objects.get(id=departmentid)
+    student = Student.objects.filter(student_assignment__department=department, student_assignment__quarter= quarter)
+    grade = SkillGrade()
+    grade.quarter = quarter
+    grade.instructor = instructor
+    grade.department = department
+
+    grade_form = SkillGradeInstructorForm(instance=grade)
+    grade_form.fields["student"].queryset = student
+
+    if request.method == "POST":
+        grade_form = SkillGradeInstructorForm(request.POST, instance=grade)
+        if grade_form.is_valid():
+            grade = grade_form.save()
+            return redirect('finalize_skill_grade', grade.id)
+        else:
+            print("Not valid")
+
+    #grades = SkillGrade.objects.filter()
+
+    context = dict( grade_form=grade_form, grade=grade)
+    return render(request, 'vocational/add_skill_grade.html', context)
+
 
 
 # AJAX used in add_grade
@@ -356,3 +394,43 @@ def finalize_grade(request, gradeid):
     context = dict(grade=grade, indicator_formset = indicator_formset,
                    formative_comments_form = formative_comments_form)
     return render(request, 'vocational/finalize_grade.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
+def finalize_skill_grade(request, gradeid):
+    grade = SkillGrade.objects.get(id=gradeid)
+
+    if request.method == "POST":
+
+        indicator_form = IndicatorSkillGradeFormSet(request.POST, instance=grade)
+        if indicator_form.is_valid():
+            indicator_form.save()
+            return redirect('add_skill_grade', grade.quarter.id, grade.department.id, grade.instructor.id)
+        else:
+            print(indicator_form.errors)
+            print("Not valid")
+
+
+    skill = VocationalSkill.objects.filter()
+    if not IndicatorSkillGrade.objects.filter(grade=grade):
+        for s in skill:
+               IndicatorSkillGrade(skill=s, grade=grade).save()
+    indicator_formset = IndicatorSkillGradeFormSet(instance=grade)
+
+    #formative_comments_form = FormativeCommentsForm()
+
+    context = dict(grade=grade, indicator_formset = indicator_formset,)
+                   #formative_comments_form = formative_comments_form)
+    return render(request, 'vocational/finalize_skill_grade.html', context)
+
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor', 'parent', 'student'])
+def student_vocational_info(request, studentid):
+
+    student=Student.objects.get(id=studentid)
+
+    context=dict(student=student)
+    return render(request, 'vocational/student_vocational_info.html', context)

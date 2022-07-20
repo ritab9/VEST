@@ -72,6 +72,11 @@ class StudentAssignment(admin.ModelAdmin):
     model=StudentAssignment
     list_display = ('quarter','department', )
 
+# @admin.register(VocationalAssignment)
+# class VocationalAssignment(admin.ModelAdmin):
+#     model=VocationalAssignment
+#     list_display = ('quarter','department', )
+
 
 # Grades
 class IndicatorSummativeGradeInLine(admin.StackedInline):
@@ -90,7 +95,35 @@ class IndicatorFormativeGradeInLine(admin.StackedInline):
 class EthicsGrade(admin.ModelAdmin):
     inlines = [IndicatorSummativeGradeInLine, IndicatorFormativeGradeInLine]
     model = EthicsGrade
-    list_display = ('quarter', 'student', 'department', )
+    list_display = ('school', 'quarter', 'instructor', 'student', 'department', 'value')
+    list_filter = ('department', 'quarter',  'instructor',  'student')
     #list_editable = ('start_date', 'end_date',)
     #ordering = ('school',)
+    def school(self, obj):
+        return obj.student.user.profile.school
 
+
+@admin.register(SkillValue)
+class SkillValue(admin.ModelAdmin):
+    model = SkillValue
+    list_display = ('number', 'description', 'value' )
+    list_editable = ('description', 'value')
+    ordering = ('number',)
+
+
+class IndicatorSkillGradeInLine(admin.StackedInline):
+    model = IndicatorSkillGrade
+    can_delete = True
+    extra = 3
+
+
+@admin.register(SkillGrade)
+class SkillGrade(admin.ModelAdmin):
+    inlines = [IndicatorSkillGradeInLine, ]
+    model = SkillGrade
+    list_display = ('school', 'quarter', 'instructor', 'student', 'department')
+    list_filter = ('department', 'quarter',  'instructor',  'student')
+    #list_editable = ('start_date', 'end_date',)
+    #ordering = ('school',)
+    def school(self, obj):
+        return obj.student.user.profile.school

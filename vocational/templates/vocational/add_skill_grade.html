@@ -1,0 +1,56 @@
+{%  extends 'base.html' %}
+{% load i18n %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Add Skill Grade {% endblock title %}
+
+{% block content %}
+    <div class = "row mt-3">
+    <div class="col-sm-auto">
+        <table class="table-sm mb-3">
+            <tbody>
+                <tr><th scope="row">Quarter</th><td>{{ grade.quarter }}</td></tr>
+                <tr><th scope="row">Department</th><td>{{ grade.department }}</td></tr>
+                <tr><th scope="row">Instructor</th><td>{{ grade.instructor.last_name }}, {{ grade.instructor.first_name }}</td></tr>
+            </tbody>
+        </table>
+        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style=""> Edit </a>
+    </div>
+    <div class="col-sm-auto mt-2">
+        <form method = "POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-sm-auto">
+                {{ grade_form|crispy }}
+                </div>
+            </div>
+            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save and continue">
+        </form>
+    </div>
+<script>
+    /* Ajax to get level and indicators after student is selected */
+    $(document).ready(function () {
+         //catch the form's submit event
+        $("#id_student").change(function () {
+            //create an AJAX call
+              $.ajax({
+                  data: $(this).serialize(), //get the form data
+                  url: "{% url "get_level" %}",
+                  //on success
+                  success: function(response){
+                     document.getElementById('id_level').value = response.level_id;
+                  },
+                  //on error
+                  error: function(response) {
+                      alert(response.errors);
+                  },
+              });
+              return false;
+        });
+    });
+
+</script>
+
+
+{% endblock %}
