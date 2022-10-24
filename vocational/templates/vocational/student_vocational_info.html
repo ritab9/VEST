@@ -8,11 +8,11 @@
    {% block content %}
 
    <div class="row">
-        <div class=" col-sm-auto card-body">
-            <h6>{{ student }}</h6>
+        <div class="col-sm-auto ">
+            <h6 class="mt-3">{{ student }}</h6>
             <div class="row">
-                <div class=" col-sm-auto card-body">
-                <h8>Info</h8>
+                <div class=" col-sm-auto card card-body">
+                <h7>Info</h7>
                     <table class="table table-sm table-bordered">
                     <tr>
                         <th> Grade Level</th>
@@ -30,20 +30,22 @@
                     {% endif %}
                 </table>
                 </div>
-                <div class=" col-sm-auto card-body">
-                <h8>Assignments</h8>
+                <div class=" col-sm-auto card card-body">
+                <h8>Grade Averages</h8>
                     <table class="table table-sm table-bordered">
                         <thead>
                             <tr>
                                 <th> School Year</th><th>Quarter</th><th>Department</th>
+                                <th>Grade Average</th><th>Level</th>
                             </tr>
                         </thead>
                         <tbody>
-                        {% for a in student.student_assignment.all %}
+
+                        {% for a in arr %}
                             <tr>
-                                <td>{{ a.quarter.school_year }}</td>
-                                <td>{{ a.quarter.get_name_display }}</td>
-                                <td>{{ a.department }}</td>
+                                {% for i in a %}
+                                    <td>{{ i|default_if_none:""}}</td>
+                                {% endfor %}
                             </tr>
                          {% endfor %}
                         </tbody>

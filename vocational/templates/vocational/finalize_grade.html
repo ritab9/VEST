@@ -14,6 +14,7 @@
                 <tr><th scope="row">Quarter</th><td>{{ grade.quarter }}</td></tr>
                 <tr><th scope="row">Department</th><td>{{ grade.department }}</td></tr>
                 <tr><th scope="row">Type</th><td>{{ grade.get_type_display }}</td></tr>
+                <tr><th>Date Evaluated</th><td>{{ grade.evaluation_date }}</td></tr>
                 <tr><th scope="row">Instructor</th><td>{{ grade.instructor.last_name }}, {{ grade.instructor.first_name }}</td></tr>
             </tbody>
             </td>
@@ -23,7 +24,10 @@
             </td>
         </table>
 
-        <a class ="btn btn-sm btn-danger" onclick="history.back()" style=""> Cancel to mean delete this grade </a>
+        <form method = "GET">
+            {% csrf_token %}
+            <input class ="btn btn-sm btn-danger" name="delete" type="submit" value="Delete">
+        </form>
     </div>
 
     <div class="col-sm-auto mt-2">
@@ -35,7 +39,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Indicator</th>
+                                <th>Ethic</th>
                                 <th>Grade (1-5)</th>
                                 {% if grade.type == "S" %}
                                     <th style="text-align: center"> Comment</th>
@@ -43,15 +47,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{ indicator_formset.management_data }}
-                            {{ indicator_formset.management_form }}
-                            {% for form in indicator_formset %}
+                            {{ ethic_formset.management_data }}
+                            {{ ethic_formset.management_form }}
+                            {% for form in ethic_formset %}
                                 {{ form.non_field_errors }}
                                 <tr>
-                                    <td>{{ form.instance.indicator.name }}</td>
-                                    <td>{{ form.value}}{{ form.value.errors}}</td>
+                                    <td>{{ form.instance.ethic.name }}</td>
+                                    <td>{{ form.score}}{{ form.score.errors}}</td>
                                     {% if grade.type == "S" %}
-                                        <td>{{ form.comment}}{{ form.value.errors}}</td>
+                                        <td>{{ form.comment}}{{ form.comment.errors}}</td>
                                     {% endif %}
                                 </tr>
                                 {% for hidden in form.hidden_fields %}
@@ -66,13 +70,17 @@
                         {{ formative_comments_form|crispy }}
                     </div>
                 {% endif %}
+                    <div class="col-sm-auto">
+                        {{ student_discussion_form|crispy }}
+                    </div>
             </div>
-            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save and continue">
+            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_c" type= "submit" value = "Save and Add Next Grade">
+            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_r" type= "submit" value = "Save and Return to Grade List">
         </form>
     </div>
 
 <script>
-    /* Ajax to get level and indicators after student is selected
+    /* Ajax to get level and ethic after student is selected
     $(document).ready(function () {
          //catch the form's submit event
         $("#id_student").change(function () {

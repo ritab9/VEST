@@ -14,7 +14,7 @@
             <div class="col-sm-auto">
           <table class="table-sm">
                 <thead>
-                    <th>Quarter</th><th>Department</th><th>Grade Type</th>
+                    <th>Quarter</th><th>Date</th><th>Department</th><th>Grade Type</th>
                 </thead>
                 <tbody>
                     <tr>
@@ -24,6 +24,9 @@
                                     <option value="{{ q.id }}">{{ q }}</option>
                                 {% endfor %}
                             </select>
+                        </td>
+                        <td>
+                                <input type="date" id="id_date" name="date">
                         </td>
                         <td>
                             <select class="form-select" name="department">
@@ -50,5 +53,11 @@
     </form>
   </div>
 
+    <script>
+    $(document).ready( function() {
+        document.getElementById('id_date').valueAsDate = new Date();
+    });
+
+    </script>
 
 {% endblock %}

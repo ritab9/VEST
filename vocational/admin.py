@@ -4,8 +4,8 @@ from .models import *
 
 # Register your models here.
 
-class EthicsIndicatorInLine(admin.StackedInline):
-    model = EthicsIndicator
+class EthicsDefinitionInLine(admin.StackedInline):
+    model = EthicsDefinition
     can_delete = True
     extra = 10
     max_num = 10
@@ -13,7 +13,7 @@ class EthicsIndicatorInLine(admin.StackedInline):
 
 @admin.register(EthicsLevel)
 class EthicsLevel(admin.ModelAdmin):
-    inlines = [EthicsIndicatorInLine, ]
+    inlines = [EthicsDefinitionInLine, ]
     model = EthicsLevel
     list_display = ('id', 'name', 'description')
     list_editable = ('name', 'description',)
@@ -79,26 +79,28 @@ class StudentAssignment(admin.ModelAdmin):
 
 
 # Grades
-class IndicatorSummativeGradeInLine(admin.StackedInline):
-    model = IndicatorSummativeGrade
+class EthicSummativeGradeInLine(admin.StackedInline):
+    model = EthicsSummativeGrade
     can_delete = True
     extra = 0
     max_num = 10
 
-class IndicatorFormativeGradeInLine(admin.StackedInline):
-    model = IndicatorFormativeGrade
+class EthicFormativeGradeInLine(admin.StackedInline):
+    model = EthicsFormativeGrade
     can_delete = True
     extra = 0
     max_num = 10
 
-@admin.register(EthicsGrade)
-class EthicsGrade(admin.ModelAdmin):
-    inlines = [IndicatorSummativeGradeInLine, IndicatorFormativeGradeInLine]
-    model = EthicsGrade
-    list_display = ('school', 'quarter', 'instructor', 'student', 'department', 'value')
+
+
+@admin.register(EthicsGradeRecord)
+class EthicsGradeRecord(admin.ModelAdmin):
+    inlines = [EthicSummativeGradeInLine, EthicFormativeGradeInLine]
+    model = EthicsGradeRecord
+    list_display = ('school', 'quarter', 'instructor', 'student', 'department', 'score', 'evaluation_date')
     list_filter = ('department', 'quarter',  'instructor',  'student')
-    #list_editable = ('start_date', 'end_date',)
-    #ordering = ('school',)
+    #list_editable = ('date',)
+    ordering = ('evaluation_date',)
     def school(self, obj):
         return obj.student.user.profile.school
 
@@ -111,16 +113,16 @@ class SkillValue(admin.ModelAdmin):
     ordering = ('number',)
 
 
-class IndicatorSkillGradeInLine(admin.StackedInline):
-    model = IndicatorSkillGrade
+class SkillGradeInLine(admin.StackedInline):
+    model = SkillGrade
     can_delete = True
     extra = 3
 
 
-@admin.register(SkillGrade)
-class SkillGrade(admin.ModelAdmin):
-    inlines = [IndicatorSkillGradeInLine, ]
-    model = SkillGrade
+@admin.register(SkillGradeRecord)
+class SkillGradeRecord(admin.ModelAdmin):
+    inlines = [SkillGradeInLine, ]
+    model = SkillGradeRecord
     list_display = ('school', 'quarter', 'instructor', 'student', 'department')
     list_filter = ('department', 'quarter',  'instructor',  'student')
     #list_editable = ('start_date', 'end_date',)

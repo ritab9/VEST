@@ -12,7 +12,7 @@
             <form method="get" id="filterForm" onchange="this.form.submit()">
                     {{ filter.form}}
                <!-- <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp; -->
-                <a href="{%  url 'grade_list' schoolid %}">Clear all filters</a>
+                <a href="{%  url 'grade_list' request.user.id %}">Clear all filters</a>
             </form>
         </div>
     </div>
@@ -27,6 +27,8 @@
     $('select').on("change", function() {
             $('#filterForm').submit();
         });
+
+
 
 
     </script>

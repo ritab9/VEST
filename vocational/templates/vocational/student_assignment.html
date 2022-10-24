@@ -19,7 +19,8 @@
             <tbody>
                 {% for q in quarter %}
                     <tr>
-                        <td> {{ q.school_year }}<br>{{ q }}</td>
+                        <td><!-- { { q.school_year }}<br> -->
+                            {{ q }}</td>
                         <td>
                             <table class = "table-borderless">
                             {% for a in q.studentassignment_set.all %}

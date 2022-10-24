@@ -1,0 +1,122 @@
+{%  extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}{{ student }} Validate grades {% endblock title %}
+
+
+   {% block content %}
+
+        <form method="POST">
+        {% csrf_token %}
+                <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save All">
+
+            {{ formset.management_form }}
+
+            <div>
+                <table class="table table-sm table-striped table-bordered mt-2" style="width: stretch">
+                {% for form in formset %}
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Quarter</th><th>Student</th><th>Department</th><th>Instructor</th>
+                            <th>Type</th><th>Grade</th><th>Score</th><th>Student Discussed</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ form.instance.quarter.get_name_display }}
+                            <br> <div class="span80">{{ form.instancequarter.school_year }}</div>
+                            </td>
+                            <td>{{ form.instance.student }}</td>
+                            <td>{{ form.instance.department }}</td><td>{{ form.instance.instructor.last_name }}, {{ form.instance.instructor.first_name }}</td>
+                            <td>{{ form.instance.get_type_display }}</td><td>{{ form.instance.percent }}%</td><td>{{ form.instance.score }}</td>
+                            <td>{% if form.instance.student_discussed %}
+                                    {{ form.instance.student_discussed}}
+                                {% else %}
+                                    <a href="{% url 'finalize_grade' form.instance.id %}" class="spanred"> Not Yet </a>
+                                {% endif %}
+                            </td>
+                            <td>{{ form.instance.evaluation_date }}<br><div class="span80">{{ form.instance.created_at }}</div></td>
+                        </tr>
+                        <tr>
+                            <td colspan="9">
+                                <div class="card card-body" id="details{{ form.instance.id }}"">
+                                    {% if form.instance.type == "S" %}
+                                    <table class="table-sm span80 table-nostriped table-bordered" >
+                                        <thead>
+                                            <tr>
+                                                {% for i in form.instance.ethicssummativegrade_set.all %}
+                                                    <th>{{ i.ethic.name }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                {% for i in form.instance.ethicssummativegrade_set.all %}
+                                                    <td>{{ i.score }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            <tr><th colspan="11">Comments:</th> </tr>
+                                            {% for i in form.instance.ethicssummativegrade_set.all %}
+                                                {% if i.comment %}
+                                                    <tr>
+                                                    <td>{{ i.ethic.name }}</td>
+                                                    <td colspan="10">{{ i.comment }}</td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% else %}
+                                     <table class="table-sm w-auto span80 table-nostriped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                {% for i in form.instance.ethicsformativegrade_set.all %}
+                                                    <th>{{ i.ethic.name }}</th>
+                                                {%  endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                {% for i in form.instance.ethicsformativegrade_set.all %}
+                                                    <td>{{ i.score}}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2"><b> Commendations:</b> </td>
+                                                <td colspan="8">
+                                                    {{ form.instance.commendation }}
+                                                </td></tr>
+                                            <tr>
+                                                <td colspan="2"><b> Recommendations:</b> </td>
+                                                 <td colspan="8">
+                                                    {{ form.instance.recommendation }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    {% endif %}
+
+                                {% if form.instance.student_discussion_comment %}
+                                    <div class="span80">Student discussion Comment: {{ form.instance.student_discussion_comment }}</div>
+                                {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                                <td colspan="2" class="spangreen">Enter date to validate: {{ form.vc_validated }}</td>
+                                <td colspan="7" class="spanred">If not valid, please explain what needs to be changed: {{ form.vc_comment }}</td>
+                        </tr>
+                    </tbody>
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    {% endfor %}
+                </table>
+
+            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save All">
+            </div>
+        </form>
+
+    {% endblock content %}

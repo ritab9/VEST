@@ -13,10 +13,13 @@
                 <tr><th scope="row">Quarter</th><td>{{ grade.quarter }}</td></tr>
                 <tr><th scope="row">Department</th><td>{{ grade.department }}</td></tr>
                 <tr><th scope="row">Type</th><td>{{ grade.get_type_display }}</td></tr>
-                <tr><th scope="row">Instructor</th><td>{{ grade.instructor.last_name }}, {{ grade.instructor.first_name }}</td></tr>
+                <tr><th scope="row">Instructor</th><td>{{ grade.instructor.first_name }} {{ grade.instructor.last_name }}</td></tr>
+                <tr><th>Date</th><td>{{ grade.evaluation_date }}</td></tr>
             </tbody>
         </table>
-        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style=""> Edit </a>
+        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style=""> Change Info Above </a>
+        <br>
+        <a class="btn btn-sm btn-ISEIblue3 mt-2" href="{% url 'grade_list' request.user.id %}"> Return to Grade List </a>
     </div>
     <div class="col-sm-auto mt-2">
         <form method = "POST">
@@ -26,11 +29,11 @@
                 {{ grade_form|crispy }}
                 </div>
             </div>
-            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save and continue">
+            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Continue to Grade Entry">
         </form>
     </div>
 <script>
-    /* Ajax to get level and indicators after student is selected */
+    /* Ajax to get level and ethics after student is selected */
     $(document).ready(function () {
          //catch the form's submit event
         $("#id_student").change(function () {

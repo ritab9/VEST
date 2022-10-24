@@ -34,14 +34,14 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Indicator</th>
+                                <th>Skill</th>
                                 <th>Grade (1-5)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {{ indicator_formset.management_data }}
-                            {{ indicator_formset.management_form }}
-                            {% for form in indicator_formset %}
+                            {{ skill_formset.management_data }}
+                            {{ skill_formset.management_form }}
+                            {% for form in skill_formset %}
                                 {{ form.non_field_errors }}
                                 <tr>
                                     <td>{{ form.instance.skill.name }}</td>
@@ -65,7 +65,7 @@
     </div>
 
 <script>
-    /* Ajax to get level and indicators after student is selected
+    /* Ajax to get level and ethics after student is selected
     $(document).ready(function () {
          //catch the form's submit event
         $("#id_student").change(function () {

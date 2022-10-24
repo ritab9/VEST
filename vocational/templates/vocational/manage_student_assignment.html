@@ -7,7 +7,15 @@
 
 {% block content %}
 
-    <p class="mt-3">{{ quarter.school_year }} {{ quarter }} </p>
+    <p class="mt-3">{{ quarter }} </p>
+
+    <!-- filter
+            <form method="get">
+                { { student_filter.form }}
+                <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
+                <a href="{ %  url 'manage_student_assignment' quarter.school_year.school.id quarter.id %}">Clear all filters</a>
+            </form> -->
+
 
 <form method = "POST">
 	{% csrf_token %}
@@ -16,44 +24,40 @@
         <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save" style="float: right">
     </div>
 
-    <table class="table" style="width: auto">
-        <thead>
-            <tr>
-                <th>Department</th>
-                <th>Student</th>
-            </tr>
-        </thead>
-        <tbody>
+<div class="card-body">
+    <div class="row">
             {{ student_formset.management_data }}
             {{ student_formset.management_form }}
-            {% for form in student_formset %}
-                {{ form.errors }}
-                {{ form.non_field_errors }}
-                <tr>
-                    <td>{{ form.department }}
-                    {{ form.DELETE|as_crispy_field }}
-                    </td>
-                    <td>
+                {% for form in student_formset %}
+                    <div class="col">
+                        {{ form.department }}
+                        {{ form.DELETE|as_crispy_field }}
+                        <!--
                         <ul style="-webkit-column-count: 10; -moz-column-count: 10; column-count: 10; list-style-type:none">
-                        {% for s in form.student %}
-                            <li> {{ s }}
-                                <a href="{% url 'student_vocational_info' s.data.value %}"
-                                   target="popup" class="mypopup" >
-                                    <i class="fa-solid fa-circle-info"></i></a>
-
+                        -->
+                        <ul style="list-style-type:none">
+                            {% for s in form.student %}
+                            <li>
+                                <div class="row">
+                                    <a href="{% url 'student_vocational_info' s.data.value %}"
+                                   target="popup" class="mypopup"> <i class="fa-solid fa-circle-info"></i> </a>
+                                    &nbsp;
+                                    {{ s }}
+                                </div>
                             </li>
-                         {% endfor %}
+                            {% endfor %}
                         </ul>
-                    </td>
-                </tr>
-                {% for hidden in form.hidden_fields %}
-                    {{ hidden }}
+                    {{ form.errors }}
+                        {{ form.non_field_errors }}
+                    {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+
+                    </div>
                 {% endfor %}
-            {% endfor %}
-        </tbody>
-    </table>
-        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Save and add more">
     </div>
+        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Save and add more">
+</div>
 </form>
 
 <script>

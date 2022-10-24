@@ -2,7 +2,7 @@
 {% load group_tags %}
 
 
-<nav class ="navbar navbar-expand-md navbar-dark bg-ISEIblue3 noprint">
+<nav class ="navbar navbar-expand-md navbar-dark bg-ISEIblue3 noprint fixed-top">
     <img src="{% static 'appfiles/VestLogoBLK.png' %}" width="120" height="60" alt="VEST Logo">
      <div class="container-fluid">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,34 +90,36 @@
                                   </li>
                               </ul>
                             </li>
-
+                            <li>
+                            <a class="nav-link vocational_coordinator " href="{% url 'vc_validate_grades' request.user.profile.school.id %}"> Validate Grades </a>
+                            </li>
                         {% endif %}
 
-
                         {% if request.user|in_group:"instructor" %}
-                            <li class="nav-item instructor">
-                                <a class="nav-link" href="">Instructor Links</a>
-                            </li>
-                            <li class="nav-item dropdown instructor">
-                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Grades
-                              </a>
-                              <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
-                                  <li>
-                                      <a class="nav-link " href="{% url 'grade_list' request.user.profile.school.id %}"> Grade List </a>
-                                  </li>
-                                  <li>
-                                    <a class="nav-link" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
-                                  </li>
-                              </ul>
-                            </li>
-
+                                <li class="nav-item instructor">
+                                    <a class="nav-link" href="">Instructor Links</a>
+                                </li>
+                                <li class="nav-item dropdown instructor">
+                                  <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Grades
+                                  </a>
+                                  <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
+                                      <li>
+                                          <a class="nav-link " href="{% url 'grade_list' request.user.id %}"> Grade List </a>
+                                      </li>
+                                      <li>
+                                        <a class="nav-link" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
+                                      </li>
+                                  </ul>
+                                </li>
                         {% endif %}
 
                         {% if request.user|in_group:"parent" %}
+
                             <li class="nav-item parent">
-                                <a class="nav-link" href="">Parent Links</a>
+                                <a class="nav-link" href="{% url "parent_page" request.user.id %}">Parent Page</a>
                             </li>
+
                         {% endif %}
 
                         {% if request.user|in_group:"student" %}
@@ -131,11 +133,12 @@
             </div>
 
 
+<!-- Dropdown to allow for user group selection -->
 
 {% if user.is_authenticated and user.is_active%}
     <span>
     <div class="col">
-        <span class ="name-msg text-light"> {{request.user.first_name}} {{request.user.last_name}} </span>
+        <div class ="name-msg text-light"> {{request.user.first_name}} {{request.user.last_name}} </div>
         {% if request.user|in_more_groups %}
             <select class="bg-ISEIblue3 text-light" id="id_group" name="group">
                 {% for g in request.user.groups.all %}
@@ -144,12 +147,12 @@
                 <div style="display: none" id="group_info" data-value="more"></div>
             </select>
         {% else %}
-            <div class="text-light">{{ request.user.groups.all.first }}</div>
+            <div class="text-light" id="one_group">{{ request.user.groups.all.first }}</div>
             <div style="display: none" id="group_info2" data-value="one">One</div>
         {% endif %}
     </div>
     </span>
-        <a href="{% url 'logout' %}" style =" color:#FFFFFF">Logout</a>
+        <a href="{% url 'logout' %}" class="text-ISEIyellow">Logout</a>
 {% endif %}
 
      </div>
@@ -160,7 +163,8 @@
     var g_i = "{{request.user|in_more_groups}}";
 
     window.addEventListener("load", function() {
-        if (g_i) {
+
+        if (g_i == 'True') {
             var selItem = sessionStorage.getItem("SelItem")
             $('#id_group').val(selItem);
             /* alert($('#id_group').val()); */
@@ -173,12 +177,21 @@
             };
             navbar_refresh(selItem);
         }
+        else {
+            navbar_refresh("{{ request.user.groups.all.first }}");
+        }
     });
 
     $('#id_group').change(function() {
             var selVal = $(this).val();
+            /* alert(selVal); */
             sessionStorage.setItem("SelItem", selVal);
             var url = "{% url 'crash' %}";
+            /* if (selVal == "school_admin"){
+                alert("School Admin")
+                url="{ % url 'school_admin_dashboard' request.user.profile.school.id %}";
+            }; */
+
             window.location.href = url;
             navbar_refresh(selVal);
     });

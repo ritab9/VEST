@@ -1,25 +1,39 @@
+{%  extends 'base.html' %}
 
   {% load static %}
-{% load group_tags %}
+
+ {% block title %}Grades {% endblock title %}
+
+   {% block content %}
+
+
+<h6 class="mt-3">{{ student.name }}'s Grades</h6>
+
+       <div class="row noprint">
+        <div class="card card-body">
+            <form method="get" id="filterForm" onchange="this.form.submit()">
+                    {{ filter.form}}
+               <!-- <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp; -->
+                <a href="{%  url 'student_grades' student.id %}">Clear all filters</a>
+            </form>
+        </div>
+    </div>
 
 <div>
-    <table class="table table-sm table table-bordered" style="width: auto">
+    <table class="table table-sm table-striped table-bordered" style="width: auto">
         <thead>
-            <tr><th></th>
-                <th>Quarter</th><th>Student</th><th>Department</th><th>Instructor</th>
+            <tr>
+                <th>Quarter</th><th>Department</th><th>Instructor</th>
                 <th>Type</th><th>Grade</th><th>Score</th><th>Student Discussed</th> <th>VC Validated</th>
                 <th>Date</th><th></th>
             </tr>
         </thead>
         <tbody>
             {% for g in grades %}
-
-                <tr class="bg-light">
-                    <td> {% if request.user|in_group:"vocational_coordinator" or not g.vc_validated %}<a href="{% url 'finalize_grade' g.id %}"> Edit </a> {% endif %}</td>
+                <tr>
                     <td>{{ g.quarter.get_name_display }}
                     <br> <div class="span80">{{ g.quarter.school_year }}</div>
                     </td>
-                    <td>{{ g.student }}</td>
                     <td>{{ g.department }}</td><td>{{ g.instructor.last_name }}, {{ g.instructor.first_name }}</td>
                     <td>{{ g.get_type_display }}</td><td>{{ g.percent }}%</td><td>{{ g.score }}</td>
                     <td>{% if g.student_discussed %}
@@ -28,26 +42,11 @@
                             <a href="{% url 'finalize_grade' g.id %}" class="spanyellow"> Discuss </a>
                         {% endif %}
                     </td>
-                    <td> {% if g.vc_validated %} Yes
-                         {% else %}
-                            <span class="spanyellow">Not yet</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ g.vc_validated|default_if_none:"Not yet" }}</td>
                     <td>{{ g.evaluation_date }}<br><div class="span80">{{ g.created_at }}</div></td>
                     <td> <input type="button" class="detailbtn btn btn-sm btn-outline-dark span80 noprint" value ="Show Details" id={{ g.id }}> </td>
                 </tr>
-                {% if g.vc_comment %}
-                    <tr>
-                        <td colspan="12">
-                            {% if g.vc_validated %}
-                                 {{ g.vc_comment }}
-                            {% else %}
-                                <span class="spanred">{{ g.vc_comment }}</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endif %}
-                <td colspan="12">
+                <td colspan="11">
                     <div class="card card-body" id="details{{ g.id }}" style="display: none;">
                         {% if g.type == "S" %}
                         <table class="table-sm span80 table-nostriped table-bordered" >
@@ -110,7 +109,6 @@
                     {% endif %}
                     </div>
                 </td>
-
             {% endfor %}
         </tbody>
     </table>
@@ -128,4 +126,13 @@
                          $("#details"+id).hide();
                          $(this).attr('value',"Show Details");}
          });
+
+        $('input').on("change", function() {
+            $('#filterForm').submit();
+        });
+        $('select').on("change", function() {
+            $('#filterForm').submit();
+        });
     </script>
+
+{% endblock %}

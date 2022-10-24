@@ -32,14 +32,18 @@ def loginuser(request):
                 return redirect(request.GET.get('next'))
             else:
                 if request.user.is_active:
-                    if request.user.groups.filter().exists():
-                        return redirect('crash')
-                    # if request.user.groups.filter(name='isei_admin').exists():
-                    #     return redirect('isei_admin_dashboard')
-                    # elif request.user.groups.filter(name='school_admin').exists():
-                    #     return redirect('school_admin_dashboard', user.profile.school.id)
-                    # elif request.user.groups.filter(name='vocational_coordinator').exists():
-                    #     return redirect('school_admin_dashboard', user.profile.school.id)
+                    #if request.user.groups.filter().exists():
+                    #    return redirect('crash')
+                    if request.user.groups.filter(name='isei_admin').exists():
+                         return redirect('isei_admin_dashboard')
+                    elif request.user.groups.filter(name='school_admin').exists():
+                         return redirect('school_admin_dashboard', user.profile.school.id)
+                    elif request.user.groups.filter(name='vocational_coordinator').exists():
+                         return redirect('crash')
+                    elif request.user.groups.filter(name='instructor').exists():
+                         return redirect('crash')
+                    elif request.user.groups.filter(name='parent').exists():
+                         return redirect('parent_page', user.id)
                     else:
                         messages.info(request, 'User not assigned to a group. Please contact the site administrator.')
                 else:
