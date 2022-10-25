@@ -1,0 +1,65 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} School Year {% endblock title %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="card-body col-sm-auto">
+            <table class="table">
+                <thead>
+                    <th>School year</th><th>Progress %</th><th>Summative %</th>
+                    <th>Track Time</th><th>Time Units</th>
+                </thead>
+                    {% for a in arr %}
+                    <tr>
+                        <td>{{ a.0 }}</td>
+                        <td>{{ a.1 }}%</td><td>{{ a.2 }}%</td>
+                        <td> {% if a.3 %} Yes {% else %} No{% endif %}</td>
+                        <td>{{ a.4}}</td>
+                    </tr>
+                    {% endfor %}
+            </table>
+    </div>
+
+        <div class="card-body col-sm-auto ml-lg-5">
+
+        <h6>{{ s_form.instance.school_year }}</h6>
+        <form method = "POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-sm-auto">
+                {{ s_form|crispy }}
+                </div>
+            </div>
+            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save Changes">
+        </form>
+
+        <div class="d-flex links">
+                {% for message in messages %}
+                  <div class="alert-warning spangreen" role="alert" >{{message}}</div>
+                {% endfor %}
+        </div>
+    </div>
+    </div>
+{% endblock %}
+
+{% block footer_javascript %}
+<script>
+    $('#id_progress_ratio').on('input', function() {
+        var pval=$(this).val();
+        var sval=100-pval;
+        document.getElementById('id_summative_ratio').value = sval;
+    });
+
+    $('#id_summative_ratio').on('input', function() {
+        var sval=$(this).val();
+        var pval=100-sval;
+        document.getElementById('id_progress_ratio').value = pval;
+    });
+
+</script>
+
+{% endblock footer_javascript %}

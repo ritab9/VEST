@@ -33,7 +33,8 @@ urlpatterns = [
 
 #school admin paths
     path('school_admin_dashboard/<str:schoolid>/', views.school_admin_dashboard, name='school_admin_dashboard'),
-    
+    path('school_users/<str:schoolid>/', views.school_users, name='school_users'),
+
     path('manage_school_staff/<str:schoolid>/', views.manage_school_staff, name='manage_school_staff'),
     path('manage_inactive_school_staff/<str:schoolid>/', views.manage_inactive_school_staff, name='manage_inactive_school_staff'),
     path('add_school_staff/<str:schoolid>/', views.add_school_staff, name='add_school_staff'),

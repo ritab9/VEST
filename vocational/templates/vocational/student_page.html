@@ -1,0 +1,18 @@
+    {%  extends 'base.html' %}
+    {% load static %}
+
+{% block title %} Parent Page {% endblock title %}
+
+{% block content %}
+
+
+            <div class="card card-body">
+                <h6>{{ student.name }}</h6>
+                <div class="col">
+                    <a class="btn btn-ISEIblue btn-sm mb-3" href="{% url 'student_vocational_info' student.id %}"> Vocational Summary</a> <br>
+                    <a class="btn btn-ISEIblue btn-sm" href="{% url 'student_grades' student.id %}"> Grades</a>
+                </div>
+            </div>
+    </nav>
+
+{% endblock %}

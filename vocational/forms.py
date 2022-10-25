@@ -7,6 +7,13 @@ from .models import *
 import datetime
 
 
+class SchoolSettingsForm(forms.ModelForm):
+    class Meta:
+        model=SchoolSettings
+        fields = ('progress_ratio', 'summative_ratio', 'track_time','time_unit')
+
+
+
 class SchoolYearForm(forms.ModelForm):
     class Meta:
         model = SchoolYear
@@ -15,7 +22,6 @@ class SchoolYearForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'type': 'date', 'placeholder': "mm/dd/yyyy"}),
             'end_date': forms.DateInput(attrs={'type': 'date', 'placeholder': "mm/dd/yyyy"})
         }
-
 
 class QuarterForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,80 @@
+{%  extends 'base.html' %}
+  {% load static %}
+
+
+  {% block title %} Users {% endblock title %}
+
+
+{% block content %}
+
+<div class="row">
+    <div class="col">
+    <table class="table-sm table-striped">
+        <thead>
+        <tr>
+            <th>School Admin(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for a in school_admin %}
+            <tr>
+                <td>{{ a.profile}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+
+        <thead>
+        <tr>
+            <th>Vocational Coordinator(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for v in vocational_coordinator %}
+            <tr>
+                <td>{{ v.profile}}</td>
+            </tr>
+        {% endfor %}
+
+
+        </tbody>
+
+        <thead>
+        <tr>
+            <th>Instructor(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for i in instructor %}
+            <tr>
+                <td>{{ i.profile}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="col">
+    <table class="table-sm table-striped">
+        <thead>
+        <tr>
+            <th>Student(s)</th><th>Parent(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for s in student %}
+            <tr>
+                <td>{{ s.profile }}</td>
+                <td>{% for p in s.student.parent.all %}
+                    {{ p.profile }}<br>
+                {% endfor %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+{% endblock %}

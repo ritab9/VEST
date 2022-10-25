@@ -56,13 +56,14 @@
                                 <li>
                                     <a class="nav-link float-left" href="{% url 'manage_students' request.user.profile.school.id %}"> Students/Parents </a>
                                 </li>
-
                               </ul>
                             </li>
 
-
                             <li>
                                 <a class="nav-link school_admin" href="{% url 'school_year' request.user.profile.school.id %}"> School Year </a>
+                            </li>
+                            <li class="nav-item school_admin">
+                                <a class="nav-link" href="{% url 'school_settings' request.user.profile.school.id %}">Settings</a>
                             </li>
 
                         {% endif %}
@@ -124,7 +125,7 @@
 
                         {% if request.user|in_group:"student" %}
                             <li class="nav-item student">
-                                <a class="nav-link" href="">Student Links</a>
+                                <a class="nav-link" href="{% url "student_page" request.user.id %}">Student Page</a>
                             </li>
                         {% endif %}
 

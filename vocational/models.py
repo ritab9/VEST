@@ -43,6 +43,17 @@ class SchoolYear(models.Model):
         if self.active:
             SchoolYear.objects.filter(school = self.school).exclude(id=self.id).update(active=False)
 
+class SchoolSettings(models.Model):
+    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE)
+    progress_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=20)
+    summative_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=80)
+    track_time=models.BooleanField(default=False)
+    CHOICES = (
+        ('h', 'Hours'),
+        ('d', 'Days'),
+        ('w', 'Weeks'),
+    )
+    time_unit = models.CharField(max_length=1, choices=CHOICES, null=True, blank=True)
 
 class Quarter(models.Model):
     CHOICES = (

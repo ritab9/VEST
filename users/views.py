@@ -44,6 +44,8 @@ def loginuser(request):
                          return redirect('crash')
                     elif request.user.groups.filter(name='parent').exists():
                          return redirect('parent_page', user.id)
+                    elif request.user.groups.filter(name='student').exists():
+                         return redirect('student_page', user.id)
                     else:
                         messages.info(request, 'User not assigned to a group. Please contact the site administrator.')
                 else:
@@ -122,6 +124,13 @@ def add_school_admin(request):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def school_admin_dashboard(request, schoolid):
+
+    context = dict()
+    return render(request, 'users/school_admin_dashboard.html', context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def school_users(request, schoolid):
     school = School.objects.get(id=schoolid)
     user = User.objects.filter(profile__school=school)
     school_admin = user.filter(groups__name="school_admin")
@@ -132,8 +141,7 @@ def school_admin_dashboard(request, schoolid):
     context = dict(school=school, school_admin=school_admin,
                    vocational_coordinator=vocational_coordinator,
                    instructor=instructor, student=student)
-    return render(request, 'users/school_admin_dashboard.html', context)
-
+    return render(request, 'users/school_users.html', context)
 
 # School staff Administration
 @login_required(login_url='login')

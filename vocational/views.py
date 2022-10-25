@@ -10,11 +10,43 @@ from .forms import *
 from .filters import *
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.contrib import messages
+
 now=timezone.now()
 
 
 
 # School Admin Views
+# School Settings
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def school_settings(request, schoolid):
+    school_year = SchoolYear.objects.filter(school__id=schoolid, active=True).first()
+
+    school_settings = SchoolSettings.objects.filter(school_year=school_year).first()
+    if not school_settings:
+        school_settings = SchoolSettings()
+        school_settings.school_year=school_year
+        school_settings.save()
+
+    if request.method == "POST":
+        s_form = SchoolSettingsForm(request.POST, instance=school_settings)
+        if s_form.is_valid():
+            s_form.save()
+            messages.info(request, 'Changes have been saved!')
+            return redirect('school_settings', schoolid)
+    else:
+        s_form = SchoolSettingsForm(instance=school_settings)
+
+    arr = []
+    for a in SchoolSettings.objects.filter(school_year__school_id=schoolid):
+        a_info = [a.school_year, a.progress_ratio, a.summative_ratio, a.track_time, a.get_time_unit_display()]
+        arr.append(a_info)
+
+    context = dict(school_year=school_year, schoolid=schoolid,
+                   s_form=s_form, arr=arr)
+    return render(request, 'vocational/school_settings.html', context)
+
 # School Year
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
@@ -514,7 +546,7 @@ def student_vocational_info(request, studentid):
     arr=[]
     for a in student.student_assignment.all().order_by('-quarter'):
         grades=EthicsGradeRecord.objects.filter(student=student, department=a.department, quarter=a.quarter)
-        avg=average(grades)
+        avg=average(grades, a.quarter.school_year)
         if grades.last():
             level=grades.last().level
         else:
@@ -529,7 +561,7 @@ def student_vocational_info(request, studentid):
 
 #parent views
 @login_required(login_url='login')
-@allowed_users(allowed_roles=['isei_admin', 'parent', 'student'])
+@allowed_users(allowed_roles=['isei_admin', 'parent'])
 def parent_page(request, parentid):
     children = Student.objects.filter(parent__id=parentid)
 
@@ -553,3 +585,12 @@ def student_grades(request, studentid):
 
     context = dict(student=student, grades=grades, filter=filter)
     return render(request, 'vocational/student_grades.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'student'])
+def student_page(request, studentid):
+    student = Student.objects.get(user__id=studentid)
+
+    context=dict(student=student)
+    return render(request, 'vocational/student_page.html', context)
