@@ -58,4 +58,9 @@ urlpatterns = [
 
     path('add_parent_from_list/<str:userid>/<str:listtype>/', views.add_parent_from_list, name='add_parent_from_list'),
 
+#vocational coordiantor Dashboard
+    path('vocational_coordinator_dashboard/<str:schoolid>/', views.vocational_coordinator_dashboard, name='vocational_coordinator_dashboard'),
+    path('instructor_dashboard/<str:userid>/', views.instructor_dashboard,
+         name='instructor_dashboard'),
+
 ]

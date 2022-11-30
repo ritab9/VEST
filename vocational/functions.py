@@ -1,7 +1,18 @@
 from statistics import mean
-from vocational.models import SchoolSettings
+from vocational.models import SchoolSettings, Quarter, SchoolYear
+from django.utils import timezone
 
-def average(grades, school_year):
+
+def current_quarter(school_year_id):
+    q = Quarter.objects.filter(start_date__lt=timezone.now()+timezone.timedelta(days=5), end_date__gt=timezone.now()+timezone.timedelta(days=5), school_year_id=school_year_id).first()
+    print(q)
+    if not q:
+        q=Quarter.objects.filter(school_year_id=school_year_id).first()
+        print(q)
+    return q
+
+
+def average(grades, school_year=None):
     summative = grades.filter(type="S")
     a1=[]
     for s in summative:
@@ -20,6 +31,10 @@ def average(grades, school_year):
     else:
         s2=None
 
+    if school_year==None:
+        sample_grade=grades.first()
+        if sample_grade:
+            school_year=sample_grade.quarter.school_year
 
    #Default settings 80% Summative and 20% Formative
     settings=SchoolSettings.objects.filter(school_year=school_year).first()

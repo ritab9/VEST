@@ -21,7 +21,11 @@
                         <td>
                             <select class="form-select" id="id_quarter" name="quarter" >
                                 {% for q in active_quarter %}
-                                    <option value="{{ q.id }}">{{ q }}</option>
+                                    {% if q.id == current_quarter_id %}
+                                        <option value="{{ q.id }}" selected="selected">{{ q }}</option>
+                                    {% else %}
+                                        <option value="{{ q.id }}">{{ q }}</option>
+                                    {% endif %}
                                 {% endfor %}
                             </select>
                         </td>

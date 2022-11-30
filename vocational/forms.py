@@ -9,9 +9,8 @@ import datetime
 
 class SchoolSettingsForm(forms.ModelForm):
     class Meta:
-        model=SchoolSettings
-        fields = ('progress_ratio', 'summative_ratio', 'track_time','time_unit')
-
+        model = SchoolSettings
+        fields = ('progress_ratio', 'summative_ratio', 'track_time', 'time_unit')
 
 
 class SchoolYearForm(forms.ModelForm):
@@ -22,6 +21,7 @@ class SchoolYearForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'type': 'date', 'placeholder': "mm/dd/yyyy"}),
             'end_date': forms.DateInput(attrs={'type': 'date', 'placeholder': "mm/dd/yyyy"})
         }
+
 
 class QuarterForm(forms.ModelForm):
     class Meta:
@@ -47,7 +47,7 @@ class InstructorAssignmentForm(forms.ModelForm):
         model = InstructorAssignment
         fields = ('department', 'instructor')
 
-    instructor = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
+    instructor = forms.ModelMultipleChoiceField(queryset=None,  required = False, widget=forms.CheckboxSelectMultiple)
 
 
 InstructorAssignmentFormSet = modelformset_factory(InstructorAssignment, form=InstructorAssignmentForm,
@@ -65,7 +65,7 @@ class StudentAssignmentForm(forms.ModelForm):
         model = StudentAssignment
         fields = ('department', 'student',)
 
-    student = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
+    student = forms.ModelMultipleChoiceField(queryset=None, required = False, widget=forms.CheckboxSelectMultiple)
 
 
 StudentAssignmentFormSet = inlineformset_factory(Quarter, StudentAssignment, form=StudentAssignmentForm,
@@ -81,12 +81,21 @@ class EthicsGradeInstructorForm(forms.ModelForm):
         }
 
 
+class EthicsGradeTimeForm(forms.ModelForm):
+    class Meta:
+        model = EthicsGradeRecord
+        fields = ('time',)
+        widgets = {
+            'time': forms.Textarea(attrs={'rows': 1, 'cols': 2,}),
+        }
+
+
 class EthicsSummativeGradeForm(forms.ModelForm):
     class Meta:
         model = EthicsSummativeGrade
-        fields = ('score', 'comment')
+        fields = ('score', 'comment',)
         widgets = {
-            'score': forms.Textarea(attrs={'rows': 1, 'cols': 3}),
+            'score': forms.NumberInput(attrs={'rows': 1, 'cols': 3, 'max': 5, 'min': 0}),
             'comment': forms.Textarea(attrs={'rows': 1, 'cols': 45})
 
         }
@@ -101,7 +110,7 @@ class EthicsFormativeGradeForm(forms.ModelForm):
         model = EthicsFormativeGrade
         fields = ('score',)
         widgets = {
-            'score': forms.NumberInput(attrs={'cols':3, 'max':5, 'min':0 }),
+            'score': forms.NumberInput(attrs={'rows':1, 'cols': 3, 'max': 5, 'min': 0}),
         }
 
 
@@ -114,8 +123,8 @@ class FormativeCommentsForm(forms.ModelForm):
         model = EthicsGradeRecord
         fields = ('commendation', 'recommendation')
         widgets = {
-            'commendation': forms.Textarea(attrs={'rows': 6, 'cols': 30, 'required':True}),
-            'recommendation': forms.Textarea(attrs={'rows': 6, 'cols': 30, 'required':True}),
+            'commendation': forms.Textarea(attrs={'rows': 6, 'cols': 30, 'required': True}),
+            'recommendation': forms.Textarea(attrs={'rows': 6, 'cols': 30, 'required': True}),
         }
         # commendation = forms.CharField(widget=forms.Textarea(attrs={'rows': 6, 'cols': 30}))
         # recommendation = forms.CharField(widget=forms.Textarea(attrs={'rows': 6, 'cols': 30}))
@@ -154,12 +163,12 @@ class VCValidationForm(forms.ModelForm):
         model = EthicsGradeRecord
         fields = ('vc_validated', 'vc_comment')
         widgets = {
-                      'vc_validated': forms.DateInput(
-                          attrs={'type': 'date', 'placeholder': "mm/dd/yyyy"}),
-                      'vc_comment': forms.Textarea(attrs={'rows': 1}),
-                  }
-        labels ={
-            'vc_validated':"Validated on:",
+            'vc_validated': forms.DateInput(
+                attrs={'type': 'date', 'placeholder': "mm/dd/yyyy"}),
+            'vc_comment': forms.Textarea(attrs={'rows': 1}),
+        }
+        labels = {
+            'vc_validated': "Validated on:",
             'vc_comment': "Comment:"
         }
         edit_only = True

@@ -24,9 +24,9 @@ def has_children(user):
     children = user.children.all().exists()
     return children
 
-def has_other_children(user, child):
-    children = user.children.exclude(user=child).exists()
-    return children
+def has_other_children(parent, child):
+    children = parent.children.exclude(user=child).filter(user__is_active=True)
+    return children.exists()
 
 
 def is_active_school_staff(user):

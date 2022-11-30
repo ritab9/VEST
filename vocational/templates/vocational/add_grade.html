@@ -17,7 +17,9 @@
                 <tr><th>Date</th><td>{{ grade.evaluation_date }}</td></tr>
             </tbody>
         </table>
-        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style=""> Change Info Above </a>
+        <!--
+        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style=""> Back to previous page </a> -->
+        <a class="btn btn-sm btn-ISEIblue3 mt-2" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Return to Grade Entry</a>
         <br>
         <a class="btn btn-sm btn-ISEIblue3 mt-2" href="{% url 'grade_list' request.user.id %}"> Return to Grade List </a>
     </div>

@@ -7,15 +7,29 @@
 
 {% block content %}
 
+<div class="card-body">
+    <form method = "POST">
+        {% csrf_token %}
 
-<form method = "POST">
-	{% csrf_token %}
+        {% if form.errors %}
+            <div class="alert alert-danger text-left">
+                {{ form.errors }}
+            </div>
+        {% endif %}
 
-    {{ form|crispy }}
-    <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save">
-    <a class ="btn btn-sm btn-danger mt-3" onclick="history.back()"> Cancel </a>
+          <div class="d-flex justify-content-left links">
+                {% for message in messages %}
+                  <div class="alert-warning spanred" role="alert" >{{message}}</div>
+                {% endfor %}
+          </div>
 
-</form>
+        {{ form|crispy }}
+
+        <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save">
+        <a class ="btn btn-sm btn-danger mt-3" onclick="history.back()"> Cancel </a>
+
+    </form>
+</div>
 
 
 

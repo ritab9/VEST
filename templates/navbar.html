@@ -70,7 +70,7 @@
 
                         {% if request.user|in_group:"vocational_coordinator" %}
                             <li class="nav-item vocational_coordinator">
-                                <a class="nav-link" href="">Vocational Coordinator Links</a>
+                                <a class="nav-link" href="{% url 'vocational_coordinator_dashboard' request.user.profile.school.id %}">Dashboard</a>
                             </li>
                             <li class="nav-item dropdown vocational_coordinator">
                               <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -92,19 +92,24 @@
                               </ul>
                             </li>
                             <li>
+                                <a class="nav-link vocational_coordinator" href="{% url 'grade_list' request.user.id %}"> Grade List </a>
+                            </li>
+                            <li>
                             <a class="nav-link vocational_coordinator " href="{% url 'vc_validate_grades' request.user.profile.school.id %}"> Validate Grades </a>
                             </li>
+
                         {% endif %}
 
                         {% if request.user|in_group:"instructor" %}
                                 <li class="nav-item instructor">
-                                    <a class="nav-link" href="">Instructor Links</a>
+                                    <a class="nav-link" href="{% url 'instructor_dashboard' request.user.id %}">Dashboard</a>
                                 </li>
+                            <!--
                                 <li class="nav-item dropdown instructor">
                                   <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Grades
                                   </a>
-                                  <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
+                                    <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
                                       <li>
                                           <a class="nav-link " href="{% url 'grade_list' request.user.id %}"> Grade List </a>
                                       </li>
@@ -112,7 +117,14 @@
                                         <a class="nav-link" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
                                       </li>
                                   </ul>
-                                </li>
+                                </li> -->
+                               <li class="nav-item instructor">
+                                  <a class="nav-link " href="{% url 'grade_list' request.user.id %}"> Grade List </a>
+                              </li>
+                              <li class="nav-item instructor">
+                                <a class="nav-link" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
+                              </li>
+
                         {% endif %}
 
                         {% if request.user|in_group:"parent" %}
@@ -164,44 +176,55 @@
     var g_i = "{{request.user|in_more_groups}}";
 
     window.addEventListener("load", function() {
-
         if (g_i == 'True') {
-            var selItem = sessionStorage.getItem("SelItem")
-            $('#id_group').val(selItem);
-            /* alert($('#id_group').val()); */
+            var group = sessionStorage.getItem("Group")
+            $('#id_group').val(group);
             if (!$('#id_group').val()) {
                 if (document.getElementById('id_group')) {
                     document.getElementById('id_group').selectedIndex = "0";
-                    /* alert($('#id_group').val()); */
-                    selItem = $('#id_group').val();
+                    group = $('#id_group').val();
                 }
             };
-            navbar_refresh(selItem);
-        }
-        else {
-            navbar_refresh("{{ request.user.groups.all.first }}");
+            navbar_refresh(group);
         }
     });
 
+ //on group change, update selected item in sessions, refresh navbar and page
     $('#id_group').change(function() {
-            var selVal = $(this).val();
-            /* alert(selVal); */
-            sessionStorage.setItem("SelItem", selVal);
-            var url = "{% url 'crash' %}";
-            /* if (selVal == "school_admin"){
-                alert("School Admin")
-                url="{ % url 'school_admin_dashboard' request.user.profile.school.id %}";
-            }; */
-
-            window.location.href = url;
-            navbar_refresh(selVal);
+        var group = $(this).val();
+        sessionStorage.setItem("Group", group);
+        url_refresh(group);
     });
 
+
+//refresh page based on selected value for user group
+    function url_refresh(group){
+        var url = "{% url 'crash' %}";
+         switch (group) {
+            case "school_admin":
+                url="{% url 'school_admin_dashboard' request.user.profile.school.id %}";
+                break;
+            case "vocational_coordinator":
+                url="{% url 'vocational_coordinator_dashboard' request.user.profile.school.id %}";
+                break;
+            case "instructor":
+                url="{% url 'instructor_dashboard' request.user.id %}";
+                break;
+            case "parent":
+                url="{% url "parent_page" request.user.id %}";
+                break;
+            default:
+                url = "{% url 'crash' %}";
+        }
+        window.location.href = url;
+        //window.open(url,"_self");
+    }
+
+ //Refresh navbar based on selected value for user group
     function navbar_refresh(group){
         for (let element of document.querySelectorAll(".school_admin, .instructor, .vocational_coordinator, .parent")){
             element.style.display="none";
             };
-
         for (let element of document.getElementsByClassName(group)){
             element.style.display="";
         };

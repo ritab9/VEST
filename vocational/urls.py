@@ -34,6 +34,7 @@ urlpatterns = [
 
     # Instructor links
     path('grade_list/<int:userid>/', views.grade_list, name='grade_list'),
+    path('grade_list_all/<int:userid>/', views.grade_list_all, name='grade_list_all'),
 
     path('initiate_grade_entry/<int:schoolid>/', views.initiate_grade_entry, name='initiate_grade_entry'),
     path('add_grade/<int:quarterid>/<str:type>/<int:departmentid>/<str:evaluation_date>/<int:instructorid>/',

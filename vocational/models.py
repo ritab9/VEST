@@ -31,7 +31,7 @@ class VocationalClass(models.Model):
 
 # school_admin managed
 class SchoolYear(models.Model):
-    name = models.CharField(max_length=9)
+    name = models.CharField(max_length=9, verbose_name="School Year (ex:2024-2025)")
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     school = models.ForeignKey(School, on_delete=models.CASCADE)
@@ -43,8 +43,11 @@ class SchoolYear(models.Model):
         if self.active:
             SchoolYear.objects.filter(school = self.school).exclude(id=self.id).update(active=False)
 
+    class Meta:
+        unique_together = (('name', 'school'),)
+
 class SchoolSettings(models.Model):
-    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE)
+    school_year = models.OneToOneField(SchoolYear, on_delete=models.CASCADE)
     progress_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=20)
     summative_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=80)
     track_time=models.BooleanField(default=False)
@@ -107,7 +110,7 @@ class InstructorAssignment(models.Model):
 class StudentAssignment(models.Model):
     quarter = models.ForeignKey(Quarter, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    student = models.ManyToManyField(Student, related_name="student_assignment", blank=True)
+    student = models.ManyToManyField(Student, related_name="student_assignment", blank=True,)
     class Meta:
         unique_together = ('quarter', 'department')
 
@@ -120,6 +123,7 @@ class EthicsGradeRecord(models.Model):
     department = models.ForeignKey(Department, on_delete=models.PROTECT, blank=False, null=False)
     instructor = models.ForeignKey(User, on_delete=models.PROTECT, blank=False, null=False)
     quarter = models.ForeignKey(Quarter, on_delete=models.PROTECT, blank=False, null=False)
+    time = models.IntegerField(blank=True, null=True)
 
     CHOICES = (
         ('F', 'Formative'),
@@ -166,7 +170,7 @@ class EthicsGradeRecord(models.Model):
 
 class EthicsSummativeGrade(models.Model):
     ethic = models.ForeignKey(EthicsDefinition, blank=False, null=False, on_delete=models.PROTECT)
-    score = models.DecimalField(decimal_places=2, max_digits=3, null=True, blank=True)
+    score = models.DecimalField(decimal_places=2, max_digits=3, null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)])
     comment = models.CharField(max_length=300, null=True, blank=True)
     grade_record = models.ForeignKey(EthicsGradeRecord, on_delete=models.CASCADE)
     class Meta:
@@ -175,7 +179,7 @@ class EthicsSummativeGrade(models.Model):
 
 class EthicsFormativeGrade(models.Model):
     ethic = models.ForeignKey(EthicsDefinition, blank=False, null=False, on_delete=models.PROTECT)
-    score = models.DecimalField(decimal_places=2, max_digits=3, null=True, blank=True)
+    score = models.DecimalField(decimal_places=2, max_digits=3, null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)])
     grade_record = models.ForeignKey(EthicsGradeRecord, on_delete=models.CASCADE)
     class Meta:
         unique_together = ('ethic', 'grade_record')
@@ -220,16 +224,4 @@ class SkillGrade(models.Model):
     grade_record = models.ForeignKey(SkillGradeRecord, on_delete=models.CASCADE, blank=False, null=False)
     class Meta:
         unique_together = ('skill', 'grade_record')
-
-
-#Extra
-class SchoolOptions(models.Model):
-    school = models.ForeignKey(School, on_delete=models.CASCADE)
-    CHOICES = (
-        ('N', "None"),
-        ('H', 'Hours'),
-        ('D', "Days"),
-        ('W', "Weeks"),
-    )
-    timebased = models.CharField(max_length=1, choices=CHOICES, null=False, blank=False, default='N')
 

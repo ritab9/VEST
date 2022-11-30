@@ -7,7 +7,7 @@ class StudentFilter(django_filters.FilterSet):
     last_name = CharFilter(field_name="user__last_name", label="Last Name")
     class Meta:
         model = Student
-        fields = ['gender', 'graduation_year']
+        fields = ['gender', 'graduation_year', ]
 
 class StudentUserFilter(django_filters.FilterSet):
     graduation_year = NumberFilter(field_name="student__graduation_year", label="Graduation Year")

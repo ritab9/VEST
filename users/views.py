@@ -12,6 +12,7 @@ from .filters import *
 import datetime
 from vocational.models import SchoolYear
 
+
 # landing page for everyone. Introduced it to allow for role transition
 @login_required(login_url='login')
 def crash(request):
@@ -32,20 +33,18 @@ def loginuser(request):
                 return redirect(request.GET.get('next'))
             else:
                 if request.user.is_active:
-                    #if request.user.groups.filter().exists():
-                    #    return redirect('crash')
                     if request.user.groups.filter(name='isei_admin').exists():
-                         return redirect('isei_admin_dashboard')
+                        return redirect('isei_admin_dashboard')
                     elif request.user.groups.filter(name='school_admin').exists():
-                         return redirect('school_admin_dashboard', user.profile.school.id)
+                        return redirect('school_admin_dashboard', user.profile.school.id)
                     elif request.user.groups.filter(name='vocational_coordinator').exists():
-                         return redirect('crash')
+                        return redirect('vocational_coordinator_dashboard', user.profile.school.id)
                     elif request.user.groups.filter(name='instructor').exists():
-                         return redirect('crash')
+                        return redirect('crash')
                     elif request.user.groups.filter(name='parent').exists():
-                         return redirect('parent_page', user.id)
+                        return redirect('parent_page', user.id)
                     elif request.user.groups.filter(name='student').exists():
-                         return redirect('student_page', user.id)
+                        return redirect('student_page', user.id)
                     else:
                         messages.info(request, 'User not assigned to a group. Please contact the site administrator.')
                 else:
@@ -94,6 +93,7 @@ def add_school(request):
     return render(request, 'users/add_school.html', context)
 
 
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin'])
 def add_school_admin(request):
@@ -119,13 +119,29 @@ def add_school_admin(request):
     context = dict(form=form, school=school)
     return render(request, 'users/add_school_admin.html', context)
 
+#instructor coordinator
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'instructor'])
+def instructor_dashboard(request, userid):
+    context = dict(userid=userid)
+    return render(request, 'users/instructor_dashboard.html', context)
+
+
+
+#vocational coordinator
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
+def vocational_coordinator_dashboard(request, schoolid):
+    context = dict(school_id=schoolid)
+    return render(request, 'users/vocational_coordinator_dashboard.html', context)
+
 
 # School Admin Views
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def school_admin_dashboard(request, schoolid):
 
-    context = dict()
+    context = dict(school_id=schoolid)
     return render(request, 'users/school_admin_dashboard.html', context)
 
 @login_required(login_url='login')
@@ -142,6 +158,7 @@ def school_users(request, schoolid):
                    vocational_coordinator=vocational_coordinator,
                    instructor=instructor, student=student)
     return render(request, 'users/school_users.html', context)
+
 
 # School staff Administration
 @login_required(login_url='login')
@@ -203,7 +220,8 @@ def add_staff_from_parent_list(request, schoolid):
         user_id = request.POST.get('parent')
         return redirect('update_school_staff', user_id)
     else:
-        parent_list = User.objects.filter(Q(groups__name="parent"), ~Q(groups__name ="staff"),Q(profile__school=school)).order_by('last_name')
+        parent_list = User.objects.filter(Q(groups__name="parent"), ~Q(groups__name="staff"),
+                                          Q(profile__school=school)).order_by('last_name')
     context = dict(school=school, parent_list=parent_list)
     return render(request, 'users/add_staff_from_parent_list.html', context)
 
@@ -345,10 +363,12 @@ def mark_inactive_students(request, schoolid):
             student_formset.save()
             return redirect('manage_students', school.id)
 
-    grads_only=False
+    grads_only = False
 
-    context = dict(school=school, grads_only=grads_only, student=student, student_formset=student_formset, student_filter=student_filter)
+    context = dict(school=school, grads_only=grads_only, student=student, student_formset=student_formset,
+                   student_filter=student_filter)
     return render(request, 'users/mark_inactive_students.html', context)
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
@@ -362,7 +382,7 @@ def graduate_students(request, schoolid):
     student = all_student.filter(student__graduation_year__lte=datetime.date.today().year)
     print(student)
     for s in student:
-        s.is_active= False
+        s.is_active = False
         s.save()
 
     studentformset = modelformset_factory(User, fields=('is_active',), extra=0, can_delete=True)
@@ -374,10 +394,11 @@ def graduate_students(request, schoolid):
             student_formset.save()
             return redirect('manage_students', school.id)
 
-    grads_only=True
+    grads_only = True
 
     context = dict(school=school, student=student, student_formset=student_formset, grads_only=grads_only)
     return render(request, 'users/mark_inactive_students.html', context)
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
@@ -421,6 +442,10 @@ def update_student(request, userid):
     student = Student.objects.get(user=user)
     school = School.objects.get(id=user.profile.school.id)
 
+#if student status changes parent status will change as well
+    active = student.user.is_active
+    parents = student.parent.distinct()
+
     if request.method == 'POST':
         form_user = UserFormStudent(request.POST, instance=user)
         form_student = StudentForm(request.POST, instance=student)
@@ -429,6 +454,20 @@ def update_student(request, userid):
             user = form_user.save()
             # form_profile.save()
             form_student.save()
+
+#adjusting parent status based on students
+            if user.is_active != active:
+                if user.is_active == True:
+                    for p in parents:
+                        p.is_active = True
+                        p.save()
+                else:
+                    for p in parents:
+                        if not is_active_school_staff(p):
+                            if not has_other_children(p,user):
+                                p.is_active = False
+                                p.save()
+
             if user.is_active:
                 return redirect('manage_students', school.id)
             else:
@@ -464,7 +503,7 @@ def delete_student(request, userid):
                 # is neither a parent nor a school staff. Delete p
                 p.delete()
         user.delete()
-
+        user.save()
         return redirect('manage_students', school.id)
 
     context = dict(user=user, school=school)

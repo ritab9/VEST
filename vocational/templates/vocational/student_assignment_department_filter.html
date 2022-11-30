@@ -30,7 +30,7 @@
                                    <td>{{ d }} </td>
                                    <td>
                                     <table class="table-borderless">
-                                    {%  for a in d.studentassignment_set.all %}
+                                    {%  for a in d.studentassignment_set.all reversed %}
                                           <tr>
                                               <td>{{ a.quarter.school_year }}, {{ a.quarter }}<br>
                                                      <a href="{% url "manage_student_assignment" schoolid a.quarter.id %} ">Manage Assignments</a>

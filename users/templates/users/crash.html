@@ -11,5 +11,12 @@
       <img class= "moveimage" src="{% static 'appfiles/VestLogo.png' %}"  alt="VEST Logo">
    </span>
 
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+               {{ message }}
+        </div>
+    {% endfor %}
+
+
 
 {% endblock %}

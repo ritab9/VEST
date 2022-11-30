@@ -24,10 +24,6 @@
             </td>
         </table>
 
-        <form method = "GET">
-            {% csrf_token %}
-            <input class ="btn btn-sm btn-danger" name="delete" type="submit" value="Delete">
-        </form>
     </div>
 
     <div class="col-sm-auto mt-2">
@@ -53,7 +49,8 @@
                                 {{ form.non_field_errors }}
                                 <tr>
                                     <td>{{ form.instance.ethic.name }}</td>
-                                    <td>{{ form.score}}{{ form.score.errors}}</td>
+                                    <td>{{ form.score}}
+                                        {{ form.score.errors}}</td>
                                     {% if grade.type == "S" %}
                                         <td>{{ form.comment}}{{ form.comment.errors}}</td>
                                     {% endif %}
@@ -65,18 +62,40 @@
                         </tbody>
                     </table>
                 </div>
+
                 {% if grade.type == "F" %}
                     <div class="col-sm-auto">
                         {{ formative_comments_form|crispy }}
                     </div>
                 {% endif %}
                     <div class="col-sm-auto">
-                        {{ student_discussion_form|crispy }}
+                        <div class="row">
+                            {{ time_form|crispy }}{{ grade.quarter.school_year.schoolsettings.get_time_unit_display}}
+                        </div>
+
+                        <div class="mt-5" > {{ student_discussion_form|crispy }}</div>
+                    </div>
+                    <div class="col-sm-auto">
                     </div>
             </div>
-            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_c" type= "submit" value = "Save and Add Next Grade">
-            <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_r" type= "submit" value = "Save and Return to Grade List">
+            <div class="row align-content-center">
+                <div class="col text-center">
+                    <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_c" type= "submit" value = "Save and Add Next Grade">
+                    <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_r" type= "submit" value = "Save and Return to Grade List">
+                    <br>
+                </div>
+            </div>
         </form>
+        <div class="row align-content-center">
+            <div class="col text-center">
+                <form method = "GET">
+                    {% csrf_token %}
+                    <input class ="btn btn-sm btn-danger mt-3" name="delete_add" type="submit" value="Delete and Add Next Grade">
+                    <input class ="btn btn-sm btn-danger mt-3" name="delete_list" type="submit" value="Delete and Return to Grade List">
+                </form>
+            </div>
+        </div>
+
     </div>
 
 <script>

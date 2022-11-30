@@ -12,12 +12,12 @@
         <a class = "btn btn-sm btn-ISEIblue3 mt-3 ml-3 mb-3" href="{% url 'add_student' school.id  %} " > Add New Student</a>
         <div class="dropdown" style ="margin-left: auto" >
           <button class="btn btn-sm btn-ISEIblue3 mt-3 mr-5 dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Manage Inactive Students
+              Manage Student Status
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                 <a class = "dropdown-item" href="{% url 'mark_inactive_students' school.id %} " > Mark Students as Inactive</a>
                 <a class = "dropdown-item" href="{% url 'graduate_students' school.id %} "> Mark Graduated Students as Inactive</a>
-                <a class = "dropdown-item" href="{% url 'manage_inactive_students' school.id %} " > Inactive Students</a>
+                <a class = "dropdown-item" href="{% url 'manage_inactive_students' school.id %} " > Manage Inactive Students</a>
           </div>
         </div>
     {% else %}
@@ -57,7 +57,7 @@
                     <p class="span80">{{ s.user.username }}</p></td>
                 <td>{{ s.user.email }}</td>
                 <td>{{ s.birthday }}</td>
-                <td>{{ s.graduation_year }}</td>
+                <td>{{ s.graduation_year }} <br> {{ s.grade_level }}</td>
                 <td>{{ s.get_gender_display }}</td>
                 <td>
  <!-- parent table -->

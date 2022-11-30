@@ -6,9 +6,22 @@
 
 
 {% block content %}
-<!--filter -->
+    <!-- show/hide previous school year grades -->
     <div class="row noprint">
-        <div class="card card-body">
+        <div class="col">
+            <div class="text-left mt-2">
+                {% if all %}
+                    <a class="btn btn-sm btn-outline-ISEIblue3" href="{%  url 'grade_list' request.user.id %}">Show grades for current school year only</a>
+                {% else %}
+                    <a class="btn btn-sm btn-outline-ISEIblue3" href="{%  url 'grade_list_all' request.user.id %}">Show grades from all school years</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!--filter -->
+    <div class="row noprint">
+        <div class="card-body">
             <form method="get" id="filterForm" onchange="this.form.submit()">
                     {{ filter.form}}
                <!-- <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp; -->
@@ -27,9 +40,6 @@
     $('select').on("change", function() {
             $('#filterForm').submit();
         });
-
-
-
 
     </script>
 

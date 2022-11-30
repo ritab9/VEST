@@ -39,7 +39,9 @@
     <div class="content">
     {# Navigation Menu #}
         <header>
-            {% include 'navbar.html' %}
+            {% block navbar %}
+                {% include 'navbar.html' %}
+            {% endblock navbar %}
         </header>
     <div class="container-fluid">
     {# The Document Body #}

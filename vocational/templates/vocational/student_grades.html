@@ -23,6 +23,11 @@
     <table class="table table-sm table-striped table-bordered" style="width: auto">
         <thead>
             <tr>
+                <th colspan="10" class="text-right">
+                <h6> Average: {% if avg %}{{ avg }} % {% else %} <span class="span80">No validated grades yet</span> {% endif %} </h6>
+                </th>
+            </tr>
+            <tr>
                 <th>Quarter</th><th>Department</th><th>Instructor</th>
                 <th>Type</th><th>Grade</th><th>Score</th><th>Student Discussed</th> <th>VC Validated</th>
                 <th>Date</th><th></th>
