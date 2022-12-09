@@ -6,6 +6,11 @@
   {% block title %} Add Grade {% endblock title %}
 
 {% block content %}
+    {% if grade.vc_comment %}
+         <div class = "row mt-3 col spanred">
+         {{ grade.vc_comment }}
+         </div>
+    {% endif %}
     <div class = "row mt-3">
     <div class="col-sm-auto">
         <table class="table-sm mb-3">
@@ -97,7 +102,7 @@
         </div>
 
     </div>
-
+    </div>
 <script>
     /* Ajax to get level and ethic after student is selected
     $(document).ready(function () {

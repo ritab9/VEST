@@ -1,8 +1,10 @@
 {% load static %}
 {% load group_tags %}
+{% load template_tags %}
 
 
 <nav class ="navbar navbar-expand-md navbar-dark bg-ISEIblue3 noprint fixed-top">
+
     <img src="{% static 'appfiles/VestLogoBLK.png' %}" width="120" height="60" alt="VEST Logo">
      <div class="container-fluid">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -150,7 +152,6 @@
 
 {% if user.is_authenticated and user.is_active%}
     <span>
-    <div class="col">
         <div class ="name-msg text-light"> {{request.user.first_name}} {{request.user.last_name}} </div>
         {% if request.user|in_more_groups %}
             <select class="bg-ISEIblue3 text-light" id="id_group" name="group">
@@ -165,7 +166,11 @@
         {% endif %}
     </div>
     </span>
+
+    <span>
+        <div class="name-msg span80 text-light">{{ request.user|school_year }}</div>
         <a href="{% url 'logout' %}" class="text-ISEIyellow">Logout</a>
+    </span>
 {% endif %}
 
      </div>

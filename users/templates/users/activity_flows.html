@@ -100,6 +100,12 @@
 
 <script>
 
+    function disable_links(class_name) {
+           for (let element of document.querySelectorAll(class_name)) {
+               element.setAttribute('style','pointer-events:none; color:gray')
+           };
+        };
+
 
     $(document).ready(function() {
 //toggle lists
@@ -115,22 +121,15 @@
         });
 
 
+
 //disable links if user in doesn't have privileges to those pages
-       if ("{{ request.user|in_group:"school_admin" }}" == False) {
+       if ("{{ request.user|in_group:"school_admin" }}" === "False") {
            disable_links(".sa");
        };
 
-       if ("{{ request.user|in_group:"vocational_coordinator" }}" == False) {
+       if ("{{ request.user|in_group:"vocational_coordinator" }}" == "False") {
            disable_links(".vc");
        };
-
-       function disable_links(class_name) {
-           for (let element of document.querySelectorAll(class_name)) {
-               element.setAttribute('style','pointer-events:none; color:gray')
-           };
-        };
-
-
 
 })
 

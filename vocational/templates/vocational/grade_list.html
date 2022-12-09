@@ -6,6 +6,8 @@
 
 
 {% block content %}
+
+<div class="col-sm-auto">
     <!-- show/hide previous school year grades -->
     <div class="row noprint">
         <div class="col">
@@ -29,8 +31,34 @@
             </form>
         </div>
     </div>
+</div>
 
+
+    <div class="row col-sm-auto">
    {% include "vocational/grades.html" %}
+
+
+
+ <div class="col-sm-auto card-body pl-5">
+        <table class="table" style="width: auto">
+            <tbody>
+                {% for q in quarter %}
+                    <tr><b>{{ q }}</b></tr>
+                            <table class = "table">
+                            {% for a in q.studentassignment_set.all %}
+                               <tr>
+                                    <td>{{ a.department }}</td>
+                                    <td>{%  for i in a.student.all %}
+                                        {{ i.user.last_name }}, {{ i.user.first_name }} <br>
+                                    {% endfor %}</td>
+                               </tr>
+                            {% endfor %}
+                            </table>
+                {% endfor %}
+            </tbody>
+        </table>
+ </div>
+    </div>
 
     <script>
 

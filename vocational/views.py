@@ -295,12 +295,17 @@ def manage_student_assignment(request, schoolid, quarterid):
 def grade_list(request, userid):
     user = User.objects.get(id=userid)
     current_year = SchoolYear.objects.filter(school_id = user.profile.school.id, active=True).first()
+    quarter = Quarter.objects.filter(school_year=current_year).order_by("name")
+
     if in_group(user,"vocational_coordinator"):
         grades = EthicsGradeRecord.objects.filter(quarter__school_year=current_year).order_by('-vc_validated','-student_discussed','-evaluation_date','student')
         filter = GradeFilterVocationalCoordinator(request.GET, request=request, queryset=grades)
+        student_assignment = StudentAssignment.objects.filter(quarter__in =quarter).order_by("quarter")
     else:
         grades = EthicsGradeRecord.objects.filter(instructor_id=userid, quarter__school_year=current_year).order_by('-evaluation_date','student')
         filter = GradeFilterInstructor(request.GET, request=request, queryset=grades)
+        department = InstructorAssignment.objects.filter(user=user).values("department")
+        student_assignment = StudentAssignment.objects.filter(quarter__in =quarter, department__in=department).order_by(quarter)
 
     for obj in grades:
         if (obj.score() == 0 and obj.created_at + timedelta(days=1) < now):
@@ -308,7 +313,9 @@ def grade_list(request, userid):
 
     grades = filter.qs
     all=False
-    context = dict(grades=grades, filter=filter, all=all)
+
+    context = dict(grades=grades, filter=filter, all=all, quarter = quarter, student_assignment=student_assignment)
+
     return render(request, 'vocational/grade_list.html', context)
 
 #all grades ever entered
@@ -547,6 +554,7 @@ def vc_validate_grades(request, schoolid):
         formset = VCValidationFormSet(request.POST)
         if formset.is_valid():
             formset.save()
+            return redirect('grade_list', request.user.id)
     else:
         formset = VCValidationFormSet(queryset=i_grades)
 
