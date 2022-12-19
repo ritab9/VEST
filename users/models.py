@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 import datetime
+from django.contrib.auth.hashers import make_password
 
 class Country(models.Model):
     name = models.CharField(max_length=25, unique = True)
@@ -19,9 +20,15 @@ class Country(models.Model):
 class School(models.Model):
     name = models.CharField(max_length=50, help_text='Enter the name of the school', unique=True, blank=False,
                             null=False)
-    abbreviation = models.CharField(max_length=4, default=" ", help_text=' Enter the abbreviation for this school', unique= True)
+    abbreviation = models.CharField(max_length=6, default=" ", help_text=' Enter the abbreviation for this school', unique= True)
     ordering = ['name']
-    foundation = models.BooleanField(default=False)
+    email_address = models.EmailField(max_length = 254, default="")
+    email_password = models.CharField(max_length = 254, default="")
+    phone_number = models.CharField(max_length= 20, null=True, blank=True)
+
+    # def save(self, *args, **kwargs):
+    #     self.email_password = make_password(self.email_password)
+    #     super(School, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ('name',)

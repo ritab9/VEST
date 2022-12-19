@@ -27,7 +27,7 @@
                     <td>{{ g.department }}</td><td>{{ g.instructor.last_name }}, {{ g.instructor.first_name }}</td>
                     <td>{{ g.get_type_display }}</td><td>{{ g.percent }}%</td><td>{{ g.score }}</td>
                     {% if grades.first.student.user.profile.school.id|track_time %}
-                        <td>{{ g.time }} {{ g.quarter.school_year.schoolsettings.get_time_unit_display}}</td>
+                        <td>{{ g.time }} {{ g.quarter.school_year.GradeSettings.get_time_unit_display}}</td>
                     {% endif %}
                     <td>{% if g.student_discussed %}
                             {{ g.student_discussed}}

@@ -46,7 +46,7 @@ class SchoolYear(models.Model):
     class Meta:
         unique_together = (('name', 'school'),)
 
-class SchoolSettings(models.Model):
+class GradeSettings(models.Model):
     school_year = models.OneToOneField(SchoolYear, on_delete=models.CASCADE)
     progress_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=20)
     summative_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=80)

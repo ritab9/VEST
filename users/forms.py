@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, PasswordInput
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
 
@@ -19,10 +19,18 @@ class CreateUserForm(UserCreationForm):
             attrs={'type': 'date', 'placeholder': 'mm/dd/yyyy', 'autofocus': '', }),
     }
 
-class SchoolForm (ModelForm):
+class SchoolForm(ModelForm):
     class Meta:
         model = School
-        fields = ['name', 'abbreviation', 'foundation']
+        fields = ['name', 'abbreviation', ]
+
+class EmailSettingsForm(ModelForm):
+    class Meta:
+        model=School
+        fields = ["email_address", "email_password"]
+        widgets = {
+            'email_password': PasswordInput(),
+        }
 
 class UserForm(forms.ModelForm):
     class Meta:

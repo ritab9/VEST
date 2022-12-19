@@ -75,7 +75,7 @@
                 {% endif %}
                     <div class="col-sm-auto">
                         <div class="row">
-                            {{ time_form|crispy }}{{ grade.quarter.school_year.schoolsettings.get_time_unit_display}}
+                            {{ time_form|crispy }}{{ grade.quarter.school_year.GradeSettings.get_time_unit_display}}
                         </div>
 
                         <div class="mt-5" > {{ student_discussion_form|crispy }}</div>

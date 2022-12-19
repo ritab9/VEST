@@ -1,0 +1,66 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+
+  {% block title %} Email Settings {% endblock title %}
+
+
+{% block content %}
+
+<div class="card-body row">
+        <div class="col-sm-auto">
+            <form method = "POST">
+            {% csrf_token %}
+                {{ email_settings_form|crispy }}
+                <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save Changes">
+        </form>
+        </div>
+
+        <div class="col-sm-auto">
+            <form method="POST">
+                {% csrf_token %}
+                <input class = "btn btn-sm btn-ISEIblue3 mt-3 ml-4" name="send" type= "submit" value = "Send Trial Email">
+            </form>
+            <div>
+                {% for message in messages %}
+                    {%  if message.tags == "info" %}
+                        <div class="alert-warning spangreen" role="alert" >{{message}}</div>
+                    {% else %}
+                        <div class="alert-warning spanred" role="alert" >{{message}}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+</div>
+
+
+
+<div class="card-body">
+    <span class="spanred">Important!</span>
+    <ul>
+        <li> The default email host for the VEST app is <b>GMAIL</b>. Therefore, the email used to communicate through this app must also be a GMAIL email address.</li>
+        <li> For security purposes, the password required is an App Password, <span class="spanred">NOT</span> the regular password used to login to the email account.</li>
+    </ul>
+
+    <span>Follow the steps bellow to obtain an Gmail App Password:</span>
+    <ol>
+        <li>Go to your Google Account.</li>
+        <li>Select Security.</li>
+        <li>Under "Signing in to Google," select App Passwords. You may need to sign in. If you don’t have this option, it might be because:
+            <ul>
+                <li>2-Step Verification is not set up for your account.</li>
+                <li>2-Step Verification is only set up for security keys.</li>
+                <li>You turned on Advanced Protection.</li>
+            </ul>
+        </li>
+        <li>At the bottom, choose Select app and choose the app you using and then Select device and choose the device you’re using and then Generate </li>
+        <li>Follow the instructions to enter the App Password. The App Password is the 16-character code in the yellow bar on your device.</li>
+        <li>Copy that code and paste it in the password box. No need to memorize it.</li>
+    </ol>
+</div>
+
+{% endblock %}
+
+{% block footer_javascript %}
+
+{% endblock footer_javascript %}

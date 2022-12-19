@@ -8,12 +8,13 @@
 {% block content %}
 
 <!-- registering user -->
-    <form method="POST">
-        {% csrf_token %}
+    <div class=" card-body">
+        <form method="POST">
+            {% csrf_token %}
 
-        {{form|crispy}}
-        <input type="submit" value ="Add"/>
-    </form>
-
+            {{form|crispy}}
+            <input type="submit" value ="Add"/>
+        </form>
+    </div>
 
 {% endblock %}

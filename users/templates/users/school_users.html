@@ -6,6 +6,13 @@
 
 
 {% block content %}
+{% for message in messages %}
+    {%  if message.tags == "info" %}
+        <div class="alert-warning spangreen" role="alert" >{{message}}</div>
+    {% else %}
+        <div class="alert-warning spanred" role="alert" >{{message}}</div>
+    {% endif %}
+{% endfor %}
 
 <div class="row">
     <div class="col">

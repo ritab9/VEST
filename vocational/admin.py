@@ -4,9 +4,9 @@ from .models import *
 
 # Register your models here.
 
-@admin.register(SchoolSettings)
-class SchoolSettings(admin.ModelAdmin):
-    model=SchoolSettings
+@admin.register(GradeSettings)
+class GradeSettings(admin.ModelAdmin):
+    model=GradeSettings
     list_display = ('school_year','progress_ratio','summative_ratio','track_time','time_unit',)
 
 

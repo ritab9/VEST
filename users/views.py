@@ -11,6 +11,7 @@ from .functions import *
 from .filters import *
 import datetime
 from vocational.models import SchoolYear
+from emailing.functions import send_email_school
 
 
 # landing page for everyone. Introduced it to allow for role transition
@@ -143,6 +144,28 @@ def school_admin_dashboard(request, schoolid):
 
     context = dict(school_id=schoolid)
     return render(request, 'users/school_admin_dashboard.html', context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def email_settings(request, schoolid):
+
+    school=School.objects.get(id=schoolid)
+    if request.method=="POST" and 'save' in request.POST:
+        email_settings_form = EmailSettingsForm(request.POST, instance=school)
+        if email_settings_form.is_valid():
+            es = email_settings_form.save(commit=False)
+            password = es.email_password[::-1]
+            es.email_password = password
+            es.save()
+    else:
+        email_settings_form = EmailSettingsForm(instance=school)
+
+    if request.method=="POST" and 'send' in request.POST:
+        send_email_school(request, "Trial Email", "Email service successfully set up for VEST", [school.email_address,], school)
+
+    context = dict(email_settings_form = email_settings_form)
+    return render(request, 'users/email_settings.html', context)
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])

@@ -64,10 +64,21 @@
                             <li>
                                 <a class="nav-link school_admin" href="{% url 'school_year' request.user.profile.school.id %}"> School Year </a>
                             </li>
-                            <li class="nav-item school_admin">
-                                <a class="nav-link" href="{% url 'school_settings' request.user.profile.school.id %}">Settings</a>
-                            </li>
 
+
+                            <li class="nav-item dropdown school_admin ">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminUserMangementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Settings
+                              </a>
+                              <ul class="dropdown-menu bg-ISEIblue3 ml-0 school_admin" aria-labelledby="navbarDropdown">
+                                  <li>
+                                      <a class="nav-link float-left" href="{% url 'grade_settings' request.user.profile.school.id %}">Grade Settings</a>
+                                  </li>
+                                  <li>
+                                      <a class="nav-link float-left" href="{% url 'email_settings' request.user.profile.school.id %}">Email Settings</a>
+                                  </li>
+                              </ul>
+                            </li>
                         {% endif %}
 
                         {% if request.user|in_group:"vocational_coordinator" %}
@@ -113,10 +124,10 @@
                                   </a>
                                     <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
                                       <li>
-                                          <a class="nav-link " href="{% url 'grade_list' request.user.id %}"> Grade List </a>
+                                          <a class="nav-link " href="{ % url 'grade_list' request.user.id %}"> Grade List </a>
                                       </li>
                                       <li>
-                                        <a class="nav-link" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
+                                        <a class="nav-link" href="{ % url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
                                       </li>
                                   </ul>
                                 </li> -->
@@ -143,6 +154,10 @@
                             </li>
                         {% endif %}
 
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'send_email' %}">Send Email</a>
+                        </li>
+
                     {% endif %}
                 </ul>
             </div>
@@ -151,7 +166,16 @@
 <!-- Dropdown to allow for user group selection -->
 
 {% if user.is_authenticated and user.is_active%}
-    <span>
+    <span class="mr-4">
+        {% if not request.user|in_group:"isei_admin"%}
+            <div class="name-msg span80 text-light">{{ request.user|school_year }}</div>
+        {% endif %}
+        {% if not request.user|in_group:"isei_admin"%}
+            <div class="name-msg span80 text-light">{{ request.user|school }}</div>
+        {% endif %}
+     </span>
+
+    <span class="span80">
         <div class ="name-msg text-light"> {{request.user.first_name}} {{request.user.last_name}} </div>
         {% if request.user|in_more_groups %}
             <select class="bg-ISEIblue3 text-light" id="id_group" name="group">
@@ -165,12 +189,15 @@
             <div style="display: none" id="group_info2" data-value="one">One</div>
         {% endif %}
     </div>
+
     </span>
 
     <span>
-        <div class="name-msg span80 text-light">{{ request.user|school_year }}</div>
         <a href="{% url 'logout' %}" class="text-ISEIyellow">Logout</a>
-    </span>
+     </span>
+
+
+
 {% endif %}
 
      </div>

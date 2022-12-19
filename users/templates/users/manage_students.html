@@ -38,12 +38,12 @@
 
 <!-- table
     <div style="overflow-y: auto; max-height: 800px;"> -->
-    <table class="table table-striped">
+    <table class="table table-striped" style="white-space: nowrap">
         <thead class="thead-dark">
         <tr><th></th>
             <th>Name <div class="span80">Username</div></th>
             <th>Email</th> <th>Birthday</th><th>Grad Year</th><th>Gender</th>
-            <th>Parents</th><th></th>
+            <th colspan="5" class="text-center">Parents</th><th></th>
         </tr>
         </thead>
 
@@ -59,15 +59,16 @@
                 <td>{{ s.birthday }}</td>
                 <td>{{ s.graduation_year }} <br> {{ s.grade_level }}</td>
                 <td>{{ s.get_gender_display }}</td>
-                <td>
+                <td colspan="5">
  <!-- parent table -->
-                    <table class="table-sm table-nostriped table-borderless" >
+
+                    <table class="table-sm w-100 table-nostriped table-borderless" >
                         {% for p in s.parent.all %}
                             <tr>
-                                <td>{{ p.last_name }}, {{ p.first_name }}<br></td>
+                                <td class="text-left">{{ p.last_name }}, {{ p.first_name }}<br></td>
                                 <td>{{ p.email }}</td> <td>{{ p.profile.phone_number }}</td>
-                                <td><a class="text-ISEIblue" href="{% url 'update_parent' p.id %}">Update</a></td>
-                                <td ><a class ="spanred" href="{% url 'delete_parent' p.id s.id %}">Delete</a></td>
+                                <td class="text-right" style="width: 1px"><a class="text-ISEIblue" href="{% url 'update_parent' p.id %}">Update</a></td>
+                                <td class="text-right" style="width: 1px"><a class ="spanred" href="{% url 'delete_parent' p.id s.id %}">Delete</a></td>
 
                             </tr>
                         {% endfor %}

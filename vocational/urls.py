@@ -10,7 +10,7 @@ urlpatterns = [
     path('add_school_year/<int:schoolid>/', views.add_school_year, name='add_school_year'),
     path('manage_school_year/<int:schoolid>/<int:schoolyearid>/', views.manage_school_year, name='manage_school_year'),
     path('delete_school_year/<int:schoolid>/<int:schoolyearid>/', views.delete_school_year, name='delete_school_year'),
-    path('school_settings/<int:schoolid>/', views.school_settings, name="school_settings"),
+    path('grade_settings/<int:schoolid>/', views.grade_settings, name="grade_settings"),
 
     # data management urls vocational_coordinator
     path('department_list/<int:schoolid>/', views.department_list, name='department_list'),

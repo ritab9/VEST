@@ -7,9 +7,9 @@ from .models import *
 import datetime
 
 
-class SchoolSettingsForm(forms.ModelForm):
+class GradeSettingsForm(forms.ModelForm):
     class Meta:
-        model = SchoolSettings
+        model = GradeSettings
         fields = ('progress_ratio', 'summative_ratio', 'track_time', 'time_unit')
 
 

@@ -14,12 +14,19 @@
                     <tr>
                         <td>1.</td>
                         <td>
+                            <a class="btn btn-sm sa" href="{% url 'email_settings' school_id %}"> Email Settings</a>
+                        </td>
+                        <td>Ensure that the emailing service is set up correctly</td>
+                    </tr>
+                    <tr>
+                        <td>2.</td>
+                        <td>
                             <a class="btn btn-sm sa" href="{% url 'add_school_year' school_id %}"> Add School Year</a>
                         </td>
                         <td>Add new school year and set up quarters.</td>
                     </tr>
                     <tr>
-                        <td>2.</td>
+                        <td>3.</td>
                         <td>
                             <a class="btn btn-sm sa" href="{% url 'manage_school_staff' school_id %}"> Manage Staff</a>
                         </td>
@@ -28,21 +35,12 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>3.</td>
+                        <td>4.</td>
                         <td>
                             <a class="btn btn-sm sa" href="{% url 'manage_students' school_id %}"> Manage Students</a>
                         </td>
                         <td>
                             Add new students, mark as inactive students that are no longer at the school.
-                        </td>
-                    </tr>
-                     <tr>
-                        <td>4.</td>
-                        <td>
-                            <a class="btn btn-sm sa" href="{% url 'school_settings' school_id %}"> Manage Settings</a>
-                        </td>
-                        <td>
-                            Update school specific settings for current school year.
                         </td>
                     </tr>
                 </div>
@@ -55,12 +53,21 @@
                     <tr>
                         <td>5.</td>
                         <td>
+                            <a class="btn btn-sm vc" href="{% url 'grade_settings' school_id %}"> Manage Grade Settings</a>
+                        </td>
+                        <td>
+                            Update grade calculation settings for current school year.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>6.</td>
+                        <td>
                             <a class="btn btn-sm vc" href="{% url 'manage_department' school_id %}"> Update Departments</a>
                         </td>
                         <td>Add new departments, mark inactive departments. </td>
                     </tr>
                     <tr>
-                        <td>6.</td>
+                        <td>7.</td>
                         <td>
                             <a class="btn btn-sm vc" href="{% url 'manage_instructor_assignment' school_id %}"> Manage Instructors</a>
                         </td>
@@ -83,7 +90,7 @@
                     <td colspan="3 mt-2"><b>Vocational Coordinator</b></td>
                 </tr>
                 <tr>
-                    <td>1.</td>
+                    <td></td>
                     <td>
                         <a class="btn btn-sm vc" href="{% url 'student_assignment' school_id %}"> Assign Students</a>
                     </td>

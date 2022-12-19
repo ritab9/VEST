@@ -18,8 +18,8 @@ class AddressInLine(admin.StackedInline):
 @admin.register(School)
 class School(admin.ModelAdmin):
     inlines = [AddressInLine,]
-    list_display = ('name', 'abbreviation', 'foundation')
-    list_editable = ('abbreviation', 'foundation')
+    list_display = ('name', 'abbreviation',)
+    list_editable = ('abbreviation', )
 
 
 class ProfileInline(admin.StackedInline):
@@ -38,7 +38,7 @@ class ProfileInline(admin.StackedInline):
 # class SchoolAdminInline(admin.StackedInline):
 #     model = SchoolAdmin
 #     can_delete = True
-#     extra = 0
+#     e
 
 class StudentInline(admin.StackedInline):
     model=Student

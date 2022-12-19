@@ -22,38 +22,38 @@ now=timezone.now()
 # School Settings
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
-def school_settings(request, schoolid):
+def grade_settings(request, schoolid):
     school_year = SchoolYear.objects.filter(school__id=schoolid, active=True).first()
 
-    school_settings = SchoolSettings.objects.filter(school_year=school_year).first()
-    if not school_settings:
-        school_settings = SchoolSettings()
-        school_settings.school_year=school_year
-        school_settings.save()
+    grade_settings = GradeSettings.objects.filter(school_year=school_year).first()
+    if not grade_settings:
+        grade_settings = GradeSettings()
+        grade_settings.school_year=school_year
+        grade_settings.save()
 
     if request.method == "POST":
-        s_form = SchoolSettingsForm(request.POST, instance=school_settings)
+        s_form = GradeSettingsForm(request.POST, instance=grade_settings)
         if s_form.is_valid():
             s_form.save()
             messages.info(request, 'Changes have been saved!')
-            return redirect('school_settings', schoolid)
+            return redirect('grade_settings', schoolid)
     else:
-        s_form = SchoolSettingsForm(instance=school_settings)
+        s_form = GradeSettingsForm(instance=grade_settings)
 
     arr = []
-    for a in SchoolSettings.objects.filter(school_year__school_id=schoolid):
+    for a in GradeSettings.objects.filter(school_year__school_id=schoolid):
         a_info = [a.school_year, a.progress_ratio, a.summative_ratio, a.track_time, a.get_time_unit_display()]
         arr.append(a_info)
 
     context = dict(school_year=school_year, schoolid=schoolid,
                    s_form=s_form, arr=arr)
-    return render(request, 'vocational/school_settings.html', context)
+    return render(request, 'vocational/grade_settings.html', context)
 
 # School Year
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def school_year(request, schoolid):
-    schoolyear = SchoolYear.objects.filter(school__id=schoolid)
+    schoolyear = SchoolYear.objects.filter(school__id=schoolid).order_by('-name')
     # current_year = school_year.get()
     context = dict(school_year=schoolyear, schoolid=schoolid)
     return render(request, 'vocational/school_year.html', context)

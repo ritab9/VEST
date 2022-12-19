@@ -7,8 +7,9 @@
 
 {% block content %}
 
+    <div class="card-body">
 <!-- registering school_admin -->
-    <form method="POST">
+         <form method="POST">
         {% csrf_token %}
                 <p> School </p>
                 <select id="id_school_dropdown" name="school_dropdown">
@@ -30,7 +31,7 @@
             </div>
             <div class="col-sm-auto">
                 <div class="col-sm-auto">
-                Default Username:
+                Create Username:
                  <div class="row">
                     <div id="id_school_abbreviation_username"></div>_
                     <input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
@@ -46,7 +47,7 @@
         <input class="btn-sm btn-ISEIblue3" type="submit" value ="Register"/>
     </form>
 
-
+    </div>
 <script>
 
     window.onload = function(){

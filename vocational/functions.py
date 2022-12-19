@@ -1,5 +1,5 @@
 from statistics import mean
-from vocational.models import SchoolSettings, Quarter, SchoolYear
+from vocational.models import GradeSettings, Quarter, SchoolYear
 from django.utils import timezone
 
 
@@ -37,7 +37,7 @@ def average(grades, school_year=None):
             school_year=sample_grade.quarter.school_year
 
    #Default settings 80% Summative and 20% Formative
-    settings=SchoolSettings.objects.filter(school_year=school_year).first()
+    settings=GradeSettings.objects.filter(school_year=school_year).first()
     if s1 and s2:
         if settings:
             sr = settings.summative_ratio

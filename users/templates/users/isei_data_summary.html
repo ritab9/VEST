@@ -6,8 +6,8 @@
 
 
 {% block content %}
-
-    <table class="table col-sm-3">
+<div class="card-body">
+    <table class="table col-sm w-auto">
         <thead>
             <tr>
                 <th> School</th> <th>School Administrator</th>
@@ -18,17 +18,17 @@
                 <tr>
                     <th>{{ s.name}}</th>
                     <td>
-                        {% for a in school_admin %}
+                        <table class="table-sm">
+                            {% for a in school_admin %}
                             {% if a.profile.school == s %}
-                            <table class="table-sm table-borderless">
                                 <tr>
                                     <td>{{ a.first_name }} {{ a.last_name }}</td>
-                                    <td><a class = "btn btn-sm iseiblue3" href="{% url 'update_school_staff' a.id  %}">Update</a></td>
-                                    <td><a class ="btn btn-sm spanred" href="{% url 'delete_school_staff' a.id  %}">Delete</a></td>
+                                    <td><a class = "iseiblue3" href="{% url 'update_school_staff' a.id  %}">Update</a></td>
+                                    <td><a class ="spanred" href="{% url 'delete_school_staff' a.id  %}">Delete</a></td>
                                 </tr>
-                            </table>
                             {% endif %}
-                        {% endfor %}
+                            {% endfor %}
+                        </table>
                     </td>
                 </tr>
             {% endfor %}
@@ -36,6 +36,6 @@
 
     </table>
 
-
+</div>
 
 {% endblock %}

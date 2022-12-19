@@ -8,10 +8,15 @@
   {% block title %} Login {% endblock title %}
 
 {% block content %}
+  <div class ="col">
+    <span class="">
+      <img class= "moveimage" src="{% static 'appfiles/VestLogo.png' %}"  alt="VEST Logo">
+   </span>
+    </div>
 
-  <div class="container h-100">
-
-    <div class="d-flex justify-content-center h-100">
+<div class="row">
+  <div class="container">
+    <div class="d-flex justify-content-center">
       <div class="user_card mt-5">
         <div class="d-flex justify-content-center">
           <h3 id="form-title" ></h3>
@@ -65,6 +70,7 @@
       </div>
     </div>
   </div>
+</div>
 {% endblock content %}
 
 
