@@ -3,7 +3,7 @@
     {% load crispy_forms_tags %}
     {% load group_tags %}
 
-  {% block title %} Update instructor {% endblock title %}
+  {% block title %} Edit instructor {% endblock title %}
 
 
 {% block content %}
@@ -12,21 +12,20 @@
 
     <form action="{% url 'delete_school_staff' user.id %}"  method="POST">
         {% csrf_token %}
-        <p> Are you sure you want to delete <i>{{user.first_name}} {{ user.last_name }}</i> as staff at your school? <br>
-            The operation can not be undone!
-            Only do this if there are no grades submitted by this staff member.<br>
-            If the staff is no longer works at your school, but has been an instructor in the past,
-            <a class = "btn btn-sm bg-iseiblue3" href="{% url 'update_school_staff' user.id  %}">Update</a>
-            the user's status to inactive, by unchecking the <i><b>Active</b></i> checkbox.
+        <p> Are you sure you want to delete <i>{{user.first_name}} {{ user.last_name }}</i>'s staff account?
+            This operation cannot be undone! <br>
+            If <i>{{user.first_name}} {{ user.last_name }}</i> is not currently on instructor, but might be in the future,
+            <a class = "btn btn-sm bg-iseiblue3" href="{% url 'update_school_staff' user.id  %}">  Click Here </a>
+            and change the user's status to inactive, by clicking the <i><b>Inactive Staff</b></i> checkbox.
            </p>
 
         <!-- <a class="btn btn-sm btn-warning" href="{ %  url 'manage_school_staff' school.id %}">Cancel</a>
         <input type="hidden" name="next" value="{ { request.path }}"> -->
         <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()"> Cancel </a>
-        <input class="btn btn-sm btn-danger" type='submit' value ='Confirm'>
+        <input class="btn btn-sm btn-danger" type='submit' value ='Delete'>
 
         {%  if is_parent %}
-            <p><i>{{user.first_name}} {{ user.last_name }}</i> will be deleted as a staff but will remain in the system as a parent. </p>
+            <p class="mt-3"><i>{{user.first_name}} {{ user.last_name }}</i> is also a parent, therefore while his/her staff account will be removed, the parent account will remain. </p>
         {% endif %}
 
     </form>

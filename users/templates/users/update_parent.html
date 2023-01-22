@@ -2,8 +2,9 @@
     {% load static %}
     {% load crispy_forms_tags %}
     {% load group_tags %}
+    {% load template_tags %}
 
-  {% block title %} Update instructor {% endblock title %}
+  {% block title %} Edit instructor {% endblock title %}
 
 
 {% block content %}
@@ -21,15 +22,30 @@
 
             </div>
             <div class="col-sm-auto">
-                {{ form_user.username|as_crispy_field }}
+                <tag>Username</tag><br><input type="text" id="internal_username" value="{{ form_user.instance.username|shortened_username }}" >
+
+                {{ form_user.username}}
                 <input type="hidden" name="next" value="{{ request.path }}">
-             <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Update"/>
+                <p>
+                    <input class="btn btn-sm btn-ISEIblue3 mt-5" type="submit" value ="Save"/></p>
+
             </div>
         </div>
     </form>
 </div>
 
 <script>
+    $(document).ready(function() {
+        $('#id_username').hide()
+    });
+
+    document.getElementById("internal_username").addEventListener("input", function(){
+            const str=document.getElementById("id_username").value;
+            const lastIndex = str.lastIndexOf("_");
+            const before = str.slice(0, lastIndex);
+            document.getElementById("id_username").value =  before + "_" + this.value;
+     });
+
 
 </script>
 

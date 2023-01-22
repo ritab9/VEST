@@ -2,8 +2,9 @@
     {% load static %}
     {% load crispy_forms_tags %}
     {% load group_tags %}
+    {% load template_tags %}
 
-  {% block title %} Update Student {% endblock title %}
+  {% block title %} Edit Student {% endblock title %}
 
 
 {% block content %}
@@ -24,16 +25,20 @@
                 {{ form_student.graduation_year|as_crispy_field }}
             </div>
             <div class="col-sm-auto">
-                {{ form_user.username|as_crispy_field }}
-                <div class="mb-3">
+                <tag>Username</tag><br><input type="text" id="internal_username" value="{{ form_user.instance.username|shortened_username }}" >
+                {{ form_user.username }}
+
+                <div class="mb-3 mt-5" >
                     <label for="id_is_active" class="control-label ">
                         Active <span class="asteriskField">*</span>
                     </label>
                     {{ form_user.is_active}} Uncheck if user is no longer a student at this school.
                 </div>
-             <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Update"/>
-                <a class ="btn btn-sm spanred" href="{% url 'delete_student' user.id  %}">Delete</a>
+             <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Save"/>
 
+                {% if not has_grades %}
+                    <a class ="btn btn-sm spanred" href="{% url 'delete_student' user.id  %}">Delete</a>
+                {% endif %}
             </div>
         </div>
     </form>
@@ -41,6 +46,16 @@
 </div>
 
 <script>
+    $(document).ready(function() {
+        $('#id_username').hide()
+    });
+
+    document.getElementById("internal_username").addEventListener("input", function(){
+        const str=document.getElementById("id_username").value;
+        const lastIndex = str.lastIndexOf("_");
+        const before = str.slice(0, lastIndex);
+        document.getElementById("id_username").value =  before + "_" + this.value;
+     });
 
 </script>
 

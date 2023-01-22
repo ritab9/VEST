@@ -12,6 +12,7 @@
 
 
 <!-- all assignments by quarter-->
+    <div class="row">
         <div class="col-sm-auto">
         <table class="table" style="width: auto">
             <thead>
@@ -19,8 +20,8 @@
             <tbody>
                 {% for q in quarter %}
                     <tr>
-                        <td><!-- { { q.school_year }}<br> -->
-                            {{ q }}</td>
+                        <td> {{ q }}
+                        </td>
                         <td>
                             <table class = "table-borderless">
                             {% for a in q.studentassignment_set.all %}
@@ -33,17 +34,54 @@
                             {% endfor %}
                             </table>
                         </td>
-                        <td>
-                            <a href="{% url "manage_student_assignment" schoolid q.id %} ">Manage Assignments</a>
+                        <td id="cb">
+                        <a id="link" href="{% url "manage_student_assignment" schoolid q.id "1234" %}">Manage Assignments</a>
                         </td>
                     </tr>
                 {% endfor %}
-
             </tbody>
         </table>
+        </div>
+<!--
+        <div class="col-sm-auto">
+            In managing assignments include:
+            <p><input class = "checkbox ml-2" type="checkbox" id="4" name="4" label = "9" checked> 9th grade</p>
+            <p><input class = "checkbox ml-2" type="checkbox" id="3" name="3" label = "10" checked> 10th grade</p>
+            <p><input class = "checkbox ml-2" type="checkbox" id="2" name="2" label = "11" checked>  11th grade</p>
+            <p><input class = "checkbox ml-2" type="checkbox" id="1" name="1" label = "12" checked>  12th grade</p>
+        </div>
     </div>
+-->
+<script>
 
-<! --
+/*
+    var s="1234"
 
+    document.addEventListener('click', function (e) {
+    if (e.target.type === 'checkbox') {
+        s="";
+        if (document.getElementById('4').checked) { s = s +"4" };
+        if (document.getElementById('3').checked) { s = s+"3" };
+        if (document.getElementById('2').checked) { s = s +"2" };
+        if (document.getElementById('1').checked) { s = s +"1" };
+        alert(s);
+    }
+});
 
-{% endblock %}
+    window.onload = function() {
+          var a = document.getElementById("link");
+          a.onclick = function() {
+              document.getElementById("link").href = document.getElementById("link").href.replace('1234', s);
+          };
+        };
+
+    $(document).ready(function(){
+        var checkboxes = document.querySelectorAll(`[id*="_"]`);
+        checkboxes.change(function(){
+            alert("changed");
+        });
+    });
+*/
+</script>
+
+{% endblock content%}

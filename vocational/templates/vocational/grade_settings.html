@@ -14,12 +14,16 @@
                     <th>Track Time</th><th>Time Units</th>
                 </thead>
                     {% for a in arr %}
-                    <tr>
-                        <td>{{ a.0 }}</td>
-                        <td>{{ a.1 }}%</td><td>{{ a.2 }}%</td>
-                        <td> {% if a.3 %} Yes {% else %} No{% endif %}</td>
-                        <td>{{ a.4}}</td>
-                    </tr>
+                        {% if a.0  == school_year %}
+                            <tr style = "color:red">
+                        {% else %}
+                            <tr>
+                        {% endif %}
+                                <td>{{ a.0 }}</td>
+                                <td>{{ a.1 }}%</td><td>{{ a.2 }}%</td>
+                                <td> {% if a.3 %} Yes {% else %} No{% endif %}</td>
+                                <td>{{ a.4}}</td>
+                            </tr>
                     {% endfor %}
             </table>
     </div>

@@ -1,123 +1,133 @@
 {% load group_tags %}
 <!-- Begining of school year flow -->
     <div class="card-body row">
-        <div class="col">
+        <h6 class="btn btn-sm btn-outline-ISEIblue3" onclick="" id="year_button_id" style="width:30ch"> New School Year To Do List </h6>
+            <table class="table table-responsive table-sm table-borderless" id="year_duty_table" >
 
-        <h6 class="btn btn-sm btn-outline-ISEIblue4" onclick="" id="year_button_id" style="width:30ch"> New School Year To Do List </h6>
-            <table id="year_duty_table" >
-                <tbody>
 <!-- School Admin -->
-                <div>
-                <tr>
-                    <td colspan="3"><b>School Admin</b></td>
-                </tr>
+                <thead><th colspan="3">School Admin</th><th class="">Last Update</th></thead>
+
+                <tbody>
                     <tr>
                         <td>1.</td>
                         <td>
-                            <a class="btn btn-sm sa" href="{% url 'email_settings' school_id %}"> Email Settings</a>
+                            <a class=" sa" href="{% url 'email_settings' school_id %}"> Email Settings</a>
                         </td>
+
                         <td>Ensure that the emailing service is set up correctly</td>
+                        <td class="datetime"> {{ school.updated_at|date:'Y-m-d'}}</td>
                     </tr>
                     <tr>
                         <td>2.</td>
                         <td>
-                            <a class="btn btn-sm sa" href="{% url 'add_school_year' school_id %}"> Add School Year</a>
+                            <a class=" sa" href="{% url 'add_school_year' school_id %}"> Add School Year</a>
                         </td>
+
                         <td>Add new school year and set up quarters.</td>
+                        <td class="datetime"> {{ school_year_update|date:'Y-m-d'}}</td>
                     </tr>
                     <tr>
                         <td>3.</td>
                         <td>
-                            <a class="btn btn-sm sa" href="{% url 'manage_school_staff' school_id %}"> Manage Staff</a>
+                            <a class=" sa" href="{% url 'manage_school_staff' school_id %}"> Manage Staff</a>
                         </td>
+
                         <td>
                             Add new staff, mark inactive the staff that is no longer at the school.
                         </td>
+                        <td class="datetime">{{ instructor_update|date:"Y-m-d" }} </td>
                     </tr>
                     <tr>
                         <td>4.</td>
                         <td>
-                            <a class="btn btn-sm sa" href="{% url 'manage_students' school_id %}"> Manage Students</a>
+                            <a class=" sa" href="{% url 'manage_students' school_id %}"> Manage Students</a>
                         </td>
+
                         <td>
                             Add new students, mark as inactive students that are no longer at the school.
                         </td>
+                        <td class="datetime"> {{ student_update|date:"Y-m-d" }}</td>
                     </tr>
-                </div>
 
  <!-- vocational coordinator -->
-                <div>
-                <tr>
-                    <td colspan="3"><b>Vocational Coordinator</b></td>
-                </tr>
+                    <tr>
+                        <td colspan="3"><b>Vocational Coordinator</b></td>
+                    </tr>
                     <tr>
                         <td>5.</td>
                         <td>
-                            <a class="btn btn-sm vc" href="{% url 'grade_settings' school_id %}"> Manage Grade Settings</a>
+                            <a class="vc" href="{% url 'grade_settings' school_id %}"> Manage Grade Settings</a>
                         </td>
+
                         <td>
-                            Update grade calculation settings for current school year.
+                            Edit grade calculation settings for current school year.
                         </td>
+                        <td class="datetime"> {{ grade_settings_update|date:'Y-m-d'}}</td>
                     </tr>
                     <tr>
                         <td>6.</td>
                         <td>
-                            <a class="btn btn-sm vc" href="{% url 'manage_department' school_id %}"> Update Departments</a>
+                            <a class="vc" href="{% url 'message_list' school_id %}"> Email Messages</a>
                         </td>
-                        <td>Add new departments, mark inactive departments. </td>
+
+                        <td>
+                            Review Email Message Templates
+                        </td>
+                        <td class="datetime"> {{ message_update|date:'Y-m-d' }}</td>
                     </tr>
                     <tr>
                         <td>7.</td>
                         <td>
-                            <a class="btn btn-sm vc" href="{% url 'manage_instructor_assignment' school_id %}"> Manage Instructors</a>
+                            <a class=" vc" href="{% url 'manage_department' school_id %}"> Edit Departments</a>
                         </td>
-                        <td>
-                            Update instructor assignment for each department.
-                        </td>
-                    </tr>
 
-                </div>
+                        <td>Add new departments, mark inactive departments. </td>
+                        <td class="datetime"> {{ department_update|date:'Y-m-d'}}</td>
+                    </tr>
+                    <tr>
+                        <td>8.</td>
+                        <td>
+                            <a class=" vc" href="{% url 'manage_instructor_assignment' school_id %}"> Manage Instructors</a>
+                        </td>
+
+                        <td>
+                            Edit instructor assignment for each department.
+                        </td>
+                        <td class="datetime"> {{ instructor_assignment_update|date:'Y-m-d'}}</td>
+                    </tr>
 
                 </tbody>
             </table>
-       <!--  </div>
-        <div class="col"> -->
-
-            <button class="btn btn-sm btn-outline-ISEIblue4 mt-3" onclick="" id="quarter_button_id" style="width:30ch"> New Quarter To Do List </button>
-            <table id="quarter_duty_table">
+    </div>
+    <div class="card-body row">
+            <button class="btn btn-sm btn-outline-ISEIblue3" onclick="" id="quarter_button_id" style="width:30ch"> New Quarter To Do List </button>
+            <table class="table table-responsive table-sm table-borderless" id="quarter_duty_table">
+                 <thead><th colspan="3">Vocational Coordinator</th><th class="">Last Update</th></thead>
                 <tbody>
-                <tr>
-                    <td colspan="3 mt-2"><b>Vocational Coordinator</b></td>
-                </tr>
+
                 <tr>
                     <td></td>
                     <td>
-                        <a class="btn btn-sm vc" href="{% url 'student_assignment' school_id %}"> Assign Students</a>
+                        <a class=" vc" href="{% url 'student_assignment' school_id %}"> Assign Students</a>
                     </td>
                     <td>
                         Assign students to the departments they will be working at.
                     </td>
+                    <td class="datetime"> {{ student_assignment_update|date:'Y-m-d'}}</td>
+
                 </tr>
 
                 </tbody>
             </table>
-        </div>
     </div>
 
-
 <script>
-
-    function disable_links(class_name) {
-           for (let element of document.querySelectorAll(class_name)) {
-               element.setAttribute('style','pointer-events:none; color:gray')
-           };
-        };
 
 
     $(document).ready(function() {
 //toggle lists
-        $('#year_duty_table').hide()
-        $('#quarter_duty_table').hide()
+        //$('#year_duty_table').hide()
+        //$('#quarter_duty_table').hide()
 
         $('#year_button_id').click(function() {
             $('#year_duty_table').toggle('slow');
@@ -128,6 +138,11 @@
         });
 
 
+        function disable_links(class_name) {
+           for (let element of document.querySelectorAll(class_name)) {
+               element.setAttribute('style','pointer-events:none; color:gray')
+           };
+        };
 
 //disable links if user in doesn't have privileges to those pages
        if ("{{ request.user|in_group:"school_admin" }}" === "False") {

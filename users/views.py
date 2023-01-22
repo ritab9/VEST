@@ -10,8 +10,10 @@ from .forms import *
 from .functions import *
 from .filters import *
 import datetime
-from vocational.models import SchoolYear
-from emailing.functions import send_email_school
+from vocational.models import SchoolYear, EthicsGradeRecord, InstructorAssignment, StudentAssignment, GradeSettings, Department, Quarter
+from emailing.functions import *
+from emailing.models import *
+from .models import Country
 
 
 # landing page for everyone. Introduced it to allow for role transition
@@ -24,36 +26,41 @@ def crash(request):
 @unauthenticated_user
 def loginuser(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            if request.GET.get('next'):
-                return redirect(request.GET.get('next'))
-            else:
-                if request.user.is_active:
-                    if request.user.groups.filter(name='isei_admin').exists():
-                        return redirect('isei_admin_dashboard')
-                    elif request.user.groups.filter(name='school_admin').exists():
-                        return redirect('school_admin_dashboard', user.profile.school.id)
-                    elif request.user.groups.filter(name='vocational_coordinator').exists():
-                        return redirect('vocational_coordinator_dashboard', user.profile.school.id)
-                    elif request.user.groups.filter(name='instructor').exists():
-                        return redirect('crash')
-                    elif request.user.groups.filter(name='parent').exists():
-                        return redirect('parent_page', user.id)
-                    elif request.user.groups.filter(name='student').exists():
-                        return redirect('student_page', user.id)
-                    else:
-                        messages.info(request, 'User not assigned to a group. Please contact the site administrator.')
-                else:
-                    messages.info(request,
-                                  'This account is not currently active. Please contact the site administrator.')
+        if not request.POST.get("country_code"):
+            messages.info(request, 'Please select school.')
         else:
-            messages.info(request, 'Username OR password is incorrect')
-    context = dict()
+            username = request.POST.get("country_code") + "_" + request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
+
+            if user is not None:
+                login(request, user)
+                if request.GET.get('next'):
+                    return redirect(request.GET.get('next'))
+                else:
+                    if request.user.is_active:
+                        if request.user.groups.filter(name='isei_admin').exists():
+                            return redirect('isei_admin_dashboard')
+                        elif request.user.groups.filter(name='school_admin').exists():
+                            return redirect('school_admin_dashboard', user.profile.school.id)
+                        elif request.user.groups.filter(name='vocational_coordinator').exists():
+                            return redirect('vocational_coordinator_dashboard', user.profile.school.id)
+                        elif request.user.groups.filter(name='instructor').exists():
+                            return redirect('crash')
+                        elif request.user.groups.filter(name='parent').exists():
+                            return redirect('parent_page', user.id)
+                        elif request.user.groups.filter(name='student').exists():
+                            return redirect('student_page', user.id)
+                        else:
+                            messages.info(request, 'User not assigned to a group. Please contact the site administrator.')
+                    else:
+                        messages.info(request,
+                                      'This account is not currently active. Please contact the site administrator.')
+            else:
+                messages.info(request, 'Username, Password, and School combination is incorrect')
+
+    school = School.objects.all
+    context = dict(school = school)
     return render(request, 'users/login.html', context)
 
 
@@ -99,21 +106,28 @@ def add_school(request):
 @allowed_users(allowed_roles=['isei_admin'])
 def add_school_admin(request):
     school = School.objects.all().order_by("name")
+
     # register school admin
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
-            new_user = form.save()
-            school_abbreviation = request.POST['school_dropdown']
-            school = School.objects.get(abbreviation=school_abbreviation)
+            new_user = form.save(commit=False)
+            school_code = request.POST['school_dropdown']
+            new_user.username = school_code + "_" + request.POST["username"]
+            new_user.password = "hjbjb3iohroibniion"
+            new_user.save()
+            school_abbreviation = school_code.rsplit('_', 1)[-1]
+            school = School.objects.get(abbreviation = school_abbreviation)
             group = Group.objects.get(Q(name='school_admin'))
             new_user.groups.add(group)
             phone_number = request.POST['phone_number']
             # address = request.POST ['address']
             Profile.objects.create(user=new_user, phone_number=phone_number, school=school)
             # address=address)
-            # email_school_admin(teacher, phone_digits)
+            send_email_school_admin(request, new_user)
             return redirect('isei_data_summary')
+        else:
+            print("form not valid")
     else:
         form = CreateUserForm()
 
@@ -133,7 +147,35 @@ def instructor_dashboard(request, userid):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
 def vocational_coordinator_dashboard(request, schoolid):
-    context = dict(school_id=schoolid)
+    school = School.objects.get(id=schoolid)
+
+    school_year_update = Quarter.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by("-updated_at").first()
+    instructor_update = Profile.objects.values_list('updated_at', flat=True).filter(school=school,
+                                user__groups__name__in=["instructor", "vocational_coordinator","school_admin", "inactive_staff"]).order_by("-updated_at").first()
+    student_update = Student.objects.values_list('updated_at', flat=True).filter(user__profile__school=school,).order_by("-updated_at").first()
+    department_update = Department.objects.values_list('updated_at', flat=True).filter(school=school).order_by("-updated_at").first()
+
+
+    instructor_assignment_update = InstructorAssignment.objects.values_list('updated_at', flat=True).filter(instructor__school=school).order_by(
+        "-updated_at").first()
+    student_assignment_update = StudentAssignment.objects.values_list('updated_at', flat=True).filter(student__user__profile__school=school).order_by(
+        "-updated_at").first()
+    grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by(
+        "-updated_at").first()
+    override_message_update = OverrideMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
+        "-updated_at").first()
+    school_message_update = SchoolMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
+        "-updated_at").first()
+    default_message_update = DefaultMessage.objects.values_list('updated_at', flat=True).order_by("-updated_at").first()
+    message_update = max(filter(None.__ne__, [override_message_update,school_message_update,default_message_update]))
+
+
+    context = dict(school_id=schoolid, school=school, instructor_update = instructor_update, student_update = student_update,
+                   department_update = department_update,
+                   school_year_update= school_year_update,grade_settings_update = grade_settings_update,
+                   instructor_assignment_update = instructor_assignment_update, student_assignment_update = student_assignment_update,
+                   message_update=message_update
+                   )
     return render(request, 'users/vocational_coordinator_dashboard.html', context)
 
 
@@ -141,8 +183,49 @@ def vocational_coordinator_dashboard(request, schoolid):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def school_admin_dashboard(request, schoolid):
+    school = School.objects.get(id=schoolid)
 
-    context = dict(school_id=schoolid)
+    school_year_update = Quarter.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by(
+        "-updated_at").first()
+    instructor_update = Profile.objects.values_list('updated_at', flat=True).filter(school=school,
+                                                                                    user__groups__name__in=[
+                                                                                        "instructor",
+                                                                                        "vocational_coordinator",
+                                                                                        "school_admin",
+                                                                                        "inactive_staff"]).order_by(
+        "-updated_at").first()
+    student_update = Student.objects.values_list('updated_at', flat=True).filter(
+        user__profile__school=school, ).order_by("-updated_at").first()
+    department_update = Department.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
+        "-updated_at").first()
+
+    instructor_assignment_update = InstructorAssignment.objects.values_list('updated_at', flat=True).filter(
+        instructor__school=school).order_by(
+        "-updated_at").first()
+    student_assignment_update = StudentAssignment.objects.values_list('updated_at', flat=True).filter(
+        student__user__profile__school=school).order_by(
+        "-updated_at").first()
+    grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(
+        school_year__school=school).order_by(
+        "-updated_at").first()
+    override_message_update = OverrideMessage.objects.values_list('updated_at', flat=True).filter(
+        school=school).order_by(
+        "-updated_at").first()
+    school_message_update = SchoolMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
+        "-updated_at").first()
+    default_message_update = DefaultMessage.objects.values_list('updated_at', flat=True).order_by(
+        "-updated_at").first()
+    message_update = max(filter(None.__ne__, [override_message_update,school_message_update,default_message_update]))
+
+    context = dict(school_id=schoolid, school=school, instructor_update=instructor_update,
+                   student_update=student_update,
+                   department_update=department_update,
+                   school_year_update=school_year_update, grade_settings_update=grade_settings_update,
+                   instructor_assignment_update=instructor_assignment_update,
+                   student_assignment_update=student_assignment_update,
+                   message_update=message_update
+                   )
+
     return render(request, 'users/school_admin_dashboard.html', context)
 
 @login_required(login_url='login')
@@ -150,6 +233,12 @@ def school_admin_dashboard(request, schoolid):
 def email_settings(request, schoolid):
 
     school=School.objects.get(id=schoolid)
+
+    if school.email_address and school.email_password:
+        set_up=True
+    else:
+        set_up=False
+
     if request.method=="POST" and 'save' in request.POST:
         email_settings_form = EmailSettingsForm(request.POST, instance=school)
         if email_settings_form.is_valid():
@@ -163,7 +252,10 @@ def email_settings(request, schoolid):
     if request.method=="POST" and 'send' in request.POST:
         send_email_school(request, "Trial Email", "Email service successfully set up for VEST", [school.email_address,], school)
 
-    context = dict(email_settings_form = email_settings_form)
+    if request.method == "POST" and 'edit' in request.POST:
+        set_up=False
+
+    context = dict(email_settings_form = email_settings_form, set_up=set_up, email=school.email_address)
     return render(request, 'users/email_settings.html', context)
 
 
@@ -212,7 +304,11 @@ def add_school_staff(request, schoolid):
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
-            new_user = form.save()
+            new_user = form.save(commit=False)
+            new_user.username = str(school.country.code)+"_"+ str(school.abbreviation)+ "_" + request.POST["username"]
+            new_user.password = "bduaguigadbuhujb"
+            new_user.save()
+
             phone_number = request.POST.get('phone_number')
             Profile.objects.create(user=new_user, phone_number=phone_number, school=school)
             # address=address)
@@ -225,7 +321,7 @@ def add_school_staff(request, schoolid):
             if request.POST.get('school_admin'):
                 group = Group.objects.get(name='school_admin')
                 new_user.groups.add(group)
-            # email_staff()
+            send_default_email_from_school(request, new_user, school, "NewStaff")
             return redirect('manage_school_staff', school.id)
     else:
         form = CreateUserForm()
@@ -243,8 +339,9 @@ def add_staff_from_parent_list(request, schoolid):
         user_id = request.POST.get('parent')
         return redirect('update_school_staff', user_id)
     else:
-        parent_list = User.objects.filter(Q(groups__name="parent"), ~Q(groups__name="staff"),
-                                          Q(profile__school=school)).order_by('last_name')
+        parent_list_including_staff_parents = User.objects.filter( Q(profile__school=school), Q(groups__name="parent"),).order_by('last_name')
+        parent_list = parent_list_including_staff_parents.filter(~Q(groups__name="instructor"),~Q(groups__name="vocational_coordiantor"), ~Q(groups__name="school_admin"),)
+
     context = dict(school=school, parent_list=parent_list)
     return render(request, 'users/add_staff_from_parent_list.html', context)
 
@@ -255,6 +352,7 @@ def update_school_staff(request, userid):
     user = User.objects.get(id=userid)
     profile = Profile.objects.get(user=user)
     school = School.objects.get(id=user.profile.school.id)
+    data_exists = user.ethicsgraderecord_set.all().exists()
 
     if request.method == 'POST':
         form_user = UserForm(request.POST, instance=user)
@@ -306,7 +404,7 @@ def update_school_staff(request, userid):
 
     context = dict(form_user=form_user, user=user,
                    form_profile=form_profile,
-                   school=school)
+                   school=school, data_exists = data_exists)
 
     return render(request, 'users/update_school_staff.html', context)
 
@@ -345,7 +443,7 @@ def manage_students(request, schoolid):
     school = School.objects.get(id=schoolid)
 
     student = Student.objects.filter(user__profile__school=school, user__is_active=True,
-                                     user__groups__name="student").order_by('user__last_name')
+                                     user__groups__name="student").order_by('graduation_year','user__last_name')
     student_filter = StudentFilter(request.GET, queryset=student)
     student = student_filter.qs
 
@@ -401,9 +499,8 @@ def graduate_students(request, schoolid):
 
     all_student = User.objects.filter(profile__school=school, is_active=True, groups__name="student").order_by(
         'student__graduation_year', 'last_name')
-    print(all_student)
+
     student = all_student.filter(student__graduation_year__lte=datetime.date.today().year)
-    print(student)
     for s in student:
         s.is_active = False
         s.save()
@@ -432,14 +529,18 @@ def add_student(request, schoolid):
         form_user = CreateUserForm(request.POST)
         form_student = StudentForm(request.POST)
         if form_user.is_valid() and form_student.is_valid():
-            new_user = form_user.save()
+            new_user = form_user.save(commit=False)
+            new_user.username = str(school.country.code)+"_"+ str(school.abbreviation)+ "_" + request.POST["username"]
+            new_user.password="jdbjahbdjhhjdga"
+            new_user.save()
+
             new_student = form_student.save()
             new_student.user = new_user
             new_student.save()
             group = Group.objects.get(name='student')
             new_user.groups.add(group)
             Profile.objects.create(user=new_user, school=school)
-            # email_student()
+            send_default_email_from_school(request, new_user, school, "NewStudent")
 
             if request.POST.get("save_back"):
                 return redirect('manage_students', school.id)
@@ -464,6 +565,8 @@ def update_student(request, userid):
     # profile = Profile.objects.get(user=user)
     student = Student.objects.get(user=user)
     school = School.objects.get(id=user.profile.school.id)
+
+    has_grades = EthicsGradeRecord.objects.filter(student=student).exists()
 
 #if student status changes parent status will change as well
     active = student.user.is_active
@@ -502,7 +605,7 @@ def update_student(request, userid):
         form_student = StudentForm(instance=student)
 
     context = dict(form_user=form_user, user=user, form_student=form_student,
-                   school=school)
+                   school=school, has_grades=has_grades)
 
     return render(request, 'users/update_student.html', context)
 
@@ -544,13 +647,18 @@ def add_parent(request, userid):
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
-            new_user = form.save()
+            new_user = form.save(commit=False)
+            new_user.username = str(school.country.code) + "_" + str(school.abbreviation) + "_" + request.POST[
+                "username"]
+            new_user.password = "bduaguidfagadbuhujb"
+            new_user.save()
+
             group = Group.objects.get(name='parent')
             new_user.groups.add(group)
             student.parent.add(new_user)
             phone_number = request.POST.get('phone_number')
             Profile.objects.create(user=new_user, phone_number=phone_number, school=school)
-            # email_student()
+            send_default_email_from_school(request, new_user, school, "NewParent")
             if request.POST.get("save_back"):
                 return redirect('manage_students', school.id)
             if request.POST.get("save_new"):

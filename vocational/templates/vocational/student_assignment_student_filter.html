@@ -38,7 +38,7 @@
                                     <td> {{ i.graduation_year }}, {{ i.grade_level }}</td>
                                    <td>
                                     <table class="table-borderless">
-                                    {%  for a in i.student_assignment.all %}
+                                    {%  for a in i.student_assignment.all|dictsort:"quarter.name"|dictsortreversed:"quarter.school_year.name" %}
                                           <tr>
                                             <td>{{ a.quarter }}</td>
                                             <td> {{ a.department }}</td>

@@ -1,6 +1,8 @@
 {%  extends 'base.html' %}
   {% load static %}
   {% load crispy_forms_tags %}
+  {% load group_tags %}
+
 
   {% block title %} Grades {% endblock title %}
 
@@ -16,6 +18,13 @@
                     <a class="btn btn-sm btn-outline-ISEIblue3" href="{%  url 'grade_list' request.user.id %}">Show grades for current school year only</a>
                 {% else %}
                     <a class="btn btn-sm btn-outline-ISEIblue3" href="{%  url 'grade_list_all' request.user.id %}">Show grades from all school years</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="text-right mt-2">
+                {% if request.user|in_group:"vocational_coordinator" %}
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'vc_unvalidate_grades' request.user.profile.school.id %}"> Unvalidate Grades </a>
                 {% endif %}
             </div>
         </div>

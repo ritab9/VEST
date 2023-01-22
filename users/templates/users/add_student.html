@@ -24,20 +24,21 @@
                     {{ form_user.last_name|as_crispy_field  }}
                     {{ form_user.email|as_crispy_field }}
                     {{ form_student.graduation_year|as_crispy_field }}
-                    {{ form_student.birthday|as_crispy_field }}
-                    {{ form_student.gender|as_crispy_field }}
-                </div>
+                       </div>
 
                 <div class="col-sm-auto">
-                    <div>Edit Username:
-                        <div class="mt-2 mb-3"> {{ school.abbreviation }}_<input type="text"  id="id_default_username" name="default_username" label = "Default Username" style="border-color: #FFFFFF"></div>
+                    {{ form_student.birthday|as_crispy_field }}
+                    {{ form_student.gender|as_crispy_field }}
+                     <div style="pointer-events: none" > {{ form_user.username|as_crispy_field }}</div>
+
+                   <!-- <div>Edit Username:
+                        <div class="mt-2 mb-3"> { { school.abbreviation }}_<input type="text"  id="id_default_username" name="default_username" label = "Default Username" style="border-color: #FFFFFF"></div>
                     </div>
-                    <div style="pointer-events: none" > {{ form_user.username|as_crispy_field }}</div>
-                    <div>Password*</div>{{ form_user.password1 }}<br>
-                    {{ form_user.password2|as_crispy_field }}
+                    <div>Password*</div>{ { form_user.password1 }}<br>
+                    { { form_user.password2|as_crispy_field }}
                     <p id="id_password_info" class="spanred"></p>
                     <button type="button" id="id_generate_button" onclick=generate() class="btn-sm span80" style="float:bottom">Generate Username and Password</button><br><br>
-
+                    -->
                 </div>
 
             </div>
@@ -61,15 +62,15 @@
          function generate() {
             var first_name = $('#id_first_name').val();
             var last_name = $('#id_last_name').val();
-            var s_a = "{{school.abbreviation}}";
-            var s_id ="{{ school.id }}";
+            //var s_a = "{{school.abbreviation}}";
+            //var s_id ="{{ school.id }}";
 
-            $('#id_default_username').val(first_name + last_name);
-            $('#id_username').val(s_a +"_"+first_name + last_name);
+            //$('#id_default_username').val(first_name + last_name);
+            $('#id_username').val(first_name + last_name);
 
-            $('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
-            $('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
-            document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a + "_" + s_id ;
+            //$('#id_password1').val("VEST" + "_" + s_a + "_" + s_id);
+            //$('#id_password2').val("VEST" + "_" + s_a + "_" + s_id);
+            //document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a + "_" + s_id ;
         };
 
         $('#id_last_name').focusout (function() {
@@ -83,11 +84,11 @@
         });
 
 
-        $('#id_default_username').focusout (function(){
-            var s_a = "{{school.abbreviation}}";
-            var p_u = $('#id_default_username').val();
-            $('#id_username').val(s_a+"_"+p_u);
-        });
+       // $('#id_default_username').focusout (function(){
+        //    var s_a = "{ {school.abbreviation}}";
+          //  var p_u = $('#id_default_username').val();
+           // $('#id_username').val(s_a+"_"+p_u);
+       // });
 
 
 </script>

@@ -6,6 +6,14 @@
 
 
 {% block content %}
+ {% for message in messages %}
+        {%  if message.tags == "info" %}
+            <div class="alert-warning spangreen" role="alert" >{{message}}</div>
+        {% else %}
+            <div class="alert-warning spanred" role="alert" >{{message}}</div>
+        {% endif %}
+    {% endfor %}
+
 <div class="card-body">
     <table class="table col-sm w-auto">
         <thead>
@@ -23,7 +31,7 @@
                             {% if a.profile.school == s %}
                                 <tr>
                                     <td>{{ a.first_name }} {{ a.last_name }}</td>
-                                    <td><a class = "iseiblue3" href="{% url 'update_school_staff' a.id  %}">Update</a></td>
+                                    <td><a class = "iseiblue3" href="{% url 'update_school_staff' a.id  %}">Edit</a></td>
                                     <td><a class ="spanred" href="{% url 'delete_school_staff' a.id  %}">Delete</a></td>
                                 </tr>
                             {% endif %}

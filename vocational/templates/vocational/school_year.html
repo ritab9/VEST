@@ -22,7 +22,7 @@
                         <br> {{ s.start_date }} - {{ s.end_date }}</td>
                     <td>
                         <table class="table-sm table-borderless">
-                            {% for q in s.quarter_set.all %}
+                            {% for q in s.quarter_set.all|dictsort:"name" %}
                                 <tr>
                                     <td> {{ q.get_name_display }} </td><td> </td>
                                     <td style="text-align: right"> {{ q.start_date }} -</td>

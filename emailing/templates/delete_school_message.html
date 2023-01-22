@@ -1,0 +1,28 @@
+{%  extends 'base.html' %}
+    {% load static %}
+    {% load crispy_forms_tags %}
+    {% load group_tags %}
+
+  {% block title %} Delete Override Message {% endblock title %}
+
+
+{% block content %}
+
+<div class="card card-body mt-2 padding">
+
+    <form action=""  method="POST">
+        {% csrf_token %}
+        <p> Are you sure you want to delete <i>{{ message.name }} </i> message? <br>
+            The operation can not be undone.
+
+        <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()"> Cancel </a>
+        <input class="btn btn-sm btn-danger" type='submit' value ='Confirm'>
+
+    </form>
+</div>
+
+<script>
+
+</script>
+
+{% endblock content %}

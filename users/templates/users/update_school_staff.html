@@ -2,8 +2,9 @@
     {% load static %}
     {% load crispy_forms_tags %}
     {% load group_tags %}
+{% load template_tags %}
 
-  {% block title %} Update instructor {% endblock title %}
+  {% block title %} Edit instructor {% endblock title %}
 
 
 {% block content %}
@@ -18,11 +19,14 @@
                 {{ form_user.last_name|as_crispy_field  }}
                 {{ form_user.email|as_crispy_field }}
                 {{ form_profile.phone_number|as_crispy_field }}
-                {{ form_user.username|as_crispy_field }}
+                <tag>Username</tag><br><input type="text" id="internal_username" value="{{ form_user.instance.username|shortened_username }}" >
+
+                    {{ form_user.username}}
             </div>
+
             <div class="col-sm-auto">
 
-            <div class="card">
+            <div class="card mt-5">
                 {% if user|in_group:"instructor" %}
                     <p><input class = "checkboxes ml-2" type="checkbox" id="instructor" name="instructor" label = "Instructor" checked> Instructor</p>
                 {% else %}
@@ -51,8 +55,10 @@
                 <br>
 
                 <input type="hidden" name="next" value="{{ request.path }}">
-             <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Update"/>
+             <input class="btn btn-sm btn-ISEIblue3" type="submit" value ="Save"/>
+            {% if not data_exists %}
                 <a class ="btn btn-sm spanred" href="{% url 'delete_school_staff' user.id  %}">Delete</a></td>
+            {% endif %}
             </div>
         </div>
     </form>
@@ -60,6 +66,9 @@
 
 <script>
     $(document).ready(function(){
+
+        $('#id_username').hide()
+
         var checkboxes = $('.checkboxes');
         checkboxes.change(function(){
             if($('.checkboxes:checked').length>0) {
@@ -76,7 +85,16 @@
                 $('.checkboxes').prop('checked', true);
             };
         });
+
     });
+
+     document.getElementById("internal_username").addEventListener("input", function(){
+            const str=document.getElementById("id_username").value;
+            const lastIndex = str.lastIndexOf("_");
+            const before = str.slice(0, lastIndex);
+            document.getElementById("id_username").value =  before + "_" + this.value;
+     });
+
 
 
 </script>

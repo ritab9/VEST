@@ -1,0 +1,233 @@
+{%  extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load group_tags %}
+
+{% block title %} Contact {% endblock title %}
+
+{% block content %}
+{% load static %}
+
+    <div class="card-body">
+        <div>
+            {% if request.user|in_group:"isei_admin"%}
+                <a class="btn-ISEIblue3 btn-sm"  href="{% url 'create_default_message' %}"> Add New Default Message </a>
+                <a class="btn-ISEIblue3 btn-sm ml-3"  href="{% url 'create_school_message' request.user.profile.school.id %}"> Add New ISEI Only Message </a>
+            {% endif %}
+            {% if request.user|in_group:"vocational_coordinator"%}
+                <a class="btn-ISEIblue3 btn-sm"  href="{% url 'create_school_message' request.user.profile.school.id %}"> Add New Message </a>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="card-body">
+
+<!-- default messages -->
+    <div class="row">
+         <a class="btn-outline-ISEIblue" id="default_b"> Default Messages</a>
+    </div>
+
+    <div class="row" id="default_m">
+        <div class="col-lg-12">
+          <div class="card card-body border-0">
+        <table class="">
+        <thead>
+        <tr><th>Name</th><th>Subject</th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for message in default_messages %}
+            <tr>
+                <td> <a class="message_name" id="d{{ message.id }}">{{ message.name}}</a></td>
+                <td>{{ message.subject }}</td>
+                <td>
+                    {% if request.user|in_group:"isei_admin"%}
+                    <div>
+                        <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_default_message' message.id %}"> Delete </a>
+                        <a class=" btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_default_message' message.id %}"> Edit </a>
+                    </div>
+                 {% endif %}
+                 {% if request.user|in_group:"vocational_coordinator" %}
+                    <a class="btn btn-ISEIblue btn-sm" style="float:right" href="{% url 'create_override_message' message.id %}"> Override Default </a>
+                {% endif %}
+                </td>
+
+            </tr>
+            <tr>
+                <td class="pb-md-2" colspan="12">
+                 <div class="card" id="md{{message.id}}" style="display: none">
+                     <b>Message: </b> {{ message.message }}
+                 </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+
+
+<!-- overrides of default messages -->
+    <div class="row mt-4">
+    <a class="btn-outline-ISEIblue" id="override_b"> Overrides of Default Messages</a>
+       <!-- { % if request.user|in_group:"vocational_coordinator"%}
+            <div class="col-sm-auto ml-auto" id="override_t">
+                <a class="btn-outline-ISEIblue btn-sm" style="float:right" id="toggle_default"> Show Default Messages </a>
+            </div>
+        { % endif %} -->
+    </div>
+
+        <div class="row" id="override_m">
+          <div class="col-lg-12">
+          <div class="card card-body border-0">
+                <table class="">
+                <thead>
+                <tr>
+                    <th>Name</th><th>Subject</th><th></th><th></th><th></th><th></th>
+                    <th></th><th></th><th></th><th></th><th></th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+            {% for message in override_messages %}
+                <tr>
+                    <td>
+                        <a class="message_name" id="o{{ message.id }}"><h8>{{ message.name}}</h8> </a>
+                    </td>
+                    <td>
+                        {{ message.subject }}
+                    </td>
+                    <td>
+                         {% if request.user|in_group:"isei_admin"%}
+                             <div class="col-sm" style="float:right" ><b>School:</b> <h8>{{ message.school}}</h8> </div>
+                         {% endif %}
+                    </td>
+                    <td>
+                            {% if request.user|in_group:"isei_admin"%}
+                                <!--
+                                <div>
+                                    <a class=" btn btn-ISEIblue btn-sm mb-2" style="float:right" href="{ % url 'edit_default_message' message.id %}"> Edit </a>
+                                    <a class="btn btn-danger btn-sm" style="float:right" href="{ % url 'delete_default_message' message.id %}"> Delete </a>
+                                </div> -->
+                             {% endif %}
+                             {% if request.user|in_group:"vocational_coordinator" %}
+                                 <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_override_message' message.id %}"> Delete </a>
+                                 <a class="btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_override_message' message.id %}"> Edit </a>
+                            {% endif %}
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="pb-md-2" colspan="12">
+                     <div class="card" id="mo{{message.id}}" style="display: none">
+                         <b>Message: </b> {{ message.message }}
+                     </div>
+                    </td>
+                </tr>
+               <!--
+                <tr>
+                    <td colspan="10">
+                        <div class="overridden_default">
+                                <h8><b>Default:</b></h8>
+                                <div class="row mb-2">
+                                    <div class="col-sm-auto">{ { message.name.subject }}</div>
+                                </div>
+                                <div class="mb-4">
+                                    <b>Message: </b> { { message.name.message }}
+                                </div>
+                            </div>
+                    </td>
+                </tr> -->
+            {% endfor %}
+                </tbody>
+
+                </table>
+                </div>
+          </div>
+        </div>
+
+<!-- School Specific messages -->
+    <div class="row mt-4">
+         <a class="btn-outline-ISEIblue" id="school_b"> School Messages</a>
+    </div>
+
+     <div class="row" id="school_m">
+          <div class="col-lg-12">
+          <div class="card card-body border-0">
+              <table class="">
+                <thead>
+                <tr>
+                    <th>Name</th><th>Subject</th><th></th><th></th><th></th><th></th>
+                    <th></th><th></th><th></th><th></th><th></th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for message in school_messages %}
+                        <tr>
+                            <td><a class="message_name" id="s{{ message.id }}"> {{ message.name }}</a></td>
+                            <td> {{ message.subject }} </td>
+                            <td style="float:right"> {% if request.user|in_group:"isei_admin"%} {{ message.school}} {% endif %}
+                            </td>
+                            <td>
+                                {% if request.user|in_group:"isei_admin"%}
+                                    {% if message.school.name == "ISEI" %}
+                                    <div>
+                                        <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_default_message' message.id %}"> Delete </a>
+                                        <a class=" btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_default_message' message.id %}"> Edit </a>
+                                    </div>
+                                   {% endif %}
+                                {% endif %}
+                                 {% if request.user|in_group:"vocational_coordinator" %}
+                                     <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_school_message' message.id %}"> Delete </a>
+                                     <a class="btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_school_message' message.id %}"> Edit </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-md-2" colspan="12">
+                             <div class="card" id="ms{{message.id}}" style="display: none">
+                                 <b>Message: </b> {{ message.message }}
+                             </div>
+                            </td>
+                         </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+          </div>
+          </div>
+     </div>
+    </div>
+
+<script>
+
+    $(document).ready(function() {
+    //toggle default message
+       // $('.overridden_default').hide()
+
+        //$('#toggle_default').click(function () {
+        //    $('.overridden_default').toggle('slow');
+        //});
+
+        $('#default_b').click(function () {
+            $('#default_m').toggle('slow');
+        });
+
+        $('#override_b').click(function () {
+            $('#override_m').toggle('slow');
+            $('#override_t').toggle('slow');
+        });
+
+         $('#school_b').click(function () {
+            $('#school_m').toggle('slow');
+        });
+
+         $('.message_name').on("click", function() {
+             const id = $(this).attr('id');
+             $("#m"+id).toggle();
+     });
+
+    });
+</script>
+
+{% endblock %}

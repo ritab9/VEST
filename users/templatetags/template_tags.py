@@ -14,3 +14,7 @@ def school_year(user):
 @register.filter('school')
 def school(user):
     return School.objects.get(id = user.profile.school.id)
+
+@register.filter('shortened_username')
+def shortened_username(username):
+    return username.rsplit('_', 1)[-1]

@@ -30,9 +30,10 @@
                                    <td>{{ d }} </td>
                                    <td>
                                     <table class="table-borderless">
-                                    {%  for a in d.studentassignment_set.all reversed %}
+                                    {%  for a in d.studentassignment_set.all|dictsort:"quarter.name" %}
+                                        {% if a.quarter.school_year == active_school_year %}
                                           <tr>
-                                              <td>{{ a.quarter.school_year }}, {{ a.quarter }}<br>
+                                              <td>{{ a.quarter }}<br>
                                                      <a href="{% url "manage_student_assignment" schoolid a.quarter.id %} ">Manage Assignments</a>
                                               </td>
                                                <td> <table class="table-borderless">
@@ -43,6 +44,7 @@
                                                </td>
                                               </td>
                                           </tr>
+                                        {% endif %}
                                     {% endfor %}
                                     </table></td>
                                 </tr>

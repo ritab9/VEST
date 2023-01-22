@@ -1,0 +1,36 @@
+{%  extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load group_tags %}
+
+{% block title %} Contact {% endblock title %}
+
+{% block content %}
+{% load static %}
+
+    <div class="card-body">
+    <div class="row">
+      <div class="col-lg-12">
+          <form method="POST" action ="" enctype="multipart/form-data">
+            {% csrf_token %}
+                    {{ formset.management_form }}
+                    {% for form in formset %}
+                        <div class="card card-body">
+                        {{ form.id }}
+                        <div class="row mb-2">
+                            <div class="col-sm-auto"> {{ form.name|as_crispy_field }} </div>
+                            <div class="col-sm-auto">{{ form.subject|as_crispy_field }}</div>
+                            <div class="col-sm-auto">{{ form.DELETE|as_crispy_field }}</div>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.message|as_crispy_field }}
+                        </div>
+                        </div>
+                    {% endfor %}
+            <button type="submit" class="btn btn-sm btn-ISEIblue4">Save</button>
+          </form>
+      </div>
+    </div>
+    </div>
+
+
+{% endblock %}

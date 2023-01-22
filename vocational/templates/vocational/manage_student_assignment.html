@@ -6,9 +6,13 @@
 
 
 {% block content %}
+<div class="card-body">
+    <div class="row">
+        <div class="col-sm-auto">
+            <p class="mt-3">{{ quarter }} </p>
+        </div>
 
-    <p class="mt-3">{{ quarter }} </p>
-
+    </div>
     <!-- filter
             <form method="get">
                 { { student_filter.form }}
@@ -19,19 +23,52 @@
 
 <form method = "POST">
 	{% csrf_token %}
+<!-- filter by grade level -->
 
-    <div class="row ml-3">
-        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save" style="float: right">
-    </div>
+     <div class="row">
+            <div class="col-sm-auto" style="float: right">
+            {% if "4" in years_to_grad %}
+                <input type="checkbox" id="4" name="years" value="4" checked>
+            {% else %}
+                <input type="checkbox" id="4" name="years" value="4" >
+            {% endif %}
+                <label for="4">9th grade</label>
 
-<div class="card-body">
+            {% if "3" in years_to_grad %}
+                <input type="checkbox" id="3" name="years" value="3" checked>
+            {% else %}
+                <input type="checkbox" id="3" name="years" value="3">
+            {% endif %}
+                <label for="3">10th grade</label>
+
+            {% if "2" in years_to_grad %}
+                <input type="checkbox" id="2" name="years" value="2" checked>
+            {% else %}
+                <input type="checkbox" id="3" name="years" value="2">
+            {% endif %}
+                    <label for="2">11th grade</label>
+
+            {% if "1" in years_to_grad %}
+                <input type="checkbox" id="1" name="years" value="1" checked>
+            {% else %}
+                <input type="checkbox" id="1" name="years" value="1">
+            {% endif %}
+                    <label for="1">12th grade</label>
+            </div>
+
+            <a id="link" href="{% url "manage_student_assignment" schoolid quarterid "1234" %}" style="float: right">Apply Selection</a>
+            <!-- <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="years" value = "Apply Filter" style="float: right"> -->
+        </div>
+
+
+    <div class="card-body row">
     <div class="row">
             {{ student_formset.management_data }}
             {{ student_formset.management_form }}
                 {% for form in student_formset %}
                     <div class="col">
-                        {{ form.department }}
-                        {{ form.DELETE|as_crispy_field }}
+                        {{ form.department }}<br>
+                        <div class="spanred span80 mb-1">{{ form.DELETE}} Remove Department</div>
                         <!--
                         <ul style="-webkit-column-count: 10; -moz-column-count: 10; column-count: 10; list-style-type:none">
                         -->
@@ -39,10 +76,9 @@
                             {% for s in form.student %}
                             <li>
                                 <div class="row">
-                                    <a href="{% url 'student_vocational_info' s.data.value %}"
+                                    <a href="{% url 's_vocational_info' s.data.value %}"
                                    target="popup" class="mypopup"> <i class="fa-solid fa-circle-info"></i> </a>
-                                    &nbsp;
-                                    {{ s }}
+                                    {{ s }} {{ s.graduation_year }}
                                 </div>
                             </li>
                             {% endfor %}
@@ -56,17 +92,44 @@
                     </div>
                 {% endfor %}
     </div>
-        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Add more departments">
 </div>
+
+    <div class="row">
+        <div class="col-sm-auto">
+            <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save">
+        </div>
+        <div class="col-sm-auto">
+            <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Add more departments">
+        </div>
+    </div>
+
 </form>
 
+</div>
+
 <script>
+
+
+      window.onload = function() {
+          var a = document.getElementById("link");
+          a.onclick = function() {
+              s="";
+                if (document.getElementById('4').checked) { s = s +"4" };
+                if (document.getElementById('3').checked) { s = s+"3" };
+                if (document.getElementById('2').checked) { s = s +"2"}
+                if (document.getElementById('1').checked) { s = s +"1" };
+              document.getElementById("link").href = document.getElementById("link").href.replace('1234', s);
+          };
+        };
+
+
+
     $("a.mypopup").on("click", function() {
         var ppp = $(this).prop('href');
-        console.log(ppp);
+        //console.log(ppp);
         window.open(ppp, "popup", "toolbar=no,scrollbars=yes, resizable=yes,width=600,height=600");
 
-});
+    });
 
 </script>
 

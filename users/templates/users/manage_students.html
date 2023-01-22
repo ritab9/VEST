@@ -1,6 +1,6 @@
 {%  extends 'base.html' %}
   {% load static %}
-
+    {% load template_tags %}
 
   {% block title %} Manage Students {% endblock title %}
 
@@ -51,10 +51,10 @@
         {% for s in student %}
             <tr>
                 <td>
-                    <a class = "btn btn-sm iseiblue3 span80" href="{% url 'update_student' s.user.id  %}">Update</a>
+                    <a class = "btn btn-sm btn-ISEIblue3 span80" href="{% url 'update_student' s.user.id  %}">Edit </a>
                 </td>
                 <td>{{ s.user.last_name }}, {{ s.user.first_name }}
-                    <p class="span80">{{ s.user.username }}</p></td>
+                    <p class="span80">{{ s.user.username|shortened_username }}</p></td>
                 <td>{{ s.user.email }}</td>
                 <td>{{ s.birthday }}</td>
                 <td>{{ s.graduation_year }} <br> {{ s.grade_level }}</td>
@@ -62,21 +62,24 @@
                 <td colspan="5">
  <!-- parent table -->
 
-                    <table class="table-sm w-100 table-nostriped table-borderless" >
+                    <table class="table-sm w-100 table-nostriped table-bordered" >
                         {% for p in s.parent.all %}
                             <tr>
+                                 <td class="text-right" style="width: 1px">
+                                    <div class="col">
+                                    <a class="text-ISEIblue span80" href="{% url 'update_parent' p.id %}">Edit</a><br>
+                                    <a class ="spanred span80" href="{% url 'delete_parent' p.id s.id %}">Remove</a>
+                                    </div>
+                                </td>
                                 <td class="text-left">{{ p.last_name }}, {{ p.first_name }}<br></td>
                                 <td>{{ p.email }}</td> <td>{{ p.profile.phone_number }}</td>
-                                <td class="text-right" style="width: 1px"><a class="text-ISEIblue" href="{% url 'update_parent' p.id %}">Update</a></td>
-                                <td class="text-right" style="width: 1px"><a class ="spanred" href="{% url 'delete_parent' p.id s.id %}">Delete</a></td>
-
                             </tr>
                         {% endfor %}
                     </table>
                 </td>
                 <td>
                     <div class="dropdown">
-                        <a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="dropdown-toggle span80" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Add Parents
                         </a>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">

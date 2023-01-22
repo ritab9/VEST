@@ -22,7 +22,7 @@
                 <tr>
                     <td>{{ a.department }}</td>
                     <td> {%  for i in a.instructor.all %}
-                            {{ i.last_name }}, {{ i.first_name }} <br>
+                            {{ i }} <br>
                         {% endfor %}
                 </tr>
             {% endfor %}

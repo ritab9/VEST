@@ -31,6 +31,7 @@ class VocationalClass(models.Model):
 
 # school_admin managed
 class SchoolYear(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
     name = models.CharField(max_length=9, verbose_name="School Year (ex:2024-2025)")
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
@@ -46,7 +47,28 @@ class SchoolYear(models.Model):
     class Meta:
         unique_together = (('name', 'school'),)
 
+
+class Quarter(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
+    CHOICES = (
+        ('1', 'Quarter 1'),
+        ('2', 'Quarter 2'),
+        ('3', 'Quarter 3'),
+        ('4', 'Quarter 4')
+    )
+    name = models.CharField(max_length=1, choices=CHOICES, null=False, blank=False)
+    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    class Meta:
+        unique_together=('school_year', 'name')
+
+    def __str__(self):
+        return self.get_name_display() + ", " + self.school_year.name
+
+
 class GradeSettings(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
     school_year = models.OneToOneField(SchoolYear, on_delete=models.CASCADE)
     progress_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=20)
     summative_ratio = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=80)
@@ -58,28 +80,16 @@ class GradeSettings(models.Model):
     )
     time_unit = models.CharField(max_length=1, choices=CHOICES, null=True, blank=True)
 
-class Quarter(models.Model):
-    CHOICES = (
-        ('1', 'Quarter 1'),
-        ('2', 'Quarter 2'),
-        ('3', 'Quarter 3'),
-        ('4', 'Quarter 4')
-    )
-    name = models.CharField(max_length=1, choices=CHOICES, null=False, blank=False)
-    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
-    def __str__(self):
-        return self.get_name_display() + ", " + self.school_year.name
-
 
 # vocational instructor managed
 class Department(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
     name = models.CharField(max_length=20, null=False, blank=False)
     is_active = models.BooleanField(default=True)
     school = models.ForeignKey(School, on_delete=models.CASCADE)
     class Meta:
         ordering = ('school', '-is_active', 'name')
+        unique_together =('school', 'name' )
     def __str__(self):
         return self.name
 
@@ -95,6 +105,9 @@ class VocationalSkill(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        unique_together = ('department', 'name')
+
 
 class VocationalStatus(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE)
@@ -103,11 +116,13 @@ class VocationalStatus(models.Model):
 
 
 class InstructorAssignment(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
     department = models.OneToOneField(Department, on_delete=models.CASCADE)
-    instructor = models.ManyToManyField(User, related_name="instructor_assignments", blank=True)
+    instructor = models.ManyToManyField(Profile, related_name="instructor_assignments", blank=True)
 
 
 class StudentAssignment(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
     quarter = models.ForeignKey(Quarter, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     student = models.ManyToManyField(Student, related_name="student_assignment", blank=True,)
@@ -144,6 +159,7 @@ class EthicsGradeRecord(models.Model):
 
     class Meta:
         unique_together = ('student', 'department', 'evaluation_date')
+
 
     def score(self):
         n = 0

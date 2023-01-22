@@ -1,10 +1,11 @@
 from django import forms
 from django.forms import ModelForm
 from django.forms.models import inlineformset_factory, modelformset_factory
+import datetime
 
 from django.contrib.auth.models import User
 from .models import *
-import datetime
+
 
 
 class GradeSettingsForm(forms.ModelForm):
@@ -41,7 +42,7 @@ class InstructorAssignmentForm(forms.ModelForm):
     def __init__(self, school, *args, **kwargs):
         super(InstructorAssignmentForm, self).__init__(*args, **kwargs)
         self.fields['department'].queryset = Department.objects.filter(school=school, is_active=True)
-        self.fields['instructor'].queryset = User.objects.filter(profile__school=school, groups__name='instructor')
+        self.fields['instructor'].queryset = Profile.objects.filter(school=school, user__groups__name='instructor')
 
     class Meta:
         model = InstructorAssignment
@@ -51,15 +52,19 @@ class InstructorAssignmentForm(forms.ModelForm):
 
 
 InstructorAssignmentFormSet = modelformset_factory(InstructorAssignment, form=InstructorAssignmentForm,
-                                                   can_delete=True, can_order=True, extra=5)
+                                                   can_delete=True, can_order=True, extra=2)
 
 
 class StudentAssignmentForm(forms.ModelForm):
-    def __init__(self, school, *args, **kwargs):
+    def __init__(self, school, graduation_year = None, *args, **kwargs):
         super(StudentAssignmentForm, self).__init__(*args, **kwargs)
         self.fields['department'].queryset = Department.objects.filter(school=school, is_active=True)
-        self.fields['student'].queryset = Student.objects.filter(user__profile__school=school,
-                                                                 user__is_active=True).order_by('graduation_year')
+        if not graduation_year:
+            self.fields['student'].queryset = Student.objects.filter(user__profile__school=school,
+                                                               user__is_active=True).order_by('-graduation_year')
+        else:
+            self.fields['student'].queryset = Student.objects.filter(user__profile__school=school, graduation_year__in = graduation_year,
+                                                                     user__is_active=True).order_by('-graduation_year')
 
     class Meta:
         model = StudentAssignment
@@ -130,24 +135,6 @@ class FormativeCommentsForm(forms.ModelForm):
         # recommendation = forms.CharField(widget=forms.Textarea(attrs={'rows': 6, 'cols': 30}))
 
 
-class SkillGradeRecordInstructorForm(forms.ModelForm):
-    class Meta:
-        model = SkillGradeRecord
-        fields = ('student', 'level')
-
-
-class SkillGradeForm(forms.ModelForm):
-    class Meta:
-        model = SkillGrade
-        fields = ('score',)
-        widgets = {
-            'score': forms.Textarea(attrs={'rows': 1, 'cols': 3}),
-        }
-
-
-SkillGradeFormSet = inlineformset_factory(SkillGradeRecord, SkillGrade, form=SkillGradeForm, extra=10)
-
-
 class StudentDiscussionForm(forms.ModelForm):
     class Meta:
         model = EthicsGradeRecord
@@ -175,3 +162,21 @@ class VCValidationForm(forms.ModelForm):
 
 
 VCValidationFormSet = modelformset_factory(EthicsGradeRecord, form=VCValidationForm, extra=0, )
+
+
+class SkillGradeRecordInstructorForm(forms.ModelForm):
+    class Meta:
+        model = SkillGradeRecord
+        fields = ('student', 'level')
+
+
+class SkillGradeForm(forms.ModelForm):
+    class Meta:
+        model = SkillGrade
+        fields = ('score',)
+        widgets = {
+            'score': forms.Textarea(attrs={'rows': 1, 'cols': 3}),
+        }
+
+
+SkillGradeFormSet = inlineformset_factory(SkillGradeRecord, SkillGrade, form=SkillGradeForm, extra=10)

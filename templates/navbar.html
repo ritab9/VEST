@@ -17,7 +17,7 @@
 <!-- ISEI Admin Links -->
                         {% if request.user|in_group:"isei_admin"%}
                             <li class="nav-item isei_admin">
-                                <a class="nav-link" href="{% url 'isei_admin_dashboard' %}">Home </a>
+                                <a class="nav-link" href="{% url 'isei_admin_dashboard' %}">VEST </a>
                             </li>
                             <li class="nav-item isei_admin">
                                 <a class="nav-link" href="{% url 'isei_data_summary'%}">Data Summary </a>
@@ -25,7 +25,7 @@
 
                             <li class="nav-item dropdown isei_admin">
                               <a class="nav-link dropdown-toggle p-3" href="#" id="iseiadminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Data Management
+                                Manage School Info
                               </a>
                               <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown">
                                   <li>
@@ -37,6 +37,24 @@
                               </ul>
                             </li>
 
+                            <li class="nav-item isei_admin">
+                                <a class="nav-link" href="{% url 'message_list' %}">Email Messages </a>
+                            </li>
+
+                            <!--
+                            <li class="nav-item dropdown isei_admin">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="iseiadminMessagesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Email Messages
+                              </a>
+                              <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown">
+                                  <li>
+                                    <a class="nav-link float-right" href="{ % url 'message_list' %}">All Messages</a>
+                                </li>
+                                  <li>
+                                    <a class="nav-link float-right" href="{ % url 'default_messages_management' %}">Default Messages</a>
+                                </li>
+                              </ul>
+                            </li> -->
 
                         {% endif %}
 
@@ -44,7 +62,7 @@
 
                         {% if request.user|in_group:"school_admin" %}
                             <li class="nav-item school_admin">
-                                <a class="nav-link" href="{% url 'school_admin_dashboard' request.user.profile.school.id %}">Dashboard </a>
+                                <a class="nav-link" href="{% url 'school_admin_dashboard' request.user.profile.school.id %}">VEST </a>
                             </li>
 
                             <li class="nav-item dropdown school_admin ">
@@ -71,11 +89,16 @@
                                 Settings
                               </a>
                               <ul class="dropdown-menu bg-ISEIblue3 ml-0 school_admin" aria-labelledby="navbarDropdown">
+                                  <!--
                                   <li>
-                                      <a class="nav-link float-left" href="{% url 'grade_settings' request.user.profile.school.id %}">Grade Settings</a>
-                                  </li>
+                                      <a class="nav-link float-left" href="{ % url 'grade_settings' request.user.profile.school.id %}">Grade Settings</a>
+                                  </li> -->
+
                                   <li>
                                       <a class="nav-link float-left" href="{% url 'email_settings' request.user.profile.school.id %}">Email Settings</a>
+                                  </li>
+                                  <li>
+                                      <a class="nav-link float-left" href="{% url 'message_list' request.user.profile.school.id %}">Email Messages</a>
                                   </li>
                               </ul>
                             </li>
@@ -83,7 +106,7 @@
 
                         {% if request.user|in_group:"vocational_coordinator" %}
                             <li class="nav-item vocational_coordinator">
-                                <a class="nav-link" href="{% url 'vocational_coordinator_dashboard' request.user.profile.school.id %}">Dashboard</a>
+                                <a class="nav-link" href="{% url 'vocational_coordinator_dashboard' request.user.profile.school.id %}">VEST</a>
                             </li>
                             <li class="nav-item dropdown vocational_coordinator">
                               <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -110,12 +133,25 @@
                             <li>
                             <a class="nav-link vocational_coordinator " href="{% url 'vc_validate_grades' request.user.profile.school.id %}"> Validate Grades </a>
                             </li>
+                            <li class="nav-item dropdown vocational_coordinator ">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminUserMangementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Settings
+                              </a>
+                            <ul class="dropdown-menu bg-ISEIblue3 vocational_coordinator" aria-labelledby="navbarDropdown">
+                                  <li>
+                                      <a class="nav-link float-left" href="{% url 'grade_settings' request.user.profile.school.id %}">Grade Settings</a>
+                                  </li>
+                                   <li>
+                                      <a class="nav-link float-left" href="{% url 'message_list' request.user.profile.school.id %}">Email Messages</a>
+                                  </li>
+                              </ul>
+                            </li>
 
                         {% endif %}
 
                         {% if request.user|in_group:"instructor" %}
                                 <li class="nav-item instructor">
-                                    <a class="nav-link" href="{% url 'instructor_dashboard' request.user.id %}">Dashboard</a>
+                                    <a class="nav-link" href="{% url 'instructor_dashboard' request.user.id %}">VEST</a>
                                 </li>
                             <!--
                                 <li class="nav-item dropdown instructor">
@@ -154,9 +190,12 @@
                             </li>
                         {% endif %}
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'send_email' %}">Send Email</a>
-                        </li>
+                         {% if request.user|in_group:"student" or request.user|in_group:"parent"%}
+                         {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'send_email' %}">Send Email</a>
+                                </li>
+                         {% endif %}
 
                     {% endif %}
                 </ul>

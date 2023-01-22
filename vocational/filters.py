@@ -2,12 +2,15 @@ import django_filters
 from django_filters import *
 from django.db.models import Q
 from django.shortcuts import render
-
+from django import forms
 import vocational.models
 from .models import StudentAssignment, EthicsGradeRecord, Department, Quarter
 from users.models import User
 from users.functions import in_group
 
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 class StudentAssignmentFilter(django_filters.FilterSet):
     class Meta:
@@ -38,16 +41,21 @@ class GradeFilterVocationalCoordinator(django_filters.FilterSet):
         school = request.user.profile.school
         return Quarter.objects.filter(school_year__school=school, school_year__active=True).order_by('-name')
 
-    def instructors(request):
-        if request is None: return User.objects.none()
-        school = request.user.profile.school
-        return User.objects.filter(profile__school=school, is_active=True, groups__name='instructor')
+    # def instructors(request):
+    #     if request is None: return User.objects.none()
+    #     school = request.user.profile.school
+    #     return User.objects.filter(profile__school=school, is_active=True, groups__name='instructor')
 
-    # instructor = CharFilter(method='i_first_last_name_filter', label='Instructor')
-    instructor = ModelChoiceFilter(queryset=instructors)
+    instructor = CharFilter(method='i_first_last_name_filter', label='Instructor')
+    #instructor = ModelChoiceFilter(queryset=instructors)
     department = ModelChoiceFilter(queryset=departments)
     quarter = ModelChoiceFilter(queryset=quarters)
     student = CharFilter(method='s_first_last_name_filter', label='Student')
+
+    start_evaluation_date = DateFilter(field_name="evaluation_date", lookup_expr='gte', label='Graded after:',
+                               widget=DateInput(attrs={'placeholder': 'mm/dd/yyyy'}))
+    end_evaluation_date = DateFilter(field_name="evaluation_date", lookup_expr='lte', label='Graded before:',
+                             widget=DateInput(attrs={'placeholder': 'mm/dd/yyyy'}))
 
     class Meta:
         model = EthicsGradeRecord
@@ -57,9 +65,9 @@ class GradeFilterVocationalCoordinator(django_filters.FilterSet):
         return queryset.filter(
             Q(student__user__first_name__icontains=value) | Q(student__user__last_name__icontains=value))
 
-    # def i_first_last_name_filter(self, queryset, name, value):
-    #     return queryset.filter(
-    #         Q(instructor__first_name__icontains=value) | Q(instructor__last_name__icontains=value))
+    def i_first_last_name_filter(self, queryset, name, value):
+         return queryset.filter(
+             Q(instructor__first_name__icontains=value) | Q(instructor__last_name__icontains=value))
 
 
 class GradeFilterInstructor(django_filters.FilterSet):

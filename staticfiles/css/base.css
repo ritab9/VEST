@@ -114,7 +114,7 @@ body {
  */
 
 /* if any changes made here please check login and register templates */
-a,h1,h2,h5,h6 {
+a,h1,h2,h5,h6, h8 {
     color: #084574;
  }
 

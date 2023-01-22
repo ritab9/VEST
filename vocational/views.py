@@ -2,18 +2,18 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db import IntegrityError
-
+import datetime
 from users.decorators import allowed_users
 from users.functions import in_group
 from .functions import *
 from .models import *
 from .forms import *
 from .filters import *
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.utils import timezone
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-
+from emailing.functions import send_default_email_from_school
 now=timezone.now()
 
 
@@ -21,7 +21,7 @@ now=timezone.now()
 # School Admin Views
 # School Settings
 @login_required(login_url='login')
-@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+@allowed_users(allowed_roles=['isei_admin', 'school_admin', 'vocational_coordinator'])
 def grade_settings(request, schoolid):
     school_year = SchoolYear.objects.filter(school__id=schoolid, active=True).first()
 
@@ -41,8 +41,8 @@ def grade_settings(request, schoolid):
         s_form = GradeSettingsForm(instance=grade_settings)
 
     arr = []
-    for a in GradeSettings.objects.filter(school_year__school_id=schoolid):
-        a_info = [a.school_year, a.progress_ratio, a.summative_ratio, a.track_time, a.get_time_unit_display()]
+    for a in GradeSettings.objects.filter(school_year__school_id=schoolid).order_by("-school_year__name"):
+        a_info = [a.school_year, a.progress_ratio, a.summative_ratio, a.track_time, a.get_time_unit_display(),]
         arr.append(a_info)
 
     context = dict(school_year=school_year, schoolid=schoolid,
@@ -213,7 +213,7 @@ def manage_instructor_assignment(request, schoolid):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
 def student_assignment(request, schoolid):
-    studentassignment = StudentAssignment.objects.filter(department__school__id=schoolid).order_by(
+    studentassignment = StudentAssignment.objects.filter(department__school__id=schoolid, quarter__school_year__active=True).order_by(
         'quarter__school_year', '-quarter__name')
     quarter = Quarter.objects.filter(id__in=studentassignment.values_list('quarter', flat=True)).order_by('-name')
 
@@ -231,7 +231,7 @@ def student_assignment(request, schoolid):
 def student_assignment_student_filter(request, schoolid):
     studentassignment = StudentAssignment.objects.filter(department__school__id=schoolid).order_by(
         '-quarter__school_year', '-quarter__name')
-    student = Student.objects.filter(id__in=studentassignment.values_list('student', flat=True))
+    student = Student.objects.filter(id__in=studentassignment.values_list('student', flat=True), user__is_active=True)
 
     student_filter = StudentFilter(request.GET, queryset=student)
     student = student_filter.qs
@@ -247,7 +247,7 @@ def student_assignment_student_filter(request, schoolid):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
 def student_assignment_department_filter(request, schoolid):
-    studentassignment = StudentAssignment.objects.filter(department__school__id=schoolid)
+    studentassignment = StudentAssignment.objects.filter(department__school__id=schoolid, quarter__school_year__active=True)
     department_filter = StudentAssignmentFilter(request.GET, queryset=studentassignment)
     studentassignment = department_filter.qs
 
@@ -256,22 +256,35 @@ def student_assignment_department_filter(request, schoolid):
     new_quarter = Quarter.objects.filter(school_year__school_id=schoolid, school_year__active=True).exclude(
         id__in=studentassignment.values_list('quarter', flat=True)).order_by('name')
 
+
+    active_school_year = SchoolYear.objects.get(school_id=schoolid, active=True)
+
     context = dict(department=department, schoolid=schoolid, new_quarter=new_quarter,
-                   department_filter=department_filter)
+                   department_filter=department_filter, active_school_year = active_school_year)
     return render(request, 'vocational/student_assignment_department_filter.html', context)
 
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
-def manage_student_assignment(request, schoolid, quarterid):
+def manage_student_assignment(request, schoolid, quarterid, years_to_grad=None):
     school = School.objects.get(id=schoolid)
     quarter = Quarter.objects.get(id=quarterid)
 
-    # students = Student.objects.filter(user__profile__school=school, user__is_active=True)
-    # student_filter = StudentFilter(request.GET, queryset=students)
-    # students = student_filter.qs
+    if years_to_grad:
+        graduation_year = []
+        now_year = date.today().year
+        if date.today().month < 7:
+            for g in years_to_grad:
+                g_y = int(now_year) + int(g) - 1
+                graduation_year.append(g_y)
+        else:
+            for g in years_to_grad:
+                g_y = int(now_year) + int(g)
+                graduation_year.append(g_y)
+    else:
+        graduation_year = None
 
-    if request.method == "POST":
+    if request.method == "POST" and request.POST.get("save"):
         student_formset = StudentAssignmentFormSet(request.POST, instance=quarter, form_kwargs={'school': school,})
         if student_formset.is_valid():
             student_formset.save()
@@ -280,10 +293,10 @@ def manage_student_assignment(request, schoolid, quarterid):
             return redirect('student_assignment', schoolid)
 
     else:
-        student_formset = StudentAssignmentFormSet(instance=quarter, initial=[{'school': school }],
-                                                   form_kwargs={'school': school})
+        student_formset = StudentAssignmentFormSet(instance=quarter, initial=[{'school': school, }],
+                                                   form_kwargs={'school': school, 'graduation_year': graduation_year})
 
-    context = dict(student_formset=student_formset, quarter=quarter)
+    context = dict(student_formset=student_formset, quarter=quarter, schoolid=schoolid, quarterid=quarterid, years_to_grad = years_to_grad)
     return render(request, 'vocational/manage_student_assignment.html', context)
 
 
@@ -298,13 +311,13 @@ def grade_list(request, userid):
     quarter = Quarter.objects.filter(school_year=current_year).order_by("name")
 
     if in_group(user,"vocational_coordinator"):
-        grades = EthicsGradeRecord.objects.filter(quarter__school_year=current_year).order_by('-vc_validated','-student_discussed','-evaluation_date','student')
+        grades = EthicsGradeRecord.objects.filter(quarter__school_year=current_year).order_by('-vc_validated','-evaluation_date','student')
         filter = GradeFilterVocationalCoordinator(request.GET, request=request, queryset=grades)
         student_assignment = StudentAssignment.objects.filter(quarter__in =quarter).order_by("quarter")
     else:
         grades = EthicsGradeRecord.objects.filter(instructor_id=userid, quarter__school_year=current_year).order_by('-evaluation_date','student')
         filter = GradeFilterInstructor(request.GET, request=request, queryset=grades)
-        department = InstructorAssignment.objects.filter(user=user).values("department")
+        department = InstructorAssignment.objects.filter(instructor=user.profile).values("department")
         student_assignment = StudentAssignment.objects.filter(quarter__in =quarter, department__in=department).order_by(quarter)
 
     for obj in grades:
@@ -324,7 +337,7 @@ def grade_list(request, userid):
 def grade_list_all(request, userid):
     user = User.objects.get(id=userid)
     if in_group(user,"vocational_coordinator"):
-        grades = EthicsGradeRecord.objects.filter(quarter__school_year__school__id=user.profile.school.id).order_by('-vc_validated','-student_discussed','-evaluation_date','student')
+        grades = EthicsGradeRecord.objects.filter(quarter__school_year__school__id=user.profile.school.id).order_by('-vc_validated','-evaluation_date','student')
         filter = GradeFilterVocationalCoordinator(request.GET, request=request, queryset=grades)
     else:
         grades = EthicsGradeRecord.objects.filter(instructor_id=userid).order_by('-evaluation_date','student')
@@ -353,7 +366,7 @@ def initiate_grade_entry(request, schoolid):
         else:
             return redirect('add_grade', quarterid, type, departmentid, evaluation_date, request.user.id)
 
-    assignments = InstructorAssignment.objects.filter(instructor__id=request.user.id)
+    assignments = InstructorAssignment.objects.filter(instructor__id=request.user.profile.id)
     department = Department.objects.filter(school__id=schoolid, is_active=True, instructorassignment__in=assignments)
     # quarter_with_grades = Quarter.objects.filter(id__in=grades.values_list('quarter', flat=True))
     # new_quarter = Quarter.objects.filter(school_year__school_id=schoolid, school_year__active=True).exclude(
@@ -548,12 +561,18 @@ def finalize_skill_grade(request, gradeid):
 @allowed_users(allowed_roles=['vocational_coordinator'])
 def vc_validate_grades(request, schoolid):
 
-    i_grades=EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid)
-
-    if request.method == 'POST':
+    i_grades=EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid).order_by("-evaluation_date")
+    school = School.objects.get(id=schoolid)
+    if request.method == 'POST':#
         formset = VCValidationFormSet(request.POST)
         if formset.is_valid():
-            formset.save()
+            grades = formset.save()
+            for g in grades:
+                if g.vc_validated:
+                    send_default_email_from_school(request, g.student.user,school,"GradePostedStudentMessage")
+                    for p in g.student.parent.all():
+                        send_default_email_from_school(request, p, school, "GradePostedParentMessage", g.student)
+
             return redirect('grade_list', request.user.id)
     else:
         formset = VCValidationFormSet(queryset=i_grades)
@@ -561,6 +580,25 @@ def vc_validate_grades(request, schoolid):
     context = dict(formset=formset)
     return render(request, 'vocational/vc_validate_grades.html', context)
 
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['vocational_coordinator'])
+def vc_unvalidate_grades(request, schoolid):
+
+    i_grades= EthicsGradeRecord.objects.filter(~Q(vc_validated = None), instructor__profile__school__id=schoolid).order_by("-evaluation_date")
+
+    if request.method == 'POST':
+        formset = VCValidationFormSet(request.POST)
+        if formset.is_valid():
+            grades = formset.save()
+            #for g in grades:
+                #print(g.student.user.email)
+            return redirect('grade_list', request.user.id)
+    else:
+        formset = VCValidationFormSet(queryset=i_grades)
+
+    context = dict(formset=formset)
+    return render(request, 'vocational/vc_validate_grades.html', context)
 
 #not used
 # @login_required(login_url='login')
@@ -613,6 +651,27 @@ def student_vocational_info(request, studentid):
 
     context=dict(student=student, arr=arr)
     return render(request, 'vocational/student_vocational_info.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor', 'parent', 'student'])
+def s_vocational_info(request, studentid):
+
+    student=Student.objects.get(id=studentid)
+    arr=[]
+    for a in student.student_assignment.all().order_by('-quarter'):
+        grades=EthicsGradeRecord.objects.filter(student=student, department=a.department, quarter=a.quarter)
+        avg=average(grades, a.quarter.school_year)
+        if grades.last():
+            level=grades.last().level
+        else:
+            level=None
+        a_info = [a.quarter.school_year, a.quarter.get_name_display, a.department, avg, level]
+        arr.append(a_info)
+
+
+    context=dict(student=student, arr=arr)
+    return render(request, 'vocational/s_vocational_info.html', context)
 
 
 #parent views

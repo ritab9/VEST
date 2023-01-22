@@ -8,11 +8,11 @@
   {% block title %} Login {% endblock title %}
 
 {% block content %}
-  <div class ="col">
-    <span class="">
-      <img class= "moveimage" src="{% static 'appfiles/VestLogo.png' %}"  alt="VEST Logo">
-   </span>
-    </div>
+     <div class="d-flex justify-content-center form_container">
+     <img class= "" src="{% static 'appfiles/VestLogo.png' %}"  alt="VEST Logo">
+     </div>
+
+
 
 <div class="row">
   <div class="container">
@@ -24,11 +24,11 @@
         <div class="d-flex justify-content-center form_container">
           <form method="POST" action="">
             {% csrf_token %}
-            <div class="input-group mb-3">
+
+             <div class="input-group mb-3">
               <div class="input-group-append">
                 <span class="input-group-text"><i class="fas fa-user"></i></span>
               </div>
-
               <input type="text" name="username" placeholder="Username..." class="form-control">
             </div>
 
@@ -36,8 +36,19 @@
               <div class="input-group-append">
                 <span class="input-group-text"><i class="fas fa-key"></i></span>
               </div>
-
                 <input type="password" name="password" placeholder="Password..." class="form-control" >
+            </div>
+
+              <div class="input-group mb-3 mt-3 " style="width: 100%" >
+              <div class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-school"></i></span>
+              </div>
+                <select name="country_code" id="country_code" style="padding: 7px; background-color:white; color:gray">
+                <option selected="selected" disabled="disabled" value="select" name="select"> -- Select School -- </option>
+                  {% for s in school %}
+                    <option value="{{ s.code }}">{{ s.name }}</option>
+                  {% endfor %}
+                </select>
             </div>
 
               <div class="d-flex justify-content-center login_container">
@@ -46,19 +57,21 @@
           </form>
 
         </div>
-        <hr>
           <div class="d-flex justify-content-center links">
                 {% for message in messages %}
                   <div class="alert-warning spanred" role="alert" >{{message}}</div>
                 {% endfor %}
           </div>
 
-        <div class="mt-4">
+        <div class="">
           <!--
           <div class="d-flex justify-content-center links">
             Don't have an account? <a href="{ % url 'register' %}" class="ml-2">Sign Up</a>
           </div>
           -->
+            <div class="d-flex justify-content-center links mt-2">
+            First time user? <a href="{% url 'reset_password' %}" class="ml-1"> Set Password</a>
+          </div>
           <div class="d-flex justify-content-center links">
             Forgot Password? <a href="{% url 'reset_password' %}" class="ml-1"> Reset Password</a>
           </div>
@@ -71,6 +84,7 @@
     </div>
   </div>
 </div>
+    </div>
 {% endblock content %}
 
 

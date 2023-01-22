@@ -26,11 +26,14 @@ urlpatterns = [
     path('student_assignment/<int:schoolid>/', views.student_assignment, name='student_assignment'),
     path('manage_student_assignment/<int:schoolid>/<int:quarterid>/', views.manage_student_assignment,
          name='manage_student_assignment'),
+    path('manage_student_assignment/<int:schoolid>/<int:quarterid>/<years_to_grad>/', views.manage_student_assignment,
+         name='manage_student_assignment'),
     path('student_assignment_student_filter/<int:schoolid>/', views.student_assignment_student_filter,
          name='student_assignment_student_filter'),
     path('student_assignment_department_filter/<int:schoolid>/', views.student_assignment_department_filter,
          name='student_assignment_department_filter'),
     path('vc_validate_grades/<int:schoolid>/', views.vc_validate_grades, name="vc_validate_grades"),
+    path('vc_unvalidate_grades/<int:schoolid>/', views.vc_unvalidate_grades, name="vc_unvalidate_grades"),
 
     # Instructor links
     path('grade_list/<int:userid>/', views.grade_list, name='grade_list'),
@@ -47,6 +50,7 @@ urlpatterns = [
     path('finalize_skill_grade/<int:gradeid>/', views.finalize_skill_grade, name="finalize_skill_grade"),
 
     path('student_vocational_info/<int:studentid>/', views.student_vocational_info, name="student_vocational_info"),
+    path('s_vocational_info/<int:studentid>/', views.s_vocational_info, name="s_vocational_info"),
 
     # parent links
     path("parent_page/<int:parentid>/", views.parent_page, name="parent_page"),

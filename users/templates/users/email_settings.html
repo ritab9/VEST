@@ -7,7 +7,12 @@
 
 {% block content %}
 
-<div class="card-body row">
+
+
+    <div class="card-body row">
+
+    {% if not set_up %}
+
         <div class="col-sm-auto">
             <form method = "POST">
             {% csrf_token %}
@@ -15,11 +20,17 @@
                 <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save Changes">
         </form>
         </div>
+    {% else %}
+         <div class="col-sm-auto mt-3">
 
-        <div class="col-sm-auto">
+             <p><span style="color:darkblue">{{ email }}</span> email address has been set-up for this school. </p>
             <form method="POST">
                 {% csrf_token %}
-                <input class = "btn btn-sm btn-ISEIblue3 mt-3 ml-4" name="send" type= "submit" value = "Send Trial Email">
+                 <p> Click <input class="btn-ISEIblue3 btn-sm" name="send" type="submit" value="Send Trial Email"> to ensure that the set-up is working correctly. An email should arrive at {{ email }} within a few minutes. </p>
+                 <p> If you would like to change the email address, or the password click
+                <input class="btn-sm btn-ISEIblue3" name="edit" type= "submit" value = "Edit">
+                </p>
+
             </form>
             <div>
                 {% for message in messages %}
@@ -31,33 +42,36 @@
                 {% endfor %}
             </div>
         </div>
+    {% endif %}
 </div>
 
-
-
-<div class="card-body">
+{% if not set_up %}
+    <!-- set up info -->
+    <div class="card-body">
     <span class="spanred">Important!</span>
     <ul>
         <li> The default email host for the VEST app is <b>GMAIL</b>. Therefore, the email used to communicate through this app must also be a GMAIL email address.</li>
+        <li> If your school's email is hosted by Google, it qualifies. If not, please sign up for a Google hosted email address. </li>
         <li> For security purposes, the password required is an App Password, <span class="spanred">NOT</span> the regular password used to login to the email account.</li>
     </ul>
 
     <span>Follow the steps bellow to obtain an Gmail App Password:</span>
     <ol>
-        <li>Go to your Google Account.</li>
+        <li>Go to Manage Your Google Account.</li>
         <li>Select Security.</li>
-        <li>Under "Signing in to Google," select App Passwords. You may need to sign in. If you don’t have this option, it might be because:
+        <li>Under "Signing in to Google", select App Passwords. You may need to sign in. If you don’t have this option, it might be because:
             <ul>
-                <li>2-Step Verification is not set up for your account.</li>
+                <li>2-Step Verification is Off.</li>
                 <li>2-Step Verification is only set up for security keys.</li>
                 <li>You turned on Advanced Protection.</li>
             </ul>
         </li>
-        <li>At the bottom, choose Select app and choose the app you using and then Select device and choose the device you’re using and then Generate </li>
-        <li>Follow the instructions to enter the App Password. The App Password is the 16-character code in the yellow bar on your device.</li>
+        <li>At the bottom, choose "Select app", then select "Other (Custom Name)" and click "Generate" </li>
+        <li>The App Password is the 16-character code in the yellow bar on your device.</li>
         <li>Copy that code and paste it in the password box. No need to memorize it.</li>
     </ol>
 </div>
+{% endif %}
 
 {% endblock %}
 

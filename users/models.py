@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 import datetime
+
 from django.contrib.auth.hashers import make_password
 
 class Country(models.Model):
@@ -18,6 +19,7 @@ class Country(models.Model):
         return self.code
 
 class School(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
     name = models.CharField(max_length=50, help_text='Enter the name of the school', unique=True, blank=False,
                             null=False)
     abbreviation = models.CharField(max_length=6, default=" ", help_text=' Enter the abbreviation for this school', unique= True)
@@ -25,6 +27,10 @@ class School(models.Model):
     email_address = models.EmailField(max_length = 254, default="")
     email_password = models.CharField(max_length = 254, default="")
     phone_number = models.CharField(max_length= 20, null=True, blank=True)
+    country = models.ForeignKey(Country, on_delete=models.PROTECT)
+
+    def code(self):
+        return self.country.code + "_" + self.abbreviation
 
     # def save(self, *args, **kwargs):
     #     self.email_password = make_password(self.email_password)
@@ -38,6 +44,7 @@ class School(models.Model):
 
 # User Model is automatically created by Django and we will extend it to add phone number
 class Profile(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     school = models.ForeignKey(School, null = True, blank = True, on_delete= models.PROTECT)
@@ -68,6 +75,8 @@ class Profile(models.Model):
 #         return self.user.first_name +" " + self.user.last_name
 
 class Student(models.Model):
+    updated_at = models.DateTimeField(auto_now=True,)
+
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     birthday = models.DateField()
     CHOICES = (

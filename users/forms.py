@@ -5,19 +5,14 @@ from django.contrib.auth.forms import UserCreationForm
 
 from .models import School, Profile, Student
 
-class CreateUserForm(UserCreationForm):
+class CreateUserForm(ModelForm):
     first_name = forms.CharField()
     last_name = forms.CharField()
     email = forms.EmailField()
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'username', 'password1','password2' ]
-
-    widgets = {
-        'first_name': forms.DateInput(
-            attrs={'type': 'date', 'placeholder': 'mm/dd/yyyy', 'autofocus': '', }),
-    }
+        fields = ['first_name', 'last_name', 'email', 'username',]
 
 class SchoolForm(ModelForm):
     class Meta:
@@ -35,7 +30,7 @@ class EmailSettingsForm(ModelForm):
 class UserForm(forms.ModelForm):
     class Meta:
         model=User
-        fields=['first_name', 'last_name', 'email', 'username',]
+        fields=['first_name', 'last_name', 'email', 'username']
 
 
 class UserFormStudent(forms.ModelForm):

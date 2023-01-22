@@ -1,5 +1,6 @@
 {%  extends 'base.html' %}
   {% load static %}
+    {% load template_tags %}
 
   {% block title %} Manage Staff {% endblock title %}
 
@@ -30,7 +31,7 @@
         {% for i in staff %}
             <tr>
                 <td>{{ i.last_name }}, {{ i.first_name }}</td>
-                <td>{{ i.username }}</td>
+                <td>{{ i.username|shortened_username }}</td>
                     <td>{% for g in i.groups.all %} {{ g }}<br> {% endfor%}</td>
                 <td>{{ i.email }}</td>
                 <td> {{ i.profile.phone_number }}</td>
@@ -38,7 +39,7 @@
                     {% else %} Inactive {% endif %}
                 </td>
                 <td>
-                    <a class = "btn btn-sm iseiblue3" href="{% url 'update_school_staff' i.id  %}">Update</a>
+                    <a class = "btn btn-sm iseiblue3" href="{% url 'update_school_staff' i.id  %}">Edit</a>
 
             </tr>
         {% endfor %}

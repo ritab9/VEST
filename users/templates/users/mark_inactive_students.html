@@ -9,7 +9,7 @@
 
 <!-- filter if we need to make not active students that have not graduated -->
 {% if not grads_only %}
-    <div class="col mt-2 mb-2">
+    <div class= "card-body mt-2 mb-2">
             <form method="get">
                     {{ student_filter.form}}
                 <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
@@ -19,9 +19,10 @@
 {% endif %}
 
 
+    <div class="card-body">
     <form action="" method="POST" name ="mark_inactive_students">
         {% csrf_token %}
-        <table class="table table-striped mt-3">
+        <table class="table table-striped">
             <thead class="thead-dark">
                 <tr>
                     <th>Name </th><th>Grad Year</th><th>Gender</th>
@@ -50,14 +51,15 @@
 
 
         {% if not grads_only %}
-            <input class="btn-ISEIblue3" type="submit" value="Submit Changes" name="submit_changes" >
+            <input class="btn btn-sm btn-ISEIblue3" type="submit" value="Save" name="submit_changes" >
             <a class ="btn btn-sm btn-ISEIblue3" onclick="history.back()" style="float:right"> Cancel </a>
+            * Clicking Save will move all students to inactive status for whom the Active checkbox is unchecked.
         {% else %}
-            <input class="btn-ISEIblue3" type="submit" value="Save" name="submit_changes" >
-            * Ensure that all students whose status have changed are indeed no longer students at this school.
-            Check the Active box if any of the students are continuing to attend this school.
+            <input class="btn btn-sm btn-ISEIblue3" type="submit" value="Save" name="submit_changes" >
+            * Clicking Save will move all students to inactive status for whom the Active checkbox is unchecked.
         {% endif %}
 
     </form>
+    </div>
 
 {% endblock %}

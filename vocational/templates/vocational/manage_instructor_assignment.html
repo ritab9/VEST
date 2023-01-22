@@ -1,6 +1,7 @@
 {%  extends 'base.html' %}
   {% load static %}
   {% load crispy_forms_tags %}
+  {% load template_tags %}
 
   {% block title %} Departments {% endblock title %}
 
@@ -10,42 +11,32 @@
 
 <form method = "POST">
 	{% csrf_token %}
-
-    <input class = "btn btn-sm btn-ISEIblue3 mt-3" type= "submit" name="save" value = "Save">
-
-    <div class="col-sm-auto">
-    <table class="table" style="width: auto">
-        <thead>
-            <tr>
-                <th>Department</th>
-                <th>Instructor</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{ instructor_formset.management_data }}
-            {{ instructor_formset.management_form }}
+    <div class="card-body">
+    <div class="row">
+        {{ instructor_formset.management_data }}
+        {{ instructor_formset.management_form }}
             {% for form in instructor_formset %}
-                {{ form.errors }}
-                {{ form.non_field_errors }}
-                <tr>
-                    <td>{{ form.department }}<br>
-                    {{ form.DELETE|as_crispy_field }}
-                    </td>
-                    <td>
-                         <ul style="-webkit-column-count: 10; -moz-column-count: 10; column-count: 10; list-style-type:none">
+                <div class="col">
+                    {{ form.errors }}
+                    {{ form.non_field_errors }}
+
+                    {{ form.department }}<br>
+                    <div class="spanred span80 mb-1">{{ form.DELETE}} Remove Department</div>
+
+                    <ul style="list-style-type:none">
                         {% for i in form.instructor %}
                             <li> {{ i }} </li>
                          {% endfor %}
-                        </ul>
-                    </td>
-                </tr>
-                {% for hidden in form.hidden_fields %}
-                    {{ hidden }}
-                {% endfor %}
+                    </ul>
+
+                    {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+                </div>
             {% endfor %}
-        </tbody>
-    </table>
-        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Save and add more">
+    </div>
+         <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save">
+        <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="add" value = "Add more departments">
     </div>
 </form>
 

@@ -11,11 +11,13 @@
 <!-- registering school_admin -->
          <form method="POST">
         {% csrf_token %}
+         {{ form.errors }}
+            {{ form.non_field_errors }}
                 <p> School </p>
                 <select id="id_school_dropdown" name="school_dropdown">
                     <option value="none">------</option>
                     {% for s in school %}
-                        <option id="{{ s.id }}" value="{{ s.abbreviation }}" >{{s}}</option>
+                        <option id="{{ s.id }}" value="{{ s.code }}" >{{s}}</option>
                     {% endfor %}
                 </select>
 
@@ -31,20 +33,19 @@
             </div>
             <div class="col-sm-auto">
                 <div class="col-sm-auto">
-                Create Username:
-                 <div class="row">
-                    <div id="id_school_abbreviation_username"></div>_
+                Create Username: <div>{{ form.username|as_crispy_field }}</div>
+                    <!-- <div id="id_school_abbreviation_username"></div>_
                     <input type="text" id="id_default_username" name="default_username" label = "Default Username"></p>
                  </div>
-                    <div style="pointer-events: none">{{ form.username|as_crispy_field }}</div>
-                <!-- <p id="id_username_info" class="spanred"></p> -->
-                {{ form.password1|as_crispy_field }}
-                {{ form.password2|as_crispy_field }}
-                <p id="id_password_info" class="spanred"></p>
-            </div>
-        </div>
+                    <div style="pointer-events: none">{ { form.username|as_crispy_field }}</div> -->
+                    <!--
+                { { form.password1|as_crispy_field }}
+                { { form.password2|as_crispy_field }}
+                <p id="id_password_info" class="spanred"></p>  -->
+                <input class="btn-sm btn-ISEIblue3" type="submit" value ="Register"/>
+                </div>
              </div>
-        <input class="btn-sm btn-ISEIblue3" type="submit" value ="Register"/>
+
     </form>
 
     </div>
@@ -53,29 +54,29 @@
     window.onload = function(){
         document.getElementById('id_username').tabIndex ="-1";
     };
-
+    /*
     $('#id_school_dropdown').change (function() {
         var dd = document.getElementById('id_school_dropdown');
         var s_a = dd.options[dd.selectedIndex].value;
         document.getElementById('id_school_abbreviation_username').innerHTML =  $.trim(s_a);
 
-    });
+    }); */
 
     $('#id_last_name').focusout (function() {
         var first_name = $('#id_first_name').val();
         var last_name = $('#id_last_name').val();
-        var dd = document.getElementById('id_school_dropdown');
-        /* var s_a = $.trim($('#id_school_dropdown :selected').val()); */
+        /*var dd = document.getElementById('id_school_dropdown');
+        /* var s_a = $.trim($('#id_school_dropdown :selected').val());
         var s_id = dd.options[dd.selectedIndex].id;
         var s_a = dd.options[dd.selectedIndex].value;
+        $('#id_default_username').val(first_name + last_name); */
 
-
-        $('#id_default_username').val(first_name + last_name);
-        $('#id_username').val(s_a+"_"+first_name + last_name);
+        $('#id_username').val(first_name + last_name);
+        /*
         document.getElementById('id_school_abbreviation_username').innerHTML =  $.trim(s_a);
         $('#id_password1').val("VEST" + "_" + s_a +"_"+s_id );
         $('#id_password2').val("VEST" + "_" + s_a +"_"+s_id);
-        document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a +"_"+s_id  ;
+        document.getElementById('id_password_info').innerHTML = "Default Password: VEST" + "_" + s_a +"_"+s_id  ; */
     });
 
 

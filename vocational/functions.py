@@ -5,10 +5,8 @@ from django.utils import timezone
 
 def current_quarter(school_year_id):
     q = Quarter.objects.filter(start_date__lt=timezone.now()+timezone.timedelta(days=5), end_date__gt=timezone.now()+timezone.timedelta(days=5), school_year_id=school_year_id).first()
-    print(q)
     if not q:
         q=Quarter.objects.filter(school_year_id=school_year_id).first()
-        print(q)
     return q
 
 

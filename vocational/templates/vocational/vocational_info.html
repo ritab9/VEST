@@ -1,0 +1,58 @@
+<!-- included in s_vocational_info (pop-up at student assignment)
+and at student_vocational_info, used for parents, includes navbar -->
+
+   {% block content %}
+
+   <div class="row">
+        <div class="col-sm-auto ">
+            <h6 class="mt-3">{{ student }}</h6>
+            <div class="row">
+                <div class=" col-sm-auto card card-body">
+                <h7>Info</h7>
+                    <table class="table table-sm table-bordered">
+                    <tr>
+                        <th> Grade Level</th>
+                        <td>{{ student.grade_level }} </td>
+                    </tr>
+                    <tr>
+                        <th> Vocational Level</th>
+                        <td>{{ student.vocationalstatus.vocational_level }} </td>
+                    </tr>
+                    {% if student.vocationalstatus.vocational_class %}
+                    <tr>
+                        <th> Vocational Class</th>
+                        <td>{{ student.vocationalstatus.vocational_class }} </td>
+                    </tr>
+                    {% endif %}
+                </table>
+                </div>
+                <div class=" col-sm-auto card card-body">
+                <h8>Grade Averages</h8>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th> School Year</th><th>Quarter</th><th>Department</th>
+                                <th>Grade Average</th><th>Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for a in arr %}
+                            <tr>
+                                {% for i in a %}
+                                    <td>{{ i|default_if_none:""}}</td>
+                                {% endfor %}
+                            </tr>
+                         {% endfor %}
+                        </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+   </div>
+
+    <script>
+
+    </script>
+
+{%  endblock content %}

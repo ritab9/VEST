@@ -14,3 +14,8 @@ def in_more_groups(user):
         return True
     else:
         return False
+
+@register.filter('groups')
+def groups(user):
+    l = ", ".join(list(user.groups.values_list('name', flat=True)))
+    return l
