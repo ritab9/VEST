@@ -2,30 +2,25 @@
 {% load crispy_forms_tags %}
 {% load group_tags %}
 
-{% block title %} Default Message Management {% endblock title %}
+{% block title %} Create Local Message {% endblock title %}
 
 {% block content %}
 {% load static %}
 
     <div class="card-body">
         <div class="row">
-            <div class="col-sm-auto">
-                 <p><b>Name: </b> {{ form.instance.name}}</p>
-                 <p><b>Default Subject:</b> {{ form.instance.name.subject}} </p>
-                 <p><b>Default Message:</b> {{ form.instance.name.message}}</p>
-            </div>
 
             <div class="card-body col-lg-12">
                 <form method="POST" action ="" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <p class="spanred"> <b> Override with:</b> </p>
+
                     <div class="row mb-2">
+                         <div class="col-sm-auto">{{ form.name|as_crispy_field }}</div>
                         <div class="col-sm-auto">{{ form.subject|as_crispy_field }}</div>
                     </div>
                     <div class="mb-4">
                         {{ form.message|as_crispy_field }}
                     </div>
-                    {% include "dynamic_email_content.html" %}
                     <button type="submit" class="btn btn-sm btn-ISEIblue3" name="save"> Save </button>
                      <a class=" btn btn-sm btn-warning" href="{% url "message_list" %}">Cancel</a>
                 </form>
@@ -33,6 +28,5 @@
             </div>
         </div>
     </div>
-
 
 {% endblock %}

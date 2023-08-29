@@ -8,9 +8,11 @@
 {% block content %}
     <div class = "row mt-3">
     <div class="col-sm-auto">
+    <h6>Skill Grade</h6>
         <table class="table-sm mb-3">
             <tbody>
                 <tr><th scope="row">Quarter</th><td>{{ grade.quarter }}</td></tr>
+                <tr><th scope="row">Date</th><td>{{ grade.evaluation_date }}</td></tr>
                 <tr><th scope="row">Department</th><td>{{ grade.department }}</td></tr>
                 <tr><th scope="row">Instructor</th><td>{{ grade.instructor.last_name }}, {{ grade.instructor.first_name }}</td></tr>
             </tbody>

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, date
 from django.utils import timezone
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from emailing.functions import send_default_email_from_school
+from emailing.functions import send_system_email_from_school
 now=timezone.now()
 
 
@@ -285,7 +285,7 @@ def manage_student_assignment(request, schoolid, quarterid, years_to_grad=None):
         graduation_year = None
 
     if request.method == "POST" and request.POST.get("save"):
-        student_formset = StudentAssignmentFormSet(request.POST, instance=quarter, form_kwargs={'school': school,})
+        student_formset = StudentAssignmentFormSet(request.POST, instance=quarter, form_kwargs={'school': school, 'graduation_year': graduation_year})
         if student_formset.is_valid():
             student_formset.save()
             if request.POST.get("add"):
@@ -356,13 +356,18 @@ def grade_list_all(request, userid):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
 def initiate_grade_entry(request, schoolid):
+    error_message=None
     if request.method == 'POST':
         departmentid = request.POST.get('department')
         quarterid = request.POST.get('quarter')
         type = request.POST.get('type')
         evaluation_date = request.POST.get('date')
         if type=="K":
-            return redirect('add_skill_grade', quarterid, departmentid, evaluation_date, request.user.id)
+            department = Department.objects.get(id=departmentid)
+            if VocationalSkill.objects.filter(department=department).exists():
+                return redirect('add_skill_grade', quarterid, departmentid, evaluation_date, request.user.id)
+            else:
+                error_message = 'There are no skills entered for this department. Please contact Vocational Coordinator'
         else:
             return redirect('add_grade', quarterid, type, departmentid, evaluation_date, request.user.id)
 
@@ -381,9 +386,8 @@ def initiate_grade_entry(request, schoolid):
         messages.warning(request, "This school year/quarter is not set up properly for grade entry. \n Please contact school administrator or vocational coordinator. ")
         return redirect('crash')
 
-
-
-    context = dict(active_quarter=active_quarter, department=department, current_quarter_id=current_quarter_id)
+    context = dict(active_quarter=active_quarter, department=department, current_quarter_id=current_quarter_id,
+                   error_message=error_message)
     return render(request, 'vocational/initiate_grade_entry.html', context)
 
 
@@ -406,6 +410,8 @@ def add_grade(request, quarterid, type, departmentid, evaluation_date, instructo
     grade_form = EthicsGradeInstructorForm(instance=grade)
     grade_form.fields["student"].queryset = student
 
+    latest_grades = EthicsGradeRecord.objects.filter(department=department, evaluation_date__gt=datetime.strptime(evaluation_date, '%Y-%m-%d').date() - timedelta(days=63)).order_by('-evaluation_date')
+
     if request.method == "POST":
         grade_form = EthicsGradeInstructorForm(request.POST, instance=grade)
         if grade_form.is_valid():
@@ -419,37 +425,8 @@ def add_grade(request, quarterid, type, departmentid, evaluation_date, instructo
             print("Not valid")
 
     #grades=EthicsGradeRecord.objects.filter()
-    context = dict(grade_form=grade_form, grade=grade)
+    context = dict(grade_form=grade_form, grade=grade, latest_grades = latest_grades)
     return render(request, 'vocational/add_grade.html', context)
-
-@login_required(login_url='login')
-@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
-def add_skill_grade(request, quarterid, date, departmentid, instructorid):
-    quarter = Quarter.objects.get(id=quarterid)
-    instructor = User.objects.get(id=instructorid)
-    department = Department.objects.get(id=departmentid)
-    student = Student.objects.filter(student_assignment__department=department, student_assignment__quarter= quarter)
-    grade = SkillGradeRecord()
-    grade.quarter = quarter
-    grade.instructor = instructor
-    grade.department = department
-    grade.date=date
-    grade_form = SkillGradeInstructorForm(instance=grade)
-    grade_form.fields["student"].queryset = student
-
-    if request.method == "POST":
-        grade_form = SkillGradeInstructorForm(request.POST, instance=grade)
-        if grade_form.is_valid():
-            grade = grade_form.save()
-            return redirect('finalize_skill_grade', grade.id)
-        else:
-            print("Not valid")
-
-    #grades = SkillGradeRecord.objects.filter()
-
-    context = dict( grade_form=grade_form, grade=grade)
-    return render(request, 'vocational/add_skill_grade.html', context)
-
 
 
 # AJAX used in add_grade
@@ -528,56 +505,295 @@ def finalize_grade(request, gradeid):
                    time_form=time_form)
     return render(request, 'vocational/finalize_grade.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
+def add_skill_grade(request, quarterid, departmentid, evaluation_date, instructorid):
+    quarter = Quarter.objects.get(id=quarterid)
+    instructor = User.objects.get(id=instructorid)
+    department = Department.objects.get(id=departmentid)
+    student = Student.objects.filter(student_assignment__department=department, student_assignment__quarter= quarter)
+    grade = SkillGradeRecord()
+    grade.quarter = quarter
+    grade.instructor = instructor
+    grade.department = department
+    grade.evaluation_date = datetime.strptime(evaluation_date, '%Y-%m-%d').date()
+    grade_form = SkillGradeRecordInstructorForm(instance=grade)
+    grade_form.fields["student"].queryset = student
+
+    if request.method == "POST":
+        grade_form = SkillGradeRecordInstructorForm(request.POST, instance=grade)
+        if grade_form.is_valid():
+            grade = grade_form.save()
+            return redirect('finalize_skill_grade', grade.id)
+        else:
+            print("Not valid")
+
+    #grades = SkillGradeRecord.objects.filter()
+
+    context = dict( grade_form=grade_form, grade=grade)
+    return render(request, 'vocational/add_skill_grade.html', context)
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
 def finalize_skill_grade(request, gradeid):
     grade = SkillGradeRecord.objects.get(id=gradeid)
+    student=grade.student
+
+    skill_grade_records = SkillGradeRecord.objects.filter(department=grade.department, student=student)
+    selected_grade_record_ids = [record.id for record in skill_grade_records]
+
+    vocational_skills = VocationalSkill.objects.filter(skillgrade__grade_record__id__in=selected_grade_record_ids).distinct().order_by('id')
+    print(vocational_skills)
+
+    result_dict ={}
+
+    for skill in vocational_skills:
+        skill_grades=SkillGrade.objects.filter(skill=skill, grade_record__student = student)
+        skill_data= {
+            'skill_name':skill.name,
+            'grades':[]
+        }
+        for skill_grade in skill_grades:
+            if skill_grade.score:
+                grade_data = {
+                    'score':skill_grade.score,
+                    'evaluation_date':skill_grade.grade_record.evaluation_date
+                }
+                skill_data['grades'].append(grade_data)
+
+        result_dict[skill.id]=skill_data
 
     if request.method == "POST":
-
         skill_form = SkillGradeFormSet(request.POST, instance=grade)
         if skill_form.is_valid():
-            skill_form.save()
-            return redirect('add_skill_grade', grade.quarter.id, grade.department.id, grade.instructor.id)
+            has_scores = any(form.cleaned_data.get('score') for form in skill_form.forms)
+            if has_scores:
+                # Scores are entered, proceed with saving
+                skill_form.save()
+            else:
+                grade.delete()
+            if request.POST.get("save_c"):
+                return redirect('add_skill_grade', grade.quarter.id, grade.department.id, grade.evaluation_date, grade.instructor.id)
+            #ToDo create skill grade list of some sort
+            if request.POST.get("save_r"):
+                return redirect('add_skill_grade', grade.evaluation_date, grade.department.id,  grade.quarter.id, grade.instructor.id)
+                #return redirect('skill_grade_list', grade.instructor.id )
         else:
             print(skill_form.errors)
 
-    skill = VocationalSkill.objects.filter()
-    if not SkillGrade.objects.filter(grade=grade):
+    if request.method == "GET" and (request.GET.get("delete_add") or request.GET.get("delete_list")):
+        if request.GET.get("delete_add"):
+            grade.delete()
+            return redirect('initiate_grade_entry', grade.quarter.school_year.school_id )
+        else:
+            grade.delete()
+            #ToDo create skill grade list of some sort
+            return redirect('initiate_grade_entry', grade.quarter.school_year.school_id )
+            #return redirect('grade_list', grade.instructor.id)
+
+
+    skill = VocationalSkill.objects.filter(department=grade.department)
+    if not SkillGrade.objects.filter(grade_record=grade):
         for s in skill:
-               SkillGrade(skill=s, grade=grade).save()
+               SkillGrade(skill=s, grade_record=grade).save()
     skill_formset = SkillGradeFormSet(instance=grade)
 
-    #formative_comments_form = FormativeCommentsForm()
-
-    context = dict(grade=grade, skill_formset = skill_formset,)
-                   #formative_comments_form = formative_comments_form)
+    context = dict(grade=grade, skill_formset = skill_formset, result_dict=result_dict)
     return render(request, 'vocational/finalize_skill_grade.html', context)
 
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
+def skill_grade_list_selection(request, userid):
+
+    departments = Department.objects.filter(instructorassignment__instructor__user_id=userid)
+
+    if request.method == 'POST':
+        department_id = request.POST.get('department_id')
+        if "by_skill" in request.POST:
+            return skill_grade_list_by_skill(request, department_id)
+        else:
+            return skill_grade_list_by_student(request, department_id)
+
+
+    context = {
+        'departments': departments
+    }
+    return render(request, 'vocational/skill_grade_list_selection.html', context)
+
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
+def skill_grade_list_by_skill(request, department_id):
+
+    department = Department.objects.get(id=department_id)
+    skills = VocationalSkill.objects.filter(department=department)
+    students = Student.objects.filter(user__is_active=True, student_assignment__department=department).distinct()
+
+    # Create an empty dictionary to hold the scores and evaluation dates
+    skill_scores = {}
+
+    for skill in skills:
+        skill_scores[skill] = {}
+        for student in students:
+            # Retrieve all grade records for the skill, student, and department
+            grade_records = SkillGradeRecord.objects.filter(
+                student=student,
+                department=department,
+                skillgrade__skill=skill
+            )
+
+            scores_and_dates = []
+            for grade_record in grade_records:
+                skill_grade = SkillGrade.objects.get(grade_record=grade_record, skill=skill)
+                if skill_grade.score:
+                    score = skill_grade.score
+                    evaluation_date = grade_record.evaluation_date
+                    scores_and_dates.append((score, evaluation_date))
+
+            if scores_and_dates:
+                # Store the scores and evaluation dates in the dictionary
+                skill_scores[skill][student] = scores_and_dates
+            else:
+                # Set None for scores and evaluation dates if no grade records exist
+                skill_scores[skill][student] = None
+
+    context = {
+        'skill_scores': skill_scores
+    }
+
+    return render(request, 'vocational/skill_grade_list_by_skill.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
+def skill_grade_list_by_student(request, department_id):
+
+    department = Department.objects.get(id=department_id)
+    skills = VocationalSkill.objects.filter(department=department)
+    students = Student.objects.filter(user__is_active=True, student_assignment__department=department).distinct()
+
+    # Create an empty dictionary to hold the scores and evaluation dates
+    skill_scores = {}
+
+    for student in students:
+        skill_scores[student] = {}
+        for skill in skills:
+            # Retrieve all grade records for the skill, student, and department
+            grade_records = SkillGradeRecord.objects.filter(
+                student=student,
+                department=department,
+                skillgrade__skill=skill
+            )
+
+            scores_and_dates = []
+            for grade_record in grade_records:
+                skill_grade = SkillGrade.objects.get(grade_record=grade_record, skill=skill)
+                if skill_grade.score:
+                    score = skill_grade.score
+                    evaluation_date = grade_record.evaluation_date
+                    scores_and_dates.append((score, evaluation_date))
+
+            if scores_and_dates:
+                # Store the scores and evaluation dates in the dictionary
+                skill_scores[student][skill] = scores_and_dates
+            else:
+                # Set None for scores and evaluation dates if no grade records exist
+                skill_scores[student][skill] = None
+
+    context = {
+        'skill_scores': skill_scores
+    }
+
+    return render(request, 'vocational/skill_grade_list_by_student.html', context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor', 'parent','student'])
+def student_skill_grades(request, student_id):
+
+    student = Student.objects.get(id=student_id)
+
+    assigned_departments = Department.objects.filter(studentassignment__student=student)
+    # Create an empty dictionary to hold the scores and evaluation dates
+    skill_scores = {}
+
+    for department in assigned_departments:
+        skill_scores[department] = {}
+        skills = VocationalSkill.objects.filter(department = department)
+        for skill in skills:
+            # Retrieve all grade records for the skill, student, and department
+            grade_records = SkillGradeRecord.objects.filter(
+                student=student,
+                department=department,
+                skillgrade__skill=skill
+            )
+
+            scores_and_dates = []
+            for grade_record in grade_records:
+                skill_grade = SkillGrade.objects.get(grade_record=grade_record, skill=skill)
+                if skill_grade.score:
+                    score = skill_grade.score
+                    evaluation_date = grade_record.evaluation_date
+                    scores_and_dates.append((score, evaluation_date))
+
+            if scores_and_dates:
+                # Store the scores and evaluation dates in the dictionary
+                skill_scores[department][skill] = scores_and_dates
+            else:
+                # Set None for scores and evaluation dates if no grade records exist
+                skill_scores[department][skill] = None
+
+    context = { 'skill_scores': skill_scores }
+
+    return render(request, 'vocational/student_skill_grades.html', context)
 
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['vocational_coordinator'])
 def vc_validate_grades(request, schoolid):
 
-    i_grades=EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid).order_by("-evaluation_date")
+    i_grades = EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid).order_by("evaluation_date")
     school = School.objects.get(id=schoolid)
-    if request.method == 'POST':#
+    errors=None
+
+    if request.method == 'POST':
         formset = VCValidationFormSet(request.POST)
         if formset.is_valid():
-            grades = formset.save()
-            for g in grades:
-                if g.vc_validated:
-                    send_default_email_from_school(request, g.student.user,school,"GradePostedStudentMessage")
-                    for p in g.student.parent.all():
-                        send_default_email_from_school(request, p, school, "GradePostedParentMessage", g.student)
+            for form in formset:
+                ethics_grade_record = form.save(commit=False)
+                accepted_level = form.cleaned_data['accepted_level']
+                if accepted_level:
+                    ethics_grade_record.student.vocationalstatus.vocational_level = accepted_level
+                    ethics_grade_record.student.vocationalstatus.save()
+                ethics_grade_record.save()
+
+            #grades = formset.save()
+            #for g in grades:
+                if ethics_grade_record.vc_validated:
+                    send_system_email_from_school(request, ethics_grade_record.student.user, school, "GradePostedStudent")
+                    for p in ethics_grade_record.student.parent.all():
+                        send_system_email_from_school(request, p, school, "GradePostedParent", ethics_grade_record.student)
+                else:
+                    if ethics_grade_record.vc_comment:
+                        instructor = ethics_grade_record.instructor
+                        send_system_email_from_school(request, instructor, school, "GradeNotValidated", ethics_grade_record.student, ethics_grade_record.vc_comment)
+
+            #not_validated = EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid)
+            #instr_id = not_validated.values_list('instructor_id')
+            #instructors = User.objects.filter(id__in = instr_id)
+            #for i in instructors:
+            #    send_system_email_from_school(request, i, school, "GradeNotValidated")
 
             return redirect('grade_list', request.user.id)
+        else:
+            errors = formset.non_form_errors()
     else:
         formset = VCValidationFormSet(queryset=i_grades)
 
-    context = dict(formset=formset)
+    context = dict(formset=formset, errors=errors)
     return render(request, 'vocational/vc_validate_grades.html', context)
 
 
@@ -628,8 +844,6 @@ def vc_unvalidate_grades(request, schoolid):
 #
 #     context = dict(grade=grade, form = form )
 #     return render(request, 'vocational/student_discussion.html', context)
-
-
 
 
 @login_required(login_url='login')

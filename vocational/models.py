@@ -94,32 +94,16 @@ class Department(models.Model):
         return self.name
 
 
-class VocationalSkill(models.Model):
-    name = models.CharField(max_length=20)
-    description = models.CharField(max_length=100, null=True, blank=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    weight = models.DecimalField(decimal_places=2, max_digits=4, default=1)
-    # TODO these are optional, need to ask school if they want those fields or not
-    level = models.ForeignKey(EthicsLevel, on_delete=models.CASCADE, null=True, blank=True)
-    code = models.CharField(max_length=10, null=True, blank=True)
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        unique_together = ('department', 'name')
-
 
 class VocationalStatus(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE)
     vocational_level = models.ForeignKey(EthicsLevel, on_delete=models.CASCADE)
     vocational_class = models.ForeignKey(VocationalClass, on_delete=models.CASCADE)
 
-
 class InstructorAssignment(models.Model):
     updated_at = models.DateTimeField(auto_now=True,)
     department = models.OneToOneField(Department, on_delete=models.CASCADE)
     instructor = models.ManyToManyField(Profile, related_name="instructor_assignments", blank=True)
-
 
 class StudentAssignment(models.Model):
     updated_at = models.DateTimeField(auto_now=True,)
@@ -128,7 +112,6 @@ class StudentAssignment(models.Model):
     student = models.ManyToManyField(Student, related_name="student_assignment", blank=True,)
     class Meta:
         unique_together = ('quarter', 'department')
-
 
 #Grades
 
@@ -139,6 +122,8 @@ class EthicsGradeRecord(models.Model):
     instructor = models.ForeignKey(User, on_delete=models.PROTECT, blank=False, null=False)
     quarter = models.ForeignKey(Quarter, on_delete=models.PROTECT, blank=False, null=False)
     time = models.IntegerField(blank=True, null=True)
+    suggested_level = models.ForeignKey(EthicsLevel, related_name="suggested_level", on_delete=models.PROTECT, blank=True, null=True)
+    accepted_level = models.ForeignKey(EthicsLevel, related_name="accepted_level", on_delete=models.PROTECT, blank=True, null=True)
 
     CHOICES = (
         ('F', 'Formative'),
@@ -209,14 +194,30 @@ class EthicsFormativeGrade(models.Model):
 #     read = models.BooleanField(default="False")
 #     date = models.DateTimeField(auto_now=True)
 
+
+class VocationalSkill(models.Model):
+    name = models.CharField(max_length=20)
+    description = models.CharField(max_length=100, null=True, blank=True)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    weight = models.DecimalField(decimal_places=2, max_digits=4, default=1)
+    # TODO these are optional, need to ask school if they want those fields or not
+    level = models.ForeignKey(EthicsLevel, on_delete=models.CASCADE, null=True, blank=True)
+    code = models.CharField(max_length=10, null=True, blank=True)
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('department', 'name')
+        ordering = ('id',)
+
 class SkillValue(models.Model):
-    number = models.IntegerField(validators=[MinValueValidator(1),MaxValueValidator(5)])
+    score = models.IntegerField(validators=[MinValueValidator(1),MaxValueValidator(5)])
     description = models.CharField(max_length=100)
     value = models.DecimalField(decimal_places=2, max_digits=3, validators=[MinValueValidator(0), MaxValueValidator(1.5)])
     class Meta:
         ordering = ('value',)
     def __str__(self):
-        return str(self.value) + " " + self.description
+        return str(self.score) + ". " + self.description
 
 
 class SkillGradeRecord(models.Model):
@@ -226,7 +227,7 @@ class SkillGradeRecord(models.Model):
     instructor = models.ForeignKey(User, on_delete=models.PROTECT, blank=False, null=False)
     quarter = models.ForeignKey(Quarter, on_delete=models.PROTECT, blank=False, null=False)
 
-    student_discussed = models.DateField(null=True, blank=True)
+    evaluation_date = models.DateField(null=False, blank=False,)
     created_at = models.DateField(auto_now=True)
     updated_at = models.DateField(auto_now=True)
 
@@ -240,4 +241,5 @@ class SkillGrade(models.Model):
     grade_record = models.ForeignKey(SkillGradeRecord, on_delete=models.CASCADE, blank=False, null=False)
     class Meta:
         unique_together = ('skill', 'grade_record')
+
 

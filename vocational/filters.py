@@ -53,9 +53,9 @@ class GradeFilterVocationalCoordinator(django_filters.FilterSet):
     student = CharFilter(method='s_first_last_name_filter', label='Student')
 
     start_evaluation_date = DateFilter(field_name="evaluation_date", lookup_expr='gte', label='Graded after:',
-                               widget=DateInput(attrs={'placeholder': 'mm/dd/yyyy'}))
+                               widget=DateInput(attrs={'type': 'date', 'placeholder': 'mm/dd/yyyy'}))
     end_evaluation_date = DateFilter(field_name="evaluation_date", lookup_expr='lte', label='Graded before:',
-                             widget=DateInput(attrs={'placeholder': 'mm/dd/yyyy'}))
+                             widget=DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = EthicsGradeRecord

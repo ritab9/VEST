@@ -23,7 +23,7 @@
 
 <form method = "POST">
 	{% csrf_token %}
-<!-- filter by grade level -->
+<!-- filter by grade level
 
      <div class="row">
             <div class="col-sm-auto" style="float: right">
@@ -56,10 +56,9 @@
                     <label for="1">12th grade</label>
             </div>
 
-            <a id="link" href="{% url "manage_student_assignment" schoolid quarterid "1234" %}" style="float: right">Apply Selection</a>
-            <!-- <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="years" value = "Apply Filter" style="float: right"> -->
+            <a id="link" href="{ % url "manage_student_assignment" schoolid quarterid "1234" %}" style="float: right">Apply Selection</a>
         </div>
-
+-->
 
     <div class="card-body row">
     <div class="row">
@@ -96,6 +95,7 @@
 
     <div class="row">
         <div class="col-sm-auto">
+            <!-- <input onclick="SaveFunction()" class = "btn btn-sm btn-ISEIblue3" name="Save" value="Save"> -->
             <input class = "btn btn-sm btn-ISEIblue3" type= "submit" name="save" value = "Save">
         </div>
         <div class="col-sm-auto">
@@ -109,7 +109,7 @@
 
 <script>
 
-
+/*
       window.onload = function() {
           var a = document.getElementById("link");
           a.onclick = function() {
@@ -123,6 +123,17 @@
         };
 
 
+   function SaveFunction() {
+        alert('click');
+        document.getElementById('4').checked = true;
+        document.getElementById('3').checked = true;
+        document.getElementById('2').checked = true;
+        document.getElementById('1').checked = true;
+        document.getElementById("link").click();
+        alert ('clicked again');
+    };
+
+ */
 
     $("a.mypopup").on("click", function() {
         var ppp = $(this).prop('href');

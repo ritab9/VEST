@@ -81,8 +81,9 @@
 </div>
 
 <script>
+
     $(document).ready(function () {
-        $("#message_name").click(function () {
+        $("#message_name").change(function () {
             var url = "{% url 'get_subject' %}"; //get url of subject matching
             var url2 = "{% url 'get_message' %}";
             var message_id = document.getElementById('message_name').value; //get selected message value
@@ -94,7 +95,7 @@
                   success: function (data) {   // `data` is the return of the get_subject view function
                       document.getElementById("id_subject").value= data;  // replace the contents of the subject input with the data that came from the server
                   }
-              })
+              });
 
             $.ajax({
                   url: url2, // set the url of the request
@@ -104,7 +105,7 @@
                   success: function (data) {   // `data` is the return of the get_subject view function
                       document.getElementById("id_message").value= data;  // replace the contents of the subject input with the data that came from the server
                   }
-              })
+              });
         });
     });
 

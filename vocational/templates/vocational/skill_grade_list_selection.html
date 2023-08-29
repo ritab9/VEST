@@ -1,0 +1,26 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+  {% load group_tags %}
+
+
+  {% block title %} Skill Grades {% endblock title %}
+
+
+{% block content %}
+
+<form method="POST" action="">
+  {% csrf_token %}
+  <label for="department">Select Department:</label>
+  <select id="department" name="department_id">
+    {% for department in departments %}
+      <option value="{{ department.id }}">{{ department.name }}</option>
+    {% endfor %}
+  </select>
+
+    <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_skill">Skill Grades by Skill </button>
+    <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_student">Skill Grade by Student </button>
+</form>
+
+
+{% endblock %}

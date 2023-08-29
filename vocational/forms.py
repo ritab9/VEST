@@ -87,9 +87,13 @@ class EthicsGradeInstructorForm(forms.ModelForm):
 
 
 class EthicsGradeTimeForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['suggested_level'].queryset = EthicsLevel.objects.order_by('name')
+
     class Meta:
         model = EthicsGradeRecord
-        fields = ('time',)
+        fields = ('time', "suggested_level")
         widgets = {
             'time': forms.Textarea(attrs={'rows': 1, 'cols': 2,}),
         }
@@ -148,7 +152,7 @@ class StudentDiscussionForm(forms.ModelForm):
 class VCValidationForm(forms.ModelForm):
     class Meta:
         model = EthicsGradeRecord
-        fields = ('vc_validated', 'vc_comment')
+        fields = ('vc_validated', 'vc_comment', 'accepted_level')
         widgets = {
             'vc_validated': forms.DateInput(
                 attrs={'type': 'date', 'placeholder': "mm/dd/yyyy"}),
@@ -169,14 +173,9 @@ class SkillGradeRecordInstructorForm(forms.ModelForm):
         model = SkillGradeRecord
         fields = ('student', 'level')
 
-
 class SkillGradeForm(forms.ModelForm):
     class Meta:
         model = SkillGrade
         fields = ('score',)
-        widgets = {
-            'score': forms.Textarea(attrs={'rows': 1, 'cols': 3}),
-        }
 
-
-SkillGradeFormSet = inlineformset_factory(SkillGradeRecord, SkillGrade, form=SkillGradeForm, extra=10)
+SkillGradeFormSet = inlineformset_factory(SkillGradeRecord, SkillGrade, form=SkillGradeForm, extra=0)

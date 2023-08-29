@@ -35,7 +35,7 @@
                             </table>
                         </td>
                         <td id="cb">
-                        <a id="link" href="{% url "manage_student_assignment" schoolid q.id "1234" %}">Manage Assignments</a>
+                        <a class="link" type="link" onclick="ChangeHref()" href="{% url "manage_student_assignment" schoolid q.id "1234" %}">Manage Assignments</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -50,9 +50,12 @@
             <p><input class = "checkbox ml-2" type="checkbox" id="2" name="2" label = "11" checked>  11th grade</p>
             <p><input class = "checkbox ml-2" type="checkbox" id="1" name="1" label = "12" checked>  12th grade</p>
         </div>
-    </div>
 -->
+
+    </div>
+
 <script>
+
 
 /*
     var s="1234"
@@ -64,24 +67,17 @@
         if (document.getElementById('3').checked) { s = s+"3" };
         if (document.getElementById('2').checked) { s = s +"2" };
         if (document.getElementById('1').checked) { s = s +"1" };
-        alert(s);
     }
-});
 
-    window.onload = function() {
-          var a = document.getElementById("link");
-          a.onclick = function() {
-              document.getElementById("link").href = document.getElementById("link").href.replace('1234', s);
-          };
-        };
-
-    $(document).ready(function(){
-        var checkboxes = document.querySelectorAll(`[id*="_"]`);
-        checkboxes.change(function(){
-            alert("changed");
-        });
+    if (e.target.type == 'link') {
+        alert(s);
+        $('a').each(function(){
+        this.href = this.href.replace('1234', s);
     });
-*/
+    };
+}); */
+
+
 </script>
 
 {% endblock content%}

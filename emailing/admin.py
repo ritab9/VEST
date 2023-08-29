@@ -1,22 +1,21 @@
 from django.contrib import admin
 from .models import *
 
-class OverrideMessageInLine(admin.StackedInline):
-    model=OverrideMessage
+
+class CustomizedSystemMessageInLine(admin.StackedInline):
+    model = CustomizedSystemMessage
     can_delete = True
     extra = 0
 
-@admin.register(DefaultMessage)
-class DefaultMessage(admin.ModelAdmin):
-    model = DefaultMessage
-    inlines=[OverrideMessageInLine]
-    list_display = ('name','subject')
+
+@admin.register(SystemMessage)
+class SystemMessage(admin.ModelAdmin):
+    model = SystemMessage
+    inlines = [CustomizedSystemMessageInLine]
+    list_display = ('name', 'subject')
 
 
-@admin.register(SchoolMessage)
-class SchoolMessage(admin.ModelAdmin):
-    model=SchoolMessage
-    list_display = ('school','name','subject')
-
-
-
+@admin.register(LocalMessage)
+class LocalMessage(admin.ModelAdmin):
+    model = LocalMessage
+    list_display = ('school', 'name', 'subject')

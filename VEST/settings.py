@@ -154,7 +154,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # allow login to inactive users (basically getting a message that their account is inactive)
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.AllowAllUsersModelBackend',)
 
-if DEVELOPMENT_MODE is False:
+if DEVELOPMENT_MODE is True:
 #print emails to a file
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = '/Users/ritab/Dropbox/B2 IT Development/Web Development/Email testing'

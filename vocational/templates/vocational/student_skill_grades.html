@@ -1,0 +1,101 @@
+{%  extends 'base.html' %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+  {% load group_tags %}
+
+
+  {% block title %} Skill Grades {% endblock title %}
+
+
+{% block content %}
+
+    <head>
+    <title>Skill Scores</title>
+</head>
+<body>
+
+    {% for department, student_scores in skill_scores.items %}
+            <div class="row">
+                <h6>{{ department }}</h6>
+            </div>
+            <div class="row">
+                <div class="container-sm">
+                    <table class="table-sm table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Skill</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for skill, scores_and_dates in student_scores.items %}
+                            <tr>
+                                <td>{{ skill }}</td>
+                                {% if scores_and_dates %}
+                                    <td>
+                                    <table class="table-sm table-borderless">
+                                        <tbody>
+                                            {% for score, evaluation_date in scores_and_dates %}
+                                                <tr  style="background-color: transparent">
+                                                    <td>{{ score }}</td>
+                                                    <td>{{ evaluation_date }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    </td>
+                                {% else %}
+                                    <td colspan="2"> - </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+    {% endfor %}
+</body>
+
+
+    <!--
+<table class="table table-sm table-bordered">
+    <thead>
+        <tr>
+            <th>Skill</th>
+            <th>Student</th>
+            <th>Score</th>
+            <th>Evaluation Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for skill, student_scores in skill_scores.items %}
+            {% if student_scores %}
+                {% for student, scores_and_dates in student_scores.items %}
+                    <tr>
+                        {% if forloop.first %}
+                            <td rowspan="{{ student_scores|length|add:1 }}">{{ skill }}</td>
+                        {% endif %}
+                        <td>{{ student }}</td>
+                        <td>{{ scores_and_dates.0.0 }}</td>
+                        <td>{{ scores_and_dates.0.1 }}</td>
+                    </tr>
+                    {% for score, evaluation_date in scores_and_dates|slice:"1:" %}
+                        <tr>
+                            <td>{{ student }}</td>
+                            <td>{{ score }}</td>
+                            <td>{{ evaluation_date }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td>{{ skill }}</td>
+                    <td colspan="3">No grade records found</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+-->
+
+{% endblock %}

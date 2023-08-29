@@ -21,13 +21,7 @@
                 {% endif %}
             </div>
         </div>
-        <div class="col">
-            <div class="text-right mt-2">
-                {% if request.user|in_group:"vocational_coordinator" %}
-                    <a class="btn btn-sm btn-outline-danger" href="{% url 'vc_unvalidate_grades' request.user.profile.school.id %}"> Unvalidate Grades </a>
-                {% endif %}
-            </div>
-        </div>
+
     </div>
 
     <!--filter -->
@@ -44,16 +38,17 @@
 
 
     <div class="row col-sm-auto">
-   {% include "vocational/grades.html" %}
 
+    {% include "vocational/grades.html" %}
 
-
- <div class="col-sm-auto card-body pl-5">
+     <div class="col-sm-auto card-body pl-5">
         <table class="table" style="width: auto">
+        <thead>Student Assignments</thead>
             <tbody>
                 {% for q in quarter %}
-                    <tr><b>{{ q }}</b></tr>
-                            <table class = "table">
+                    <tr>
+                        <td><button class="btn btn-sm btn-outline-ISEIblue3 span80 quarter_button" id={{ q.id }}>{{ q }}</button>
+                            <table class = "table" id="quarter_table{{ q.id }}" style="display: none;">
                             {% for a in q.studentassignment_set.all %}
                                <tr>
                                     <td>{{ a.department }}</td>
@@ -63,13 +58,21 @@
                                </tr>
                             {% endfor %}
                             </table>
+                        </td></tr>
                 {% endfor %}
             </tbody>
         </table>
  </div>
+
+
     </div>
 
     <script>
+
+    $('.quarter_button').on("click", function() {
+            var id=$(this).attr('id');
+            $('#quarter_table'+id).toggle('fast');
+    });
 
     $('input').on("change", function() {
             $('#filterForm').submit();

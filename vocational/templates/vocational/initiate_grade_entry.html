@@ -6,7 +6,9 @@
 
 
 {% block content %}
-
+    {% if error_message %}
+        <span class="spanred">{{ error_message }}</span>
+    {% endif %}
   <div class ="card card-body border-0 col-sm-auto">
       <form method="POST">
       {% csrf_token %}

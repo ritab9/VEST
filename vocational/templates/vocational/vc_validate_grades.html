@@ -7,6 +7,14 @@
 
    {% block content %}
 
+       {% if errors %}
+    <ul class="errors">
+      {% for error in errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
         <form method="POST">
         {% csrf_token %}
                 <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save All">
@@ -18,7 +26,7 @@
                 <table class="table table-sm table-striped table-bordered mt-2 mb-5" style="width: stretch">
                     <thead class="thead-dark">
                         <tr>
-                            <th>Quarter</th><th>Student</th><th>Department</th><th>Instructor</th>
+                            <th>Quarter</th><th>Student</th><th>Level</th><th>Department</th><th>Instructor</th>
                             <th>Type</th><th>Grade</th><th>Score</th><th>Student Discussed</th>
                             <th>Date</th>
                         </tr>
@@ -29,6 +37,7 @@
                             <br> <div class="span80">{{ form.instancequarter.school_year }}</div>
                             </td>
                             <td>{{ form.instance.student }}</td>
+                            <td>{{ form.instance.level }}</td>
                             <td>{{ form.instance.department }}</td><td>{{ form.instance.instructor.last_name }}, {{ form.instance.instructor.first_name }}</td>
                             <td>{{ form.instance.get_type_display }}</td><td>{{ form.instance.percent }}%</td><td>{{ form.instance.score }}</td>
                             <td>{% if form.instance.student_discussed %}
@@ -105,8 +114,12 @@
                             </td>
                         </tr>
                         <tr>
-                                <td colspan="2" class="spangreen">Enter date to validate: {{ form.vc_validated }}</td>
-                                <td colspan="7" class="spanred">If not valid, please explain what needs to be changed: {{ form.vc_comment }}</td>
+                            <td colspan="2" class="">
+                                Suggested Level: {{ form.instance.suggested_level }} <br>
+                                New Level: {{ form.accepted_level }}
+                            </td>
+                            <td colspan="2" class="spangreen">Enter date to validate: {{ form.vc_validated }}</td>
+                            <td colspan="7" class="spanred">If not valid, please explain what needs to be changed: {{ form.vc_comment }}</td>
                         </tr>
                     </tbody>
                         {% for hidden in form.hidden_fields %}

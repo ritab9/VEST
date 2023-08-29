@@ -23,9 +23,12 @@
                     <td>{{ g.quarter.get_name_display }}
                     <br> <div class="span80">{{ g.quarter.school_year }}</div>
                     </td>
-                    <td>{{ g.student }}</td>
+                    <td>{{ g.student }} <br>
+                        <span class="span80">{{ g.student.vocationalstatus.vocational_level }}</span>
+                    </td>
                     <td>{{ g.department }}</td><td>{{ g.instructor.last_name }}, {{ g.instructor.first_name }}</td>
-                    <td>{{ g.get_type_display }}</td><td>{{ g.percent }}%</td><td>{{ g.score }}</td>
+                    <td>{{ g.get_type_display }}<br><span class="span80">{{ g.level }}</span></td>
+                    <td>{{ g.percent }}%</td><td>{{ g.score }}</td>
                     {% if grades.first.student.user.profile.school.id|track_time %}
                         <td>{{ g.time }} {{ g.quarter.school_year.GradeSettings.get_time_unit_display}}</td>
                     {% endif %}
@@ -41,7 +44,7 @@
                         {% endif %}
                     </td>
                     <td>{{ g.evaluation_date }}<br><div class="span80">{{ g.created_at }}</div></td>
-                    <td> <input type="button" class="detailbtn btn btn-sm btn-outline-dark span80 noprint" value ="Show Details" id={{ g.id }}> </td>
+                    <td> <input type="button" class="detailbtn btn btn-sm btn-outline-ISEIblue4 span80 noprint" value ="Show Details" id={{ g.id }}> </td>
                 </tr>
                 {% if g.vc_comment %}
                     <tr>

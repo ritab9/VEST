@@ -39,6 +39,12 @@ urlpatterns = [
     path('grade_list/<int:userid>/', views.grade_list, name='grade_list'),
     path('grade_list_all/<int:userid>/', views.grade_list_all, name='grade_list_all'),
 
+    path('skill_grade_list_selection/<int:userid>/', views.skill_grade_list_selection,
+         name='skill_grade_list_selection'),
+    path('skill_grade_list_by_skill/<int:department_id>/', views.skill_grade_list_by_skill, name='skill_grade_list_by_skill'),
+    path('skill_grade_list_by_student/<int:department_id>/', views.skill_grade_list_by_student,
+         name='skill_grade_list_by_student'),
+
     path('initiate_grade_entry/<int:schoolid>/', views.initiate_grade_entry, name='initiate_grade_entry'),
     path('add_grade/<int:quarterid>/<str:type>/<int:departmentid>/<str:evaluation_date>/<int:instructorid>/',
          views.add_grade, name='add_grade'),
@@ -52,9 +58,10 @@ urlpatterns = [
     path('student_vocational_info/<int:studentid>/', views.student_vocational_info, name="student_vocational_info"),
     path('s_vocational_info/<int:studentid>/', views.s_vocational_info, name="s_vocational_info"),
 
-    # parent links
+    # parent and student links
     path("parent_page/<int:parentid>/", views.parent_page, name="parent_page"),
     path("student_grades/<int:studentid>/", views.student_grades, name="student_grades"),
+    path("student_skill_grades/<int:student_id>/", views.student_skill_grades, name="student_skill_grades"),
 
     # student links
     path("student_page/<int:studentid>/", views.student_page, name="student_page"),

@@ -7,7 +7,7 @@
 
     <img src="{% static 'appfiles/VestLogoBLK.png' %}" width="120" height="60" alt="VEST Logo">
      <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -51,7 +51,7 @@
                                     <a class="nav-link float-right" href="{ % url 'message_list' %}">All Messages</a>
                                 </li>
                                   <li>
-                                    <a class="nav-link float-right" href="{ % url 'default_messages_management' %}">Default Messages</a>
+                                    <a class="nav-link float-right" href="{ % url 'system_messages_management' %}">system Messages</a>
                                 </li>
                               </ul>
                             </li> -->
@@ -127,24 +127,50 @@
                                   </li>
                               </ul>
                             </li>
-                            <li>
-                                <a class="nav-link vocational_coordinator" href="{% url 'grade_list' request.user.id %}"> Grade List </a>
+
+                             <li class="nav-item dropdown vocational_coordinator">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminDataManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Grades
+                              </a>
+                              <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
+                                    <li>
+                                        <a class="nav-link vocational_coordinator" href="{% url 'grade_list' request.user.id %}"> Ethics Grade List </a>
+                                    </li>
+                                    <li>
+                                        <a class="nav-link vocational_coordinator" href="{% url 'skill_grade_list_selection' request.user.id %}"> Skill Grade List </a>
+                                    </li>
+                              </ul>
+                             </li>
+
+
+
+                            <li class="nav-item dropdown vocational_coordinator ">
+                              <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminUserMangementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Grade Validation
+                              </a>
+                                <ul class="dropdown-menu bg-ISEIblue3 vocational_coordinator" aria-labelledby="navbarDropdown">
+                                    <li>
+                                    <a class="nav-link float-left vocational_coordinator"  href="{% url 'vc_validate_grades' request.user.profile.school.id %}"> Validate Grades </a>
+                                    </li>
+                                    <li>
+                                         <a class="nav-link float-left vocational_coordinator" style="color:orangered" href="{% url 'vc_unvalidate_grades' request.user.profile.school.id %}"> Unvalidate Grades </a>
+                                    </li>
+                                </ul>
                             </li>
-                            <li>
-                            <a class="nav-link vocational_coordinator " href="{% url 'vc_validate_grades' request.user.profile.school.id %}"> Validate Grades </a>
-                            </li>
+
+
                             <li class="nav-item dropdown vocational_coordinator ">
                               <a class="nav-link dropdown-toggle p-3" href="#" id="schoolAdminUserMangementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Settings
                               </a>
-                            <ul class="dropdown-menu bg-ISEIblue3 vocational_coordinator" aria-labelledby="navbarDropdown">
+                                <ul class="dropdown-menu bg-ISEIblue3 vocational_coordinator" aria-labelledby="navbarDropdown">
                                   <li>
                                       <a class="nav-link float-left" href="{% url 'grade_settings' request.user.profile.school.id %}">Grade Settings</a>
                                   </li>
                                    <li>
                                       <a class="nav-link float-left" href="{% url 'message_list' request.user.profile.school.id %}">Email Messages</a>
                                   </li>
-                              </ul>
+                                 </ul>
                             </li>
 
                         {% endif %}
@@ -168,8 +194,11 @@
                                   </ul>
                                 </li> -->
                                <li class="nav-item instructor">
-                                  <a class="nav-link " href="{% url 'grade_list' request.user.id %}"> Grade List </a>
+                                  <a class="nav-link " href="{% url 'grade_list' request.user.id %}"> Ethics Grade List </a>
                               </li>
+                             <li>
+                                <a class="nav-link instructor" href="{% url 'skill_grade_list_selection' request.user.id %}"> Skill Grade List </a>
+                             </li>
                               <li class="nav-item instructor">
                                 <a class="nav-link" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}"> Enter Grades</a>
                               </li>
@@ -190,8 +219,7 @@
                             </li>
                         {% endif %}
 
-                         {% if request.user|in_group:"student" or request.user|in_group:"parent"%}
-                         {% else %}
+                         {% if request.user|in_group:"isei_admin" or request.user|in_group:"school_admin" or request.user|in_group:"vocational_coordinator"%}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'send_email' %}">Send Email</a>
                                 </li>
@@ -242,6 +270,8 @@
      </div>
 </nav>
 
+
+
 <script type="text/javascript">
 
     var g_i = "{{request.user|in_more_groups}}";
@@ -279,7 +309,8 @@
                 url="{% url 'vocational_coordinator_dashboard' request.user.profile.school.id %}";
                 break;
             case "instructor":
-                url="{% url 'instructor_dashboard' request.user.id %}";
+                //url="{ % url 'instructor_dashboard' request.user.id %}";
+                url="{% url 'initiate_grade_entry' request.user.profile.school.id %}";
                 break;
             case "parent":
                 url="{% url "parent_page" request.user.id %}";

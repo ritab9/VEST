@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 {% load group_tags %}
 
-{% block title %} Default Message Management {% endblock title %}
+{% block title %} Edit Customized System Message {% endblock title %}
 
 {% block content %}
 {% load static %}
@@ -13,20 +13,24 @@
           <form method="POST" action ="" enctype="multipart/form-data">
             {% csrf_token %}
                         <div class="row mb-2">
-                            <div class="col-sm-auto"> {{ form.name|as_crispy_field }} </div>
+                            <div class="col-sm-auto">Name: {{ form.instance.name }} </div>
                             <div class="col-sm-auto">{{ form.subject|as_crispy_field }}</div>
                         </div>
                         <div class="mb-4">
                             {{ form.message|as_crispy_field }}
                         </div>
-              <div>
-                  {% include 'dynamic_email_content.html' %}
-              </div>
-            <button type="submit" class="btn btn-sm btn-ISEIblue3">Save</button>
+            <button type="submit" class="btn btn-sm btn-ISEIblue4">Save</button>
           </form>
       </div>
     </div>
     </div>
+    {% include "dynamic_email_content.html" %}
 
+
+    <div class="card-body">
+        <p><h8><b>System Message: </b> {{ form.instance.name }} </h8></p>
+        <p><b>Subject: </b>{{ form.instance.name.subject }}</p>
+        <p><b>Message: </b>{{ form.instance.name.subject }}</p>
+    </div>
 
 {% endblock %}

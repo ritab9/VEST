@@ -10,11 +10,11 @@
     <div class="card-body">
         <div>
             {% if request.user|in_group:"isei_admin"%}
-                <a class="btn-ISEIblue3 btn-sm"  href="{% url 'create_default_message' %}"> Add New Default Message </a>
-                <a class="btn-ISEIblue3 btn-sm ml-3"  href="{% url 'create_school_message' request.user.profile.school.id %}"> Add New ISEI Only Message </a>
+                <a class="btn-ISEIblue3 btn-sm"  href="{% url 'create_system_message' %}"> Add System Message </a>
+                <a class="btn-ISEIblue3 btn-sm ml-3"  href="{% url 'create_local_message' request.user.profile.school.id %}"> Add Local Message </a>
             {% endif %}
             {% if request.user|in_group:"vocational_coordinator"%}
-                <a class="btn-ISEIblue3 btn-sm"  href="{% url 'create_school_message' request.user.profile.school.id %}"> Add New Message </a>
+                <a class="btn-ISEIblue3 btn-sm"  href="{% url 'create_local_message' request.user.profile.school.id %}"> Add Local Message </a>
             {% endif %}
 
         </div>
@@ -22,37 +22,35 @@
 
     <div class="card-body">
 
-<!-- default messages -->
+<!-- system messages -->
     <div class="row">
-         <a class="btn-outline-ISEIblue" id="default_b"> Default Messages</a>
+         <a class="btn-outline-ISEIblue" id="default_b"> System Messages</a>
     </div>
 
     <div class="row" id="default_m">
-        <div class="col-lg-12">
+        <div class="col-sm">
           <div class="card card-body border-0">
-        <table class="">
+        <table class="table-sm table-bordered">
         <thead>
-        <tr><th>Name</th><th>Subject</th><th></th><th></th><th></th><th></th>
-            <th></th><th></th><th></th><th></th><th></th><th></th>
+        <tr><th>Name</th><th>Subject</th><th></th>
         </tr>
         </thead>
         <tbody>
-            {% for message in default_messages %}
+            {% for message in system_messages %}
             <tr>
                 <td> <a class="message_name" id="d{{ message.id }}">{{ message.name}}</a></td>
                 <td>{{ message.subject }}</td>
                 <td>
                     {% if request.user|in_group:"isei_admin"%}
                     <div>
-                        <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_default_message' message.id %}"> Delete </a>
-                        <a class=" btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_default_message' message.id %}"> Edit </a>
+                        <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_system_message' message.id %}"> Delete </a>
+                        <a class=" btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_system_message' message.id %}"> Edit </a>
                     </div>
                  {% endif %}
                  {% if request.user|in_group:"vocational_coordinator" %}
-                    <a class="btn btn-ISEIblue btn-sm" style="float:right" href="{% url 'create_override_message' message.id %}"> Override Default </a>
+                    <a class="btn btn-outline-ISEIblue btn-sm" style="float:right" href="{% url 'create_customized_system_message' message.id %}"> Customize System Message </a>
                 {% endif %}
                 </td>
-
             </tr>
             <tr>
                 <td class="pb-md-2" colspan="12">
@@ -69,12 +67,12 @@
     </div>
 
 
-<!-- overrides of default messages -->
+<!-- customization of system messages -->
     <div class="row mt-4">
-    <a class="btn-outline-ISEIblue" id="override_b"> Overrides of Default Messages</a>
+    <a class="btn-outline-ISEIblue" id="override_b"> Customized System Messages</a>
        <!-- { % if request.user|in_group:"vocational_coordinator"%}
             <div class="col-sm-auto ml-auto" id="override_t">
-                <a class="btn-outline-ISEIblue btn-sm" style="float:right" id="toggle_default"> Show Default Messages </a>
+                <a class="btn-outline-ISEIblue btn-sm" style="float:right" id="toggle_default"> Show System Messages </a>
             </div>
         { % endif %} -->
     </div>
@@ -82,15 +80,20 @@
         <div class="row" id="override_m">
           <div class="col-lg-12">
           <div class="card card-body border-0">
-                <table class="">
+                <table class="table-bordered table-sm">
                 <thead>
                 <tr>
-                    <th>Name</th><th>Subject</th><th></th><th></th><th></th><th></th>
-                    <th></th><th></th><th></th><th></th><th></th><th></th>
+                    <th>Name</th><th>Subject</th>
+                    <th>
+                         {% if request.user|in_group:"isei_admin"%}
+                             School:
+                         {% endif %}
+                    </th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
-            {% for message in override_messages %}
+            {% for message in customized_system_messages %}
                 <tr>
                     <td>
                         <a class="message_name" id="o{{ message.id }}"><h8>{{ message.name}}</h8> </a>
@@ -100,20 +103,20 @@
                     </td>
                     <td>
                          {% if request.user|in_group:"isei_admin"%}
-                             <div class="col-sm" style="float:right" ><b>School:</b> <h8>{{ message.school}}</h8> </div>
+                             {{ message.school}}
                          {% endif %}
                     </td>
                     <td>
                             {% if request.user|in_group:"isei_admin"%}
                                 <!--
                                 <div>
-                                    <a class=" btn btn-ISEIblue btn-sm mb-2" style="float:right" href="{ % url 'edit_default_message' message.id %}"> Edit </a>
-                                    <a class="btn btn-danger btn-sm" style="float:right" href="{ % url 'delete_default_message' message.id %}"> Delete </a>
+                                    <a class=" btn btn-ISEIblue btn-sm mb-2" style="float:right" href="{ % url 'edit_system_message' message.id %}"> Edit </a>
+                                    <a class="btn btn-danger btn-sm" style="float:right" href="{ % url 'delete_system_message' message.id %}"> Delete </a>
                                 </div> -->
                              {% endif %}
                              {% if request.user|in_group:"vocational_coordinator" %}
-                                 <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_override_message' message.id %}"> Delete </a>
-                                 <a class="btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_override_message' message.id %}"> Edit </a>
+                                 <a class="btn btn-outline-danger btn-sm" style="float:right" href="{% url 'delete_customized_system_message' message.id %}"> Delete </a>
+                                 <a class="btn btn-outline-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_customized_system_message' message.id %}"> Edit </a>
                             {% endif %}
 
                     </td>
@@ -149,38 +152,40 @@
 
 <!-- School Specific messages -->
     <div class="row mt-4">
-         <a class="btn-outline-ISEIblue" id="school_b"> School Messages</a>
+         <a class="btn-outline-ISEIblue" id="school_b"> Local Messages</a>
     </div>
 
      <div class="row" id="school_m">
           <div class="col-lg-12">
           <div class="card card-body border-0">
-              <table class="">
+              <table class="table-bordered table-sm">
                 <thead>
                 <tr>
-                    <th>Name</th><th>Subject</th><th></th><th></th><th></th><th></th>
-                    <th></th><th></th><th></th><th></th><th></th><th></th>
+                    <th>Name</th><th>Subject</th>
+                    <th>{% if request.user|in_group:"isei_admin"%}School{% endif %}</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
-                    {% for message in school_messages %}
+                    {% for message in local_messages %}
                         <tr>
                             <td><a class="message_name" id="s{{ message.id }}"> {{ message.name }}</a></td>
                             <td> {{ message.subject }} </td>
-                            <td style="float:right"> {% if request.user|in_group:"isei_admin"%} {{ message.school}} {% endif %}
+                            <td> {% if request.user|in_group:"isei_admin"%} {{ message.school}} {% endif %}
                             </td>
                             <td>
+
                                 {% if request.user|in_group:"isei_admin"%}
                                     {% if message.school.name == "ISEI" %}
                                     <div>
-                                        <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_default_message' message.id %}"> Delete </a>
-                                        <a class=" btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_default_message' message.id %}"> Edit </a>
+                                        <a class="btn btn-outline-danger btn-sm" style="float:right" href="{% url 'delete_local_message' message.id %}"> Delete </a>
+                                        <a class=" btn btn-outline-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_local_message' message.id %}"> Edit </a>
                                     </div>
                                    {% endif %}
                                 {% endif %}
                                  {% if request.user|in_group:"vocational_coordinator" %}
-                                     <a class="btn btn-danger btn-sm" style="float:right" href="{% url 'delete_school_message' message.id %}"> Delete </a>
-                                     <a class="btn btn-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_school_message' message.id %}"> Edit </a>
+                                     <a class="btn btn-outline-danger btn-sm" style="float:right" href="{% url 'delete_local_message' message.id %}"> Delete </a>
+                                     <a class="btn btn-outline-ISEIblue btn-sm mr-2" style="float:right" href="{% url 'edit_local_message' message.id %}"> Edit </a>
                                 {% endif %}
                             </td>
                         </tr>
@@ -202,7 +207,7 @@
 <script>
 
     $(document).ready(function() {
-    //toggle default message
+    //toggle system message
        // $('.overridden_default').hide()
 
         //$('#toggle_default').click(function () {

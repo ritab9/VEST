@@ -50,6 +50,9 @@ class Department(admin.ModelAdmin):
 @admin.register(VocationalSkill)
 class VocationalSkill(admin.ModelAdmin):
     model = VocationalSkill
+    list_display = ('name', 'department', 'school' )
+    def school(self, obj):
+        return obj.department.school
 
 
 class QuarterInLine(admin.StackedInline):
@@ -104,7 +107,7 @@ class EthicsGradeRecord(admin.ModelAdmin):
     inlines = [EthicSummativeGradeInLine, EthicFormativeGradeInLine]
     model = EthicsGradeRecord
     list_display = ('school', 'quarter', 'instructor', 'student', 'department', 'score', 'evaluation_date')
-    list_filter = ('department', 'quarter',  'instructor',  'student')
+    list_filter = ('department', 'quarter', )
     #list_editable = ('date',)
     ordering = ('evaluation_date',)
     def school(self, obj):
@@ -114,9 +117,9 @@ class EthicsGradeRecord(admin.ModelAdmin):
 @admin.register(SkillValue)
 class SkillValue(admin.ModelAdmin):
     model = SkillValue
-    list_display = ('number', 'description', 'value' )
+    list_display = ('score', 'description', 'value')
     list_editable = ('description', 'value')
-    ordering = ('number',)
+    ordering = ('score',)
 
 
 class SkillGradeInLine(admin.StackedInline):
@@ -129,8 +132,8 @@ class SkillGradeInLine(admin.StackedInline):
 class SkillGradeRecord(admin.ModelAdmin):
     inlines = [SkillGradeInLine, ]
     model = SkillGradeRecord
-    list_display = ('school', 'quarter', 'instructor', 'student', 'department')
-    list_filter = ('department', 'quarter',  'instructor',  'student')
+    list_display = ('instructor', 'student', 'quarter', 'evaluation_date', 'department', 'school')
+    #list_filter = ('department', 'quarter',  'instructor',  'student')
     #list_editable = ('start_date', 'end_date',)
     #ordering = ('school',)
     def school(self, obj):

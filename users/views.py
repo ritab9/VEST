@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 # from django.db.models import Q
 from django.forms import modelformset_factory
@@ -14,6 +14,7 @@ from vocational.models import SchoolYear, EthicsGradeRecord, InstructorAssignmen
 from emailing.functions import *
 from emailing.models import *
 from .models import Country
+
 
 
 # landing page for everyone. Introduced it to allow for role transition
@@ -46,7 +47,8 @@ def loginuser(request):
                         elif request.user.groups.filter(name='vocational_coordinator').exists():
                             return redirect('vocational_coordinator_dashboard', user.profile.school.id)
                         elif request.user.groups.filter(name='instructor').exists():
-                            return redirect('crash')
+                            #return redirect('crash')
+                            return redirect('initiate_grade_entry', user.profile.school.id )
                         elif request.user.groups.filter(name='parent').exists():
                             return redirect('parent_page', user.id)
                         elif request.user.groups.filter(name='student').exists():
@@ -162,12 +164,12 @@ def vocational_coordinator_dashboard(request, schoolid):
         "-updated_at").first()
     grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by(
         "-updated_at").first()
-    override_message_update = OverrideMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
+    customized_system_message_update = CustomizedSystemMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
-    school_message_update = SchoolMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
+    local_message_update = LocalMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
-    default_message_update = DefaultMessage.objects.values_list('updated_at', flat=True).order_by("-updated_at").first()
-    message_update = max(filter(None.__ne__, [override_message_update,school_message_update,default_message_update]))
+    system_message_update = SystemMessage.objects.values_list('updated_at', flat=True).order_by("-updated_at").first()
+    message_update = max(filter(None.__ne__, [customized_system_message_update,local_message_update,system_message_update]))
 
 
     context = dict(school_id=schoolid, school=school, instructor_update = instructor_update, student_update = student_update,
@@ -208,14 +210,14 @@ def school_admin_dashboard(request, schoolid):
     grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(
         school_year__school=school).order_by(
         "-updated_at").first()
-    override_message_update = OverrideMessage.objects.values_list('updated_at', flat=True).filter(
+    customized_system_message_update = CustomizedSystemMessage.objects.values_list('updated_at', flat=True).filter(
         school=school).order_by(
         "-updated_at").first()
-    school_message_update = SchoolMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
+    local_message_update = LocalMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
-    default_message_update = DefaultMessage.objects.values_list('updated_at', flat=True).order_by(
+    system_message_update = SystemMessage.objects.values_list('updated_at', flat=True).order_by(
         "-updated_at").first()
-    message_update = max(filter(None.__ne__, [override_message_update,school_message_update,default_message_update]))
+    message_update = max(filter(None.__ne__, [customized_system_message_update,local_message_update,system_message_update]))
 
     context = dict(school_id=schoolid, school=school, instructor_update=instructor_update,
                    student_update=student_update,
@@ -321,7 +323,7 @@ def add_school_staff(request, schoolid):
             if request.POST.get('school_admin'):
                 group = Group.objects.get(name='school_admin')
                 new_user.groups.add(group)
-            send_default_email_from_school(request, new_user, school, "NewStaff")
+            send_system_email_from_school(request, new_user, school, "NewStaff")
             return redirect('manage_school_staff', school.id)
     else:
         form = CreateUserForm()
@@ -540,7 +542,7 @@ def add_student(request, schoolid):
             group = Group.objects.get(name='student')
             new_user.groups.add(group)
             Profile.objects.create(user=new_user, school=school)
-            send_default_email_from_school(request, new_user, school, "NewStudent")
+            send_system_email_from_school(request, new_user, school, "NewStudent")
 
             if request.POST.get("save_back"):
                 return redirect('manage_students', school.id)
@@ -658,7 +660,7 @@ def add_parent(request, userid):
             student.parent.add(new_user)
             phone_number = request.POST.get('phone_number')
             Profile.objects.create(user=new_user, phone_number=phone_number, school=school)
-            send_default_email_from_school(request, new_user, school, "NewParent")
+            send_system_email_from_school(request, new_user, school, "NewParent")
             if request.POST.get("save_back"):
                 return redirect('manage_students', school.id)
             if request.POST.get("save_new"):

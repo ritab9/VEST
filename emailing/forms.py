@@ -9,31 +9,31 @@ class EmailForm(forms.Form):
     message = forms.CharField(widget = forms.Textarea)
 
 
-class DefaultMessageForm(ModelForm):
+class SystemMessageForm(ModelForm):
     class Meta:
-        model= DefaultMessage
+        model= SystemMessage
         fields = "__all__"
 
         widgets = {
             'message': forms.Textarea(attrs={'cols': 80, 'rows': 10})
         }
 
-DefaultMessageFormSet = modelformset_factory(DefaultMessage, form=DefaultMessageForm,
-                                                   can_delete=True, extra=1)
+SystemMessageFormSet = modelformset_factory(SystemMessage, form=SystemMessageForm,
+                                             can_delete=True, extra=1)
 
 
-class OverrideMessageForm(ModelForm):
+class CustomizedSystemMessageForm(ModelForm):
     class Meta:
-        model= OverrideMessage
+        model= CustomizedSystemMessage
         fields = ('subject', 'message')
         widgets = {
             'message': forms.Textarea(attrs={'cols': 80, 'rows': 10})
         }
 
 
-class SchoolMessageForm(ModelForm):
+class LocalMessageForm(ModelForm):
     class Meta:
-        model= SchoolMessage
+        model= LocalMessage
         fields = ('name', 'subject', 'message')
         widgets = {
             'message': forms.Textarea(attrs={'cols': 80, 'rows': 10})

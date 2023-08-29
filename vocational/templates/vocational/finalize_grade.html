@@ -75,28 +75,35 @@
                 {% endif %}
                     <div class="col-sm-auto">
                         <div class="row">
-                            {{ time_form|crispy }}{{ grade.quarter.school_year.GradeSettings.get_time_unit_display}}
+                            {{ time_form.time|as_crispy_field }}
+                            ({{ grade.quarter.school_year.gradesettings.get_time_unit_display}})
                         </div>
+
+                        {% if grade.type == "S" %}
+                             <div class="row">
+                                <td>{{ time_form.suggested_level|as_crispy_field }}</td>
+                             </div>
+                        {% endif %}
 
                         <div class="mt-5" > {{ student_discussion_form|crispy }}</div>
                     </div>
                     <div class="col-sm-auto">
                     </div>
             </div>
-            <div class="row align-content-center">
-                <div class="col text-center">
-                    <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_c" type= "submit" value = "Save and Add Next Grade">
-                    <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save_r" type= "submit" value = "Save and Return to Grade List">
+            <div class="row align-content-right">
+                <div class="col text-left">
+                    <input class = "btn btn-sm btn-outline-ISEIblue3 mt-3" name="save_c" type= "submit" value = "Save and Add Next Grade">
+                    <input class = "btn btn-sm btn-outline-ISEIblue3 mt-3" name="save_r" type= "submit" value = "Save and Return to Grade List">
                     <br>
                 </div>
             </div>
         </form>
         <div class="row align-content-center">
-            <div class="col text-center">
+            <div class="col text-left">
                 <form method = "GET">
                     {% csrf_token %}
-                    <input class ="btn btn-sm btn-danger mt-3" name="delete_add" type="submit" value="Delete and Add Next Grade">
-                    <input class ="btn btn-sm btn-danger mt-3" name="delete_list" type="submit" value="Delete and Return to Grade List">
+                    <input class ="btn btn-sm btn-outline-danger mt-3" name="delete_add" type="submit" value="Delete and Return to Grade Entry">
+                    <input class ="btn btn-sm btn-outline-danger mt-3" name="delete_list" type="submit" value="Delete and Return to Grade List">
                 </form>
             </div>
         </div>
