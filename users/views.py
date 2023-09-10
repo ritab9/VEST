@@ -10,7 +10,9 @@ from .forms import *
 from .functions import *
 from .filters import *
 import datetime
-from vocational.models import SchoolYear, EthicsGradeRecord, InstructorAssignment, StudentAssignment, GradeSettings, Department, Quarter
+from vocational.models import SchoolYear, EthicsGradeRecord, \
+    InstructorAssignment, StudentAssignment, GradeSettings, \
+    Department, Quarter, VocationalStatus, EthicsLevel, VocationalClass
 from emailing.functions import *
 from emailing.models import *
 from .models import Country
@@ -48,7 +50,8 @@ def loginuser(request):
                             return redirect('vocational_coordinator_dashboard', user.profile.school.id)
                         elif request.user.groups.filter(name='instructor').exists():
                             #return redirect('crash')
-                            return redirect('initiate_grade_entry', user.profile.school.id )
+                            return redirect('grade_list', user.id )
+                            #return redirect('initiate_grade_entry', user.profile.school.id )
                         elif request.user.groups.filter(name='parent').exists():
                             return redirect('parent_page', user.id)
                         elif request.user.groups.filter(name='student').exists():
@@ -169,7 +172,7 @@ def vocational_coordinator_dashboard(request, schoolid):
     local_message_update = LocalMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
     system_message_update = SystemMessage.objects.values_list('updated_at', flat=True).order_by("-updated_at").first()
-    message_update = max(filter(None.__ne__, [customized_system_message_update,local_message_update,system_message_update]))
+    message_update = max(filter(None.__ne__, [customized_system_message_update,local_message_update]), default=None)
 
 
     context = dict(school_id=schoolid, school=school, instructor_update = instructor_update, student_update = student_update,
@@ -190,34 +193,26 @@ def school_admin_dashboard(request, schoolid):
     school_year_update = Quarter.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by(
         "-updated_at").first()
     instructor_update = Profile.objects.values_list('updated_at', flat=True).filter(school=school,
-                                                                                    user__groups__name__in=[
-                                                                                        "instructor",
-                                                                                        "vocational_coordinator",
-                                                                                        "school_admin",
-                                                                                        "inactive_staff"]).order_by(
-        "-updated_at").first()
+        user__groups__name__in=["instructor", "vocational_coordinator", "inactive_staff"]).order_by(
+                                "-updated_at").first()
     student_update = Student.objects.values_list('updated_at', flat=True).filter(
         user__profile__school=school, ).order_by("-updated_at").first()
     department_update = Department.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
 
     instructor_assignment_update = InstructorAssignment.objects.values_list('updated_at', flat=True).filter(
-        instructor__school=school).order_by(
-        "-updated_at").first()
+        instructor__school=school).order_by("-updated_at").first()
     student_assignment_update = StudentAssignment.objects.values_list('updated_at', flat=True).filter(
-        student__user__profile__school=school).order_by(
-        "-updated_at").first()
+        student__user__profile__school=school).order_by("-updated_at").first()
     grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(
-        school_year__school=school).order_by(
-        "-updated_at").first()
+        school_year__school=school).order_by("-updated_at").first()
     customized_system_message_update = CustomizedSystemMessage.objects.values_list('updated_at', flat=True).filter(
-        school=school).order_by(
-        "-updated_at").first()
+        school=school).order_by("-updated_at").first()
     local_message_update = LocalMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
     system_message_update = SystemMessage.objects.values_list('updated_at', flat=True).order_by(
         "-updated_at").first()
-    message_update = max(filter(None.__ne__, [customized_system_message_update,local_message_update,system_message_update]))
+    message_update = max(filter(None.__ne__, [customized_system_message_update, local_message_update]), default=None)
 
     context = dict(school_id=schoolid, school=school, instructor_update=instructor_update,
                    student_update=student_update,
@@ -252,7 +247,9 @@ def email_settings(request, schoolid):
         email_settings_form = EmailSettingsForm(instance=school)
 
     if request.method=="POST" and 'send' in request.POST:
-        send_email_school(request, "Trial Email", "Email service successfully set up for VEST", [school.email_address,], school)
+        if not send_email_school(request, "Trial Email", "Email service successfully set up for VEST", None, school):
+            school.email_update = datetime.datetime.now().date()
+            school.save()
 
     if request.method == "POST" and 'edit' in request.POST:
         set_up=False
@@ -445,7 +442,7 @@ def manage_students(request, schoolid):
     school = School.objects.get(id=schoolid)
 
     student = Student.objects.filter(user__profile__school=school, user__is_active=True,
-                                     user__groups__name="student").order_by('graduation_year','user__last_name')
+                                     user__groups__name="student").order_by('-graduation_year','user__last_name')
     student_filter = StudentFilter(request.GET, queryset=student)
     student = student_filter.qs
 
@@ -526,6 +523,7 @@ def graduate_students(request, schoolid):
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def add_student(request, schoolid):
     school = School.objects.get(id=schoolid)
+
     # add new student
     if request.method == 'POST':
         form_user = CreateUserForm(request.POST)
@@ -543,6 +541,10 @@ def add_student(request, schoolid):
             new_user.groups.add(group)
             Profile.objects.create(user=new_user, school=school)
             send_system_email_from_school(request, new_user, school, "NewStudent")
+
+            ethics_1 = EthicsLevel.objects.get(id=1)
+            class_ethics = VocationalClass.objects.get(id=1)
+            VocationalStatus.objects.create(student=new_student, vocational_level=ethics_1, vocational_class=class_ethics)
 
             if request.POST.get("save_back"):
                 return redirect('manage_students', school.id)
@@ -631,7 +633,6 @@ def delete_student(request, userid):
                 # is neither a parent nor a school staff. Delete p
                 p.delete()
         user.delete()
-        user.save()
         return redirect('manage_students', school.id)
 
     context = dict(user=user, school=school)

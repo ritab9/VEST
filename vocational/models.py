@@ -1,4 +1,5 @@
 from users.models import *
+from django.core.exceptions import ValidationError
 
 
 # isei_admin managed
@@ -177,6 +178,7 @@ class EthicsSummativeGrade(models.Model):
     class Meta:
         unique_together = ( 'ethic', 'grade_record')
         ordering = ('id',)
+
 
 class EthicsFormativeGrade(models.Model):
     ethic = models.ForeignKey(EthicsDefinition, blank=False, null=False, on_delete=models.PROTECT)

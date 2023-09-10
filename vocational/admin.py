@@ -61,7 +61,6 @@ class QuarterInLine(admin.StackedInline):
     extra = 4
     max_num = 4
 
-
 @admin.register(SchoolYear)
 class SchoolYear(admin.ModelAdmin):
     inlines = [QuarterInLine, ]

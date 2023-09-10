@@ -11,6 +11,12 @@
          {{ grade.vc_comment }}
          </div>
     {% endif %}
+    {% if error_messages %}
+         <div class = "row mt-3 col spanred">
+         {{ error_messages }}
+         </div>
+    {% endif %}
+
     <div class = "row mt-3">
     <div class="col-sm-auto">
         <table class="table-sm mb-3">
@@ -43,7 +49,7 @@
                                 <th>Ethic</th>
                                 <th>Grade (1-5)</th>
                                 {% if grade.type == "S" %}
-                                    <th style="text-align: center"> Comment</th>
+                                    <th style="text-align: center"> Comment <div class="spanred">*required for scores of 1, 2 or 5</div></div></th>
                                 {% endif %}
                             </tr>
                         </thead>
@@ -52,6 +58,7 @@
                             {{ ethic_formset.management_form }}
                             {% for form in ethic_formset %}
                                 {{ form.non_field_errors }}
+
                                 <tr>
                                     <td>{{ form.instance.ethic.name }}</td>
                                     <td>{{ form.score}}
@@ -90,6 +97,8 @@
                     <div class="col-sm-auto">
                     </div>
             </div>
+
+
             <div class="row align-content-right">
                 <div class="col text-left">
                     <input class = "btn btn-sm btn-outline-ISEIblue3 mt-3" name="save_c" type= "submit" value = "Save and Add Next Grade">
@@ -111,26 +120,33 @@
     </div>
     </div>
 <script>
-    /* Ajax to get level and ethic after student is selected
-    $(document).ready(function () {
-         //catch the form's submit event
-        $("#id_student").change(function () {
-            //create an AJAX call
-              $.ajax({
-                  data: $(this).serialize(), //get the form data
-                  url: "{ % url "get_level" %}",
-                  //on success
-                  success: function(response){
-                     document.getElementById('id_level').value = response.level_id;
-                  },
-                  //on error
-                  error: function(response) {
-                      alert(response.errors);
-                  },
-              });
-              return false;
+
+$(document).ready(function () {
+    // Select all the score and comment fields within the formset
+    var scoreFields = $('input[name$="score"]');
+    var commentFields = $('textarea[name$="comment"]');
+
+    // Function to update the comment field's required attribute based on the score
+    function updateCommentRequired() {
+        scoreFields.each(function (index) {
+            var scoreValue = parseInt($(this).val()); // Get the score value as an integer
+            var commentField = commentFields.eq(index);
+
+            // Check if the score is 1, 2, or 5 and update the required attribute accordingly
+            if ([1, 2, 5].includes(scoreValue)) {
+                commentField.prop('required', true);
+            } else {
+                commentField.prop('required', false);
+            }
         });
-    }); */
+    }
+
+    // Call the function initially
+    updateCommentRequired();
+
+    // Attach an event listener to the score fields to update the comment requirement
+    scoreFields.on('input', updateCommentRequired);
+});
 
 </script>
 

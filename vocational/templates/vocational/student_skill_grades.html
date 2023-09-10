@@ -18,6 +18,7 @@
             <div class="row">
                 <h6>{{ department }}</h6>
             </div>
+        {%  if skill in skill_scores %}
             <div class="row">
                 <div class="container-sm">
                     <table class="table-sm table-bordered table-striped">
@@ -53,6 +54,9 @@
                 </table>
                 </div>
             </div>
+        {% else %}
+            <p>There are no skill grades recorded for this department. </p>
+        {% endif %}
     {% endfor %}
 </body>
 

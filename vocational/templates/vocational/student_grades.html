@@ -24,12 +24,12 @@
         <thead>
             <tr>
                 <th colspan="10" class="text-right">
-                <h6> Average: {% if avg %}{{ avg }} % {% else %} <span class="span80">No validated grades yet</span> {% endif %} </h6>
+                <h6> Average: {% if avg %}{{ avg }} % {% else %} <span class="span80 spanred">No validated grades yet</span> {% endif %} </h6>
                 </th>
             </tr>
             <tr>
                 <th>Quarter</th><th>Department</th><th>Instructor</th>
-                <th>Type</th><th>Grade</th><th>Score</th><th>Student Discussed</th> <th>VC Validated</th>
+                <th>Type</th><th>Level</th></th><th>Grade</th><th>Score</th><th>Student Discussed</th> <th>VC Validated</th>
                 <th>Date</th><th></th>
             </tr>
         </thead>
@@ -40,7 +40,13 @@
                     <br> <div class="span80">{{ g.quarter.school_year }}</div>
                     </td>
                     <td>{{ g.department }}</td><td>{{ g.instructor.last_name }}, {{ g.instructor.first_name }}</td>
-                    <td>{{ g.get_type_display }}</td><td>{{ g.percent }}%</td><td>{{ g.score }}</td>
+                    <td>{{ g.get_type_display }}</td>
+                    <td>{{ g.level }}
+                        {% if g.accepted_level  %} <div class="span80 spangreen">
+                        New level: {{ g.accepted_level }}
+                        </div> {% endif %}
+                    </td>
+                    <td>{{ g.percent }}%</td><td>{{ g.score }}</td>
                     <td>{% if g.student_discussed %}
                             {{ g.student_discussed}}
                         {% else %}

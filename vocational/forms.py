@@ -2,6 +2,8 @@ from django import forms
 from django.forms import ModelForm
 from django.forms.models import inlineformset_factory, modelformset_factory
 import datetime
+from django.core.exceptions import ValidationError
+
 
 from django.contrib.auth.models import User
 from .models import *
@@ -61,10 +63,10 @@ class StudentAssignmentForm(forms.ModelForm):
         self.fields['department'].queryset = Department.objects.filter(school=school, is_active=True)
         if not graduation_year:
             self.fields['student'].queryset = Student.objects.filter(user__profile__school=school,
-                                                               user__is_active=True).order_by('-graduation_year')
+                                                               user__is_active=True).order_by('user__last_name')
         else:
             self.fields['student'].queryset = Student.objects.filter(user__profile__school=school, graduation_year__in = graduation_year,
-                                                                     user__is_active=True).order_by('-graduation_year')
+                                                                     user__is_active=True).order_by('user__last_name')
 
     class Meta:
         model = StudentAssignment
@@ -109,10 +111,17 @@ class EthicsSummativeGradeForm(forms.ModelForm):
 
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        score = cleaned_data.get('score')
+        comment = cleaned_data.get('comment')
+
+        #if score in [1, 2, 5] and not comment:
+        #    raise ValidationError("Comments are required for scores of 1, 2, or 5.")
+
 
 EthicsSummativeGradeFormSet = inlineformset_factory(EthicsGradeRecord, EthicsSummativeGrade,
                                                     form=EthicsSummativeGradeForm, extra=0, max_num=10)
-
 
 class EthicsFormativeGradeForm(forms.ModelForm):
     class Meta:
@@ -163,6 +172,11 @@ class VCValidationForm(forms.ModelForm):
             'vc_comment': "Comment:"
         }
         edit_only = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Sort the 'accepted_level' queryset by 'name'
+        self.fields['accepted_level'].queryset = EthicsLevel.objects.order_by('name')
 
 
 VCValidationFormSet = modelformset_factory(EthicsGradeRecord, form=VCValidationForm, extra=0, )

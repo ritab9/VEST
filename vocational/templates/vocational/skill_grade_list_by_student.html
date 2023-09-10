@@ -8,6 +8,11 @@
 
 
 {% block content %}
+     {% if error_message %}
+        <div class="card card-body mt-2 mb-2">
+            <span class="spanred">{{ error_message }}</span>
+        </div>
+    {% endif %}
 
     <head>
     <title>Skill Scores</title>

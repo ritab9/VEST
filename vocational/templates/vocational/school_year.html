@@ -24,7 +24,7 @@
                         <table class="table-sm table-borderless">
                             {% for q in s.quarter_set.all|dictsort:"name" %}
                                 <tr>
-                                    <td> {{ q.get_name_display }} </td><td> </td>
+                                    <td> {{ q.get_name_display }} <span class="span80">({{ q.id }})</span> </td><td> </td>
                                     <td style="text-align: right"> {{ q.start_date }} -</td>
                                     <td>{{ q.end_date }}</td>
                                 </tr>

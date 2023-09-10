@@ -24,9 +24,9 @@
              <p><span style="color:darkblue">{{ email }}</span> email address has been set-up for this school. </p>
             <form method="POST">
                 {% csrf_token %}
-                 <p> Click <input class="btn-ISEIblue3 btn-sm" name="send" type="submit" value="Send Trial Email"> to ensure that the set-up is working correctly. An email should arrive at {{ email }} within a few minutes. </p>
+                <p> Click <button class="btn btn-sm btn-outline-ISEIblue3 btn-sm" name="send" type="submit">Send Trial Email</button> to ensure that the set-up is working correctly. An email should arrive at {{ email }} within a few minutes. </p>
                  <p> If you would like to change the email address, or the email password click
-                <input class="btn-sm btn-ISEIblue3" name="edit" type= "submit" value = "Edit">
+                     <button class="btn btn-sm btn-outline-ISEIblue3" name="edit" type= "submit" value = "Edit">Edit</button>
                 </p>
 
             </form>

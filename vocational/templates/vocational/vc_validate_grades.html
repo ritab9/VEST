@@ -115,7 +115,9 @@
                         </tr>
                         <tr>
                             <td colspan="2" class="">
-                                Suggested Level: {{ form.instance.suggested_level }} <br>
+                                {% if form.instance.suggested_level %}
+                                    <div class="spanred">Suggested Level: {{ form.instance.suggested_level }} <br></div>
+                                {% endif %}
                                 New Level: {{ form.accepted_level }}
                             </td>
                             <td colspan="2" class="spangreen">Enter date to validate: {{ form.vc_validated }}</td>

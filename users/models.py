@@ -26,6 +26,7 @@ class School(models.Model):
     ordering = ['name']
     email_address = models.EmailField(max_length = 254, default="")
     email_password = models.CharField(max_length = 254, default="")
+    email_update= models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length= 20, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.PROTECT)
 

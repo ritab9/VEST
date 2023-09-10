@@ -34,7 +34,7 @@
                 <td>{{ i.username|shortened_username }}</td>
                     <td>{% for g in i.groups.all %} {{ g }}<br> {% endfor%}</td>
                 <td>{{ i.email }}</td>
-                <td> {{ i.profile.phone_number }}</td>
+                <td> {% if i.profile.phone_number %}{{ i.profile.phone_number }}{% endif %}</td>
                 <td> {% if i.is_active %} <div class="spangreen">Active</div>
                     {% else %} Inactive {% endif %}
                 </td>
