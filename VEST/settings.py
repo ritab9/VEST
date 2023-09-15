@@ -99,7 +99,7 @@ if DEVELOPMENT_MODE is True:
             'PASSWORD': os.getenv('DATABASE_PASS'),
             'HOST': os.getenv('DATABASE_HOST', ''),
             'PORT': os.getenv('DATABASE_PORT', ''),
-            # 'OPTIONS': {'sslmode': 'require'}, #uncomment for digitalocean database
+             #'OPTIONS': {'sslmode': 'require'}, #uncomment for digitalocean database
         }
     }
 elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
@@ -140,7 +140,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
+#STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
 
 
 # Uncomment if you have extra static files and a directory in your GitHub repo.
