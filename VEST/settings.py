@@ -89,7 +89,6 @@ WSGI_APPLICATION = 'VEST.wsgi.application'
 
 
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
-DEVELOPMENT_MODE = False
 if DEVELOPMENT_MODE is True:
     DATABASES = {
         'default': {
