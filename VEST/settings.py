@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'VEST.wsgi.application'
 
 
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
-#DEVELOPMENT_MODE = True
+DEVELOPMENT_MODE = False
 if DEVELOPMENT_MODE is True:
     DATABASES = {
         'default': {
@@ -140,7 +140,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-#STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
+STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
 
 
 # Uncomment if you have extra static files and a directory in your GitHub repo.
