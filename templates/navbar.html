@@ -276,20 +276,22 @@
 
     var g_i = "{{request.user|in_more_groups}}";
 
-    window.addEventListener("load", function() {
-        if (g_i == 'True') {
-            var group = sessionStorage.getItem("Group")
-            $('#id_group').val(group);
-            if (!$('#id_group').val()) {
-                if (document.getElementById('id_group')) {
-                    document.getElementById('id_group').selectedIndex = "0";
-                    group = $('#id_group').val();
+    window.onload=function() {
+        window.addEventListener("load", function () {
+            if (g_i == 'True') {
+                var group = sessionStorage.getItem("Group")
+                $('#id_group').val(group);
+                if (!$('#id_group').val()) {
+                    if (document.getElementById('id_group')) {
+                        document.getElementById('id_group').selectedIndex = "0";
+                        group = $('#id_group').val();
+                    }
                 }
-            };
-            navbar_refresh(group);
-        }
-    });
-
+                ;
+                navbar_refresh(group);
+            }
+        });
+    }
  //on group change, update selected item in sessions, refresh navbar and page
     $('#id_group').change(function() {
         var group = $(this).val();
