@@ -18,8 +18,8 @@ from pathlib import Path
 from decouple import config
 from django.core.management.utils import get_random_secret_key
 
-import mimetypes
-mimetypes.add_type("text/css", ".css", True)
+#import mimetypes
+#mimetypes.add_type("text/css", ".css", True)
 
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env()
