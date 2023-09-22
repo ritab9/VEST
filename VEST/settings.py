@@ -19,7 +19,6 @@ from decouple import config
 from django.core.management.utils import get_random_secret_key
 
 import mimetypes
-#mimetypes.add_type("text/css", ".css", True)
 mimetypes.add_type("text/css", ".css", True)
 
 env = environ.Env(DEBUG=(bool, False))
@@ -142,7 +141,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 #STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
 
 
