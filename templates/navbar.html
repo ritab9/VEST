@@ -5,7 +5,7 @@
 
 <nav class ="navbar navbar-expand-md navbar-dark bg-ISEIblue3 noprint fixed-top">
 
-    <img src="{% static 'appfiles/VestLogoBLK.png' %}" width="120" height="60" alt="VEST Logo">
+    <img class="" src="{% static 'appfiles/VestLogo.png' %}" width="120" height="60" alt="VEST Logo">
      <div class="container-fluid">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -277,26 +277,27 @@
     var g_i = "{{request.user|in_more_groups}}";
 
     window.onload=function() {
-        window.addEventListener("load", function () {
-            if (g_i == 'True') {
-                var group = sessionStorage.getItem("Group")
-                $('#id_group').val(group);
-                if (!$('#id_group').val()) {
-                    if (document.getElementById('id_group')) {
-                        document.getElementById('id_group').selectedIndex = "0";
-                        group = $('#id_group').val();
-                    }
+        //alert("Load");
+        if (g_i == 'True') {
+            var group = sessionStorage.getItem("Group")
+            $('#id_group').val(group);
+            if (!$('#id_group').val()) {
+                if (document.getElementById('id_group')) {
+                    document.getElementById('id_group').selectedIndex = "0";
+                    group = $('#id_group').val();
                 }
-                ;
-                navbar_refresh(group);
-            }
-        });
-    }
+            };
+            navbar_refresh(group);
+            //alert("Load");
+        };
+    };
+
  //on group change, update selected item in sessions, refresh navbar and page
     $('#id_group').change(function() {
         var group = $(this).val();
         sessionStorage.setItem("Group", group);
         url_refresh(group);
+        //alert("Group Change");
     });
 
 
@@ -326,6 +327,7 @@
 
  //Refresh navbar based on selected value for user group
     function navbar_refresh(group){
+        //alert("navbar_refresh");
         for (let element of document.querySelectorAll(".school_admin, .instructor, .vocational_coordinator, .parent")){
             element.style.display="none";
             };
