@@ -43,7 +43,8 @@ def loginuser(request):
                 else:
                     if request.user.is_active:
                         if request.user.groups.filter(name='isei_admin').exists():
-                            return redirect('isei_admin_dashboard')
+                            return redirect('isei_data_summary')
+                            #return redirect('isei_admin_dashboard')
                         elif request.user.groups.filter(name='school_admin').exists():
                             return redirect('school_admin_dashboard', user.profile.school.id)
                         elif request.user.groups.filter(name='vocational_coordinator').exists():

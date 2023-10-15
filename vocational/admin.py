@@ -21,8 +21,9 @@ class EthicsDefinitionInLine(admin.StackedInline):
 class EthicsLevel(admin.ModelAdmin):
     inlines = [EthicsDefinitionInLine, ]
     model = EthicsLevel
-    list_display = ('id', 'name', 'description')
-    list_editable = ('name', 'description',)
+    list_display = ('name', 'description', 'id')
+
+    #list_editable = ('name', 'description',)
     ordering = ('id',)
 
 
