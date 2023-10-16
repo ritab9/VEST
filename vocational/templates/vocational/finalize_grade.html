@@ -3,9 +3,12 @@
   {% load static %}
   {% load crispy_forms_tags %}
 
+
+
   {% block title %} Add Grade {% endblock title %}
 
 {% block content %}
+
     {% if grade.vc_comment %}
          <div class = "row mt-3 col spanred">
          {{ grade.vc_comment }}
@@ -46,7 +49,9 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Ethic</th>
+                                <th>Ethic
+                                    <br> <span class="span80blue"> *Hover over Ethic to see description </span>
+                                </th>
                                 <th>Grade (1-5)</th>
                                 {% if grade.type == "S" %}
                                     <th style="text-align: center"> Comment <div class="spanred">*required for scores of 1, 2 or 5</div></div></th>
@@ -60,7 +65,17 @@
                                 {{ form.non_field_errors }}
 
                                 <tr>
-                                    <td>{{ form.instance.ethic.name }}</td>
+                                    <td>
+                                        <div class="tooltip" style="color: #053A64">{{ form.instance.ethic.name }}
+                                             <span class="tooltiptext">{{ form.instance.ethic.description }}</span>
+                                        </div>
+                                        <!--
+                                        { { form.instance.ethic.name }}
+                                        <a href="{ % url '' form.instance.ethic.description %}"
+                                           target="popup" class="mypopup"> <i class="fa-solid fa-circle-info"></i> </a>
+                                        -->
+
+                                    </td>
                                     <td>{{ form.score}}
                                         {{ form.score.errors}}</td>
                                     {% if grade.type == "S" %}
@@ -122,6 +137,7 @@
 <script>
 
 $(document).ready(function () {
+    $('[data-toggle="tooltip"]').tooltip();
     // Select all the score and comment fields within the formset
     var scoreFields = $('input[name$="score"]');
     var commentFields = $('textarea[name$="comment"]');

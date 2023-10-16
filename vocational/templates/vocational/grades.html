@@ -64,7 +64,11 @@
                             <thead>
                                 <tr>
                                     {% for i in g.ethicssummativegrade_set.all %}
-                                        <th>{{ i.ethic.name }}</th>
+                                        <th>
+                                            <div class="tooltip" > {{ i.ethic.name }}
+                                             <span class="tooltiptext">{{i.ethic.description }}</span>
+                                            </div>
+                                        </th>
                                     {% endfor %}
                                 </tr>
                             </thead>
@@ -90,7 +94,11 @@
                             <thead>
                                 <tr>
                                     {% for i in g.ethicsformativegrade_set.all %}
-                                        <th>{{ i.ethic.name }}</th>
+                                        <th>
+                                            <div class="tooltip" > {{ i.ethic.name }}
+                                             <span class="tooltiptext">{{i.ethic.description }}</span>
+                                            </div>
+                                        </th>
                                     {%  endfor %}
                                 </tr>
                             </thead>
@@ -138,4 +146,8 @@
                          $("#details"+id).hide();
                          $(this).attr('value',"Show Details");}
          });
+
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
     </script>
