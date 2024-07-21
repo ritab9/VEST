@@ -235,14 +235,14 @@
 {% if user.is_authenticated and user.is_active%}
     <span class="mr-4">
         {% if not request.user|in_group:"isei_admin"%}
-            <div class="name-msg span80 text-light">{{ request.user|school_year }}</div>
+            <div class="name-msg text-light">{{ request.user|school_year }}</div>
         {% endif %}
         {% if not request.user|in_group:"isei_admin"%}
-            <div class="name-msg span80 text-light">{{ request.user|school }}</div>
+            <div class="name-msg text-light">{{ request.user|school }}</div>
         {% endif %}
      </span>
 
-    <span class="span80">
+    <span class="">
         <div class ="name-msg text-light"> {{request.user.first_name}} {{request.user.last_name}} </div>
         {% if request.user|in_more_groups %}
             <select class="bg-ISEIblue3 text-light" id="id_group" name="group">
