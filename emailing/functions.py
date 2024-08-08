@@ -11,7 +11,7 @@ from .models import *
 def format_message(message, user, child=None, extra_message=None):
     return message.format(first_name=user.first_name, last_name=user.last_name,
                           username=user.username.rsplit('_', 1)[-1],
-                          link='http://127.0.0.1:8000', child=child, extra_message=extra_message)
+                          link='iseivest.org', child=child, extra_message=extra_message)
 
 #ISEI sends email to School admin on account creation
 def send_email_school_admin(request, user):
