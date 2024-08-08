@@ -42,14 +42,13 @@ def send_system_email_from_school(request, user, school, message_name, child=Non
                   auth_user=school.email_address,
                   auth_password=school.email_password[::-1], connection=None, html_message=None)
         messages.info(request, "Email(s) sent successfully to " + str(user.email))
-    except SMTPException as e:
-        messages.error(request, mark_safe('Email was not sent to ' + str(user.email) + '. <br>' + str(e) + 'Please contact the website administrator.'))
+    except Exception as e:
+        messages.error(request, mark_safe('Email was not sent to ' + str(user.email) + '. <br>' + str(e) + '. <br>' + 'Please contact the website administrator.'))
 
 
 
 def send_email_school(request, subject, message, user=None, school=None):
 
-    print("function send_email_school_admin")
     # message = message+school.signature
     password = school.email_password[::-1]
     if user is None:
