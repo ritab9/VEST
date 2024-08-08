@@ -1,4 +1,35 @@
 
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  /* border-bottom: 1px dotted black; If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 360px;
+  background-color: rgb(5, 58, 100);
+  color: #fff;
+  text-align: left;
+  padding: 5px 0;
+    padding-left: 10px;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+
+
+
 .table-nostriped tbody tr:nth-of-type(odd) {
   background-color: transparent;
 }
@@ -114,7 +145,7 @@ body {
  */
 
 /* if any changes made here please check login and register templates */
-a,h1,h2,h5,h6, h8 {
+a,h1,h2,h5,h6,h8 {
     color: #084574;
  }
 
@@ -172,4 +203,7 @@ input::-webkit-inner-spin-button {
 input[type='number'] {
     -moz-appearance:textfield; /* Firefox */
 }
+
+/*.tableFixHead          { overflow: auto; height: 100px; }*/
+/*.tableFixHead thead th { position: sticky; top: 0; z-index: 1; }*/
 

@@ -312,7 +312,7 @@ def grade_list(request, userid):
     quarter = Quarter.objects.filter(school_year=current_year).order_by("name")
 
     if in_group(user,"vocational_coordinator"):
-        grades = EthicsGradeRecord.objects.filter(quarter__school_year=current_year).order_by('-vc_validated','-evaluation_date','student')
+        grades = EthicsGradeRecord.objects.filter(quarter__school_year=current_year).order_by('-vc_validated','-quarter','student')
         filter = GradeFilterVocationalCoordinator(request.GET, request=request, queryset=grades)
         student_assignment = StudentAssignment.objects.filter(quarter__in =quarter).order_by("quarter")
     else:
