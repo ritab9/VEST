@@ -43,7 +43,7 @@ def send_system_email_from_school(request, user, school, message_name, child=Non
                   auth_password=school.email_password[::-1], connection=None, html_message=None)
         messages.info(request, "Email(s) sent successfully to " + str(user.email))
     except SMTPException as e:
-        messages.error(request, mark_safe('Email was not sent to ' + str(user.email) + '. <br>' + str(e)))
+        messages.error(request, mark_safe('Email was not sent to ' + str(user.email) + '. <br>' + str(e) + 'Please contact the website administrator.'))
 
 
 
@@ -64,10 +64,8 @@ def send_email_school(request, subject, message, user=None, school=None):
                   auth_password=password,
                   connection=None, html_message=None)
         messages.info(request, "Email(s) sent successfully to " + str(user.email))
-        print("success")
     except SMTPException as e:
         messages.error(request, mark_safe('Email was not sent to:'+ str(user.email) +' Contact your school administrator. <br>' + str(e)))
-        print("error")
         return False
 
 

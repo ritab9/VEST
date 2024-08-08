@@ -16,6 +16,15 @@
     {% endif %}
 </p>
 
+     <div class="card card-body mt-2 padding">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+    {% endif %}
+
 
 
     <table class="table table-striped" id="myTable">

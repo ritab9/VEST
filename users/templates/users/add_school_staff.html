@@ -8,7 +8,8 @@
 
 {% block content %}
 
-<div class="card card-body mt-2 padding">
+    <div class="card card-body mt-2 padding">
+
 <!-- registering instructor -->
     <form method="POST">
         {% csrf_token %}
@@ -20,7 +21,6 @@
                 <br>
                 Phone number
                  <p><input type="text" id="phone_number" name="phone_number" label = "Phone Number"></p>
-
 
             </div>
             <div class="col-sm-auto">
