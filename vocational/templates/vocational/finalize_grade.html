@@ -24,13 +24,13 @@
     <div class="col-sm-auto">
         <table class="table-sm mb-3">
             <td>
-            <tbody>
-                <tr><th scope="row">Quarter</th><td>{{ grade.quarter }}</td></tr>
-                <tr><th scope="row">Department</th><td>{{ grade.department }}</td></tr>
-                <tr><th scope="row">Type</th><td>{{ grade.get_type_display }}</td></tr>
-                <tr><th>Date Evaluated</th><td>{{ grade.evaluation_date }}</td></tr>
-                <tr><th scope="row">Instructor</th><td>{{ grade.instructor.last_name }}, {{ grade.instructor.first_name }}</td></tr>
-            </tbody>
+                <tbody>
+                    <tr><th scope="row">Quarter</th><td>{{ grade.quarter }}</td></tr>
+                    <tr><th scope="row">Department</th><td>{{ grade.department }}</td></tr>
+                    <tr><th scope="row">Type</th><td>{{ grade.get_type_display }}</td></tr>
+                    <tr><th>Date Evaluated</th><td>{{ grade.evaluation_date }}</td></tr>
+                    <tr><th scope="row">Instructor</th><td>{{ grade.instructor.last_name }}, {{ grade.instructor.first_name }}</td></tr>
+                </tbody>
             </td>
             <td>
                 <tr><th scope="row">Student</th><td>{{ grade.student.user.last_name }}, {{ grade.student.user.first_name }}</td></tr>
@@ -54,7 +54,7 @@
                                 </th>
                                 <th>Grade (1-5)</th>
                                 {% if grade.type == "S" %}
-                                    <th style="text-align: center"> Comment <div class="spanred">*required for scores of 1, 2 or 5</div></div></th>
+                                    <th style="text-align: center"> Comment <div class="spanred">*required for scores of 1, 2 or 5</div></th>
                                 {% endif %}
                             </tr>
                         </thead>
@@ -96,20 +96,30 @@
                     </div>
                 {% endif %}
                     <div class="col-sm-auto">
-                        <div class="row">
-                            {{ time_form.time|as_crispy_field }}
-                            ({{ grade.quarter.school_year.gradesettings.get_time_unit_display}})
+                        <div class="row mt-2">
+                            Time ({{ grade.quarter.school_year.gradesettings.get_time_unit_display}})
+                            {{ time_form.time}}
                         </div>
 
-                        {% if grade.type == "S" %}
-                             <div class="row">
-                                <td>{{ time_form.suggested_level|as_crispy_field }}</td>
-                             </div>
-                        {% endif %}
+                        <div class="row mt-4">
+                            <div class="col">
+                                <div class="row mt-2">
+                                    Average: <strong><div id="averageScore"></div></strong>
+                                </div>
+                                <div class="row mt-2">
+                                    Percent: <strong><div id="percent"></div></strong>
+                                </div>
+                            </div>
+                            {% if grade.type == "S" %}
+                                 <div class="col">
+                                     {{ time_form.suggested_level|as_crispy_field }}
+                                 </div>
+                            {% endif %}
+                        </div>
 
-                        <div class="mt-5" > {{ student_discussion_form|crispy }}</div>
-                    </div>
-                    <div class="col-sm-auto">
+                        <div class="row">
+                            <div class="mt-5" > {{ student_discussion_form|crispy }}</div>
+                        </div>
                     </div>
             </div>
 
@@ -162,6 +172,43 @@ $(document).ready(function () {
 
     // Attach an event listener to the score fields to update the comment requirement
     scoreFields.on('input', updateCommentRequired);
+
+//calculate average score
+    function updateAverageScore(){
+        var totalScore = 0;
+        var count = 0;
+
+        // Loop through each score input field
+        $("input[name$='score']").each(function(){
+            var score = $(this).val();
+
+            // If score is not empty, add it to totalScore and increase the count
+            if(score){
+                totalScore += parseFloat(score);
+                count++;
+            }
+        });
+
+        var averageScore = totalScore/count; // Calculate average
+        var percent;
+
+        // Perform calculation if averageScore is not NaN
+        if (!isNaN(averageScore)) {
+            percent = Math.round((48.0294 * Math.pow(1.1571, averageScore) + 0.4) * 10) / 10;
+        } else {
+            percent = 'N/A';
+        }
+
+        // Display percent with 1 decimal point if a number, otherwise display 'N/A'
+        $('#percent').text(percent === 'N/A' ? percent : percent + '%');
+
+        $('#averageScore').text(isNaN(averageScore) ? 'N/A' : averageScore.toFixed(2)); // Display average with 2 decimal points
+    }
+
+    // Call updateAverageScore whenever there's a change in any score input field
+    $("input[name$='score']").change(updateAverageScore);
+
+    updateAverageScore(); // Call updateAverageScore when the page is loaded
 });
 
 </script>

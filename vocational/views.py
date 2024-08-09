@@ -316,7 +316,7 @@ def grade_list(request, userid):
         filter = GradeFilterVocationalCoordinator(request.GET, request=request, queryset=grades)
         student_assignment = StudentAssignment.objects.filter(quarter__in =quarter).order_by("quarter")
     else:
-        grades = EthicsGradeRecord.objects.filter(instructor_id=userid, quarter__school_year=current_year).order_by('-vc_validated','-evaluation_date','student')
+        grades = EthicsGradeRecord.objects.filter(instructor_id=userid, quarter__school_year=current_year).order_by('-vc_validated','-quarter','student')
         filter = GradeFilterInstructor(request.GET, request=request, queryset=grades)
         department = InstructorAssignment.objects.filter(instructor=user.profile).values("department")
         student_assignment = StudentAssignment.objects.filter(quarter__in =quarter, department__in=department).order_by(quarter)

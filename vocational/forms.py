@@ -97,7 +97,7 @@ class EthicsGradeTimeForm(forms.ModelForm):
         model = EthicsGradeRecord
         fields = ('time', "suggested_level")
         widgets = {
-            'time': forms.Textarea(attrs={'rows': 1, 'cols': 2,}),
+            'time': forms.Textarea(attrs={'rows': 1, 'cols': 2, 'style': 'width:150px;'}),
         }
 
 
