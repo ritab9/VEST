@@ -91,6 +91,17 @@ class EthicsGradeInstructorForm(forms.ModelForm):
 class EthicsGradeTimeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        try:
+            school_year_id = self.instance.quarter.school_year_id
+            time_track = GradeSettings.objects.filter(school_year_id=school_year_id).first().track_time
+        except AttributeError:
+            time_track = False
+
+        self.fields['time'].required = time_track
+        if not time_track:
+            self.fields['time'].widget = forms.HiddenInput()  # hide the field when not tracking time
+
         self.fields['suggested_level'].queryset = EthicsLevel.objects.order_by('name')
 
     class Meta:

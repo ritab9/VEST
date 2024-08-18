@@ -77,7 +77,8 @@
             generate();
             var first_name = $('#id_first_name').val();
             var last_name = $('#id_last_name').val();
-            var s_a = "{{school.abbreviation}}";
+            //var s_a = "{{school.abbreviation}}";
+            var s_a = "{{school.school_name_no_spaces}}";
             $('#id_email').val(first_name + last_name + "@" + s_a + ".org");
 
 

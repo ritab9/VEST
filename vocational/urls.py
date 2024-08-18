@@ -64,7 +64,10 @@ urlpatterns = [
     path("student_skill_grades/<int:student_id>/", views.student_skill_grades, name="student_skill_grades"),
 
     # student links
-    path("student_page/<int:studentid>/", views.student_page, name="student_page"),
+    path("student_page/<int:userid>/", views.student_page, name="student_page"),
     # path("student_grades/<int:studentid>/", views.student_grades, name="student_grades"),
+
+    #grade averages links
+    path('average_quarter_grades/<int:schoolid>/<int:quarterid>/', views.average_quarter_grades, name="average_quarter_grades"),
 
 ]

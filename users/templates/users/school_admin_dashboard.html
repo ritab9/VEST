@@ -7,6 +7,23 @@
 
 {% block content %}
 
-    {% include 'users/activity_flows.html' %}
+    <div class = "row">
+
+        <div class = "col col-auto">
+            {% include 'users/activity_flows.html' %}
+        </div>
+
+
+        <div class="col col-auto mt-5">
+            {% for quarter in quarters %}
+                <div class="row">
+                    <a href="{% url 'average_quarter_grades' school_id quarter.id %}">
+                        Average Grades for {{ quarter.get_name_display }} in {{ quarter.school_year }}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
 
 {% endblock %}

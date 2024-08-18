@@ -155,6 +155,14 @@ def instructor_dashboard(request, userid):
 def vocational_coordinator_dashboard(request, schoolid):
     school = School.objects.get(id=schoolid)
 
+    try:
+        active_school_year = SchoolYear.objects.get(school=school, active=True)
+    except SchoolYear.DoesNotExist:
+        active_school_year = None
+
+    # Get all quarters for the active school year
+    quarters = Quarter.objects.filter(school_year=active_school_year)
+
     school_year_update = Quarter.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by("-updated_at").first()
     instructor_update = Profile.objects.values_list('updated_at', flat=True).filter(school=school,
                                 user__groups__name__in=["instructor", "vocational_coordinator","school_admin", "inactive_staff"]).order_by("-updated_at").first()
@@ -180,7 +188,8 @@ def vocational_coordinator_dashboard(request, schoolid):
                    department_update = department_update,
                    school_year_update= school_year_update,grade_settings_update = grade_settings_update,
                    instructor_assignment_update = instructor_assignment_update, student_assignment_update = student_assignment_update,
-                   message_update=message_update
+                   message_update=message_update,
+                   active_school_year=active_school_year, quarters=quarters,
                    )
     return render(request, 'users/vocational_coordinator_dashboard.html', context)
 
@@ -190,6 +199,14 @@ def vocational_coordinator_dashboard(request, schoolid):
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def school_admin_dashboard(request, schoolid):
     school = School.objects.get(id=schoolid)
+
+    try:
+        active_school_year = SchoolYear.objects.get(school=school, active=True)
+    except SchoolYear.DoesNotExist:
+        active_school_year = None
+
+    # Get all quarters for the active school year
+    quarters = Quarter.objects.filter(school_year=active_school_year)
 
     school_year_update = Quarter.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by(
         "-updated_at").first()
@@ -221,7 +238,8 @@ def school_admin_dashboard(request, schoolid):
                    school_year_update=school_year_update, grade_settings_update=grade_settings_update,
                    instructor_assignment_update=instructor_assignment_update,
                    student_assignment_update=student_assignment_update,
-                   message_update=message_update
+                   message_update=message_update,
+                   active_school_year=active_school_year, quarters=quarters,
                    )
 
     return render(request, 'users/school_admin_dashboard.html', context)

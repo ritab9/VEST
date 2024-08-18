@@ -271,17 +271,14 @@ def manage_student_assignment(request, schoolid, quarterid, years_to_grad=None):
     school = School.objects.get(id=schoolid)
     quarter = Quarter.objects.get(id=quarterid)
 
+    active_school_year= SchoolYear.objects.get(school_id=schoolid, active=True)
+    start_year = active_school_year.start_date.year
+
     if years_to_grad:
         graduation_year = []
-        now_year = date.today().year
-        if date.today().month < 7:
-            for g in years_to_grad:
-                g_y = int(now_year) + int(g) - 1
-                graduation_year.append(g_y)
-        else:
-            for g in years_to_grad:
-                g_y = int(now_year) + int(g)
-                graduation_year.append(g_y)
+        for g in years_to_grad:
+            g_y = int(start_year) + int(g)
+            graduation_year.append(g_y)
     else:
         graduation_year = None
 
@@ -890,7 +887,7 @@ def student_vocational_info(request, studentid):
     student=Student.objects.get(id=studentid)
     arr=[]
     for a in student.student_assignment.all().order_by('-quarter'):
-        grades=EthicsGradeRecord.objects.filter(student=student, department=a.department, quarter=a.quarter)
+        grades=EthicsGradeRecord.objects.filter(student=student, department=a.department, quarter=a.quarter, vc_validated__isnull=False)
         avg=average(grades, a.quarter.school_year)
         if grades.last():
             level=grades.last().level
@@ -935,7 +932,7 @@ def parent_page(request, parentid):
     return render(request, 'vocational/parent_page.html', context)
 
 @login_required(login_url='login')
-@allowed_users(allowed_roles=['isei_admin', 'parent', 'student'])
+@allowed_users(allowed_roles=['isei_admin', 'parent', 'student', 'school_admin', 'vocational_coordinator'])
 def student_grades(request, studentid):
 
     #request.session['selected_student_id'] = Student.objects.filter(id=studentid).first()
@@ -956,9 +953,22 @@ def student_grades(request, studentid):
 
 
 @login_required(login_url='login')
-@allowed_users(allowed_roles=['isei_admin', 'student'])
-def student_page(request, studentid):
-    student = Student.objects.get(user__id=studentid)
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'school_admin', 'student'])
+def student_page(request, userid):
+    student = Student.objects.get(user__id=userid)
 
     context=dict(student=student)
     return render(request, 'vocational/student_page.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'parent', 'student', 'school_admin', 'vocational_coordinator'])
+def average_quarter_grades(request, schoolid, quarterid):
+
+    school = School.objects.get(id=schoolid)
+    quarter = Quarter.objects.get(id=quarterid)
+
+    student_summaries  = calculate_quarter_averages(school, quarter)
+
+    context=dict(student_summaries=student_summaries, quarter=quarter)
+    return render(request, 'vocational/average_quarter_grades.html', context)

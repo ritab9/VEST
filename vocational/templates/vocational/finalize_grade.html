@@ -97,7 +97,9 @@
                 {% endif %}
                     <div class="col-sm-auto">
                         <div class="row mt-2">
+                            {% if grade.quarter.school_year.gradesettings.time_unit %}
                             Time ({{ grade.quarter.school_year.gradesettings.get_time_unit_display}})
+                            {% endif %}
                             {{ time_form.time}}
                         </div>
 

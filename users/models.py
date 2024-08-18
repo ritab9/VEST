@@ -33,6 +33,9 @@ class School(models.Model):
     def code(self):
         return self.country.code + "_" + self.abbreviation
 
+    def school_name_no_spaces(self):
+        return self.name.replace(" ", "")
+
     # def save(self, *args, **kwargs):
     #     self.email_password = make_password(self.email_password)
     #     super(School, self).save(*args, **kwargs)
