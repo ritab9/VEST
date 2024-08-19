@@ -62,9 +62,9 @@ def send_email_school(request, subject, message, user=None, school=None):
         send_mail(subject, formatted_message, school.email_address, [email], fail_silently=False, auth_user=school.email_address,
                   auth_password=password,
                   connection=None, html_message=None)
-        messages.info(request, "Email(s) sent successfully to " + str(user.email))
+        messages.info(request, "Email(s) sent successfully to " + str(email))
     except SMTPException as e:
-        messages.error(request, mark_safe('Email was not sent to:'+ str(user.email) +' Contact your school administrator. <br>' + str(e)))
+        messages.error(request, mark_safe('Email was not sent to:'+ str(email) +' Contact your school administrator. <br>' + str(e)))
         return False
 
 
