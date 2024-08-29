@@ -7,78 +7,82 @@
 {% block content %}
 {% load static %}
 
+<!-- Error Message, Filter, Prewritten messages -->
     <div class="card-body">
-    <div class="row">
-      <div class="col-lg-12">
-
-          {% if error_message %}
-          <div class="alert alert-primary" role="alert">
-            {{error_message}}
-          </div>
-          {% endif %}
-
-<div class="row">
-<div class="col-lg-12">
-    <div>
-        <form method="get">
-                {{ user_filter.form}}
-            <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
-            <a href="{%  url 'send_email' %}">Clear all filters</a>
-        </form>
-    </div>
-
-    <div>
-          <select name="dropdown-menu" id="message_name" style="float:right">
-                <option> -- Select Pre-written Message -- </option>
-              {% for message in message_names %}
-                    <option class="dropdown-item" href="#" id="{{ message.id }}" value="{{ message.id }}"> {{message.name }}</option>
-             {% endfor %}
-          </select>
-    </div>
-</div>
-</div>
-
-
-<p></p>
-          {% if email_form %}
-
-          <form method="POST" action ="" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{email_form|crispy}}
-          <button type="submit" class="btn btn-sm btn-ISEIblue3">Send Email</button>
-          </form>
-          {% endif %}
-      </div>
-    </div>
-
-    <div class="row mt-3">
-    <div class="col">
         <div class="row">
-        <div class="col-sm-auto">
-            <table class="table">
-                <thead>
-                    <tr> <th>User</th><th>Email Address</th><th>Role</th> </tr>
-                </thead>
-                <tbody>
-                    {% for u in users %}
-                        <tr>
-                           <td>{{ u.profile}}</td> <td>{{ u.email }}</td><td>{{ u|groups }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            <div class="col-lg-12">
+<!--Error Messages -->
+                {% if error_message %}
+                  <div class="alert alert-primary" role="alert">
+                    {{error_message}}
+                  </div>
+                {% endif %}
+<!-- Filer and Prewritten messages -->
+                <div class="row">
+                    <div class="col-lg-12">
+<!-- Filer -->
+                        <div>
+                            <form method="get">
+                                    {{ user_filter.form}}
+                                <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
+                                <a href="{%  url 'send_email' %}">Clear all filters</a>
+                            </form>
+                        </div>
+<!-- Prewritten messages -->
+                        <div>
+                              <select name="dropdown-menu" id="message_name" style="float:right">
+                                    <option> -- Select Pre-written Message -- </option>
+                                  {% for message in message_names %}
+                                        <option class="dropdown-item" href="#" id="{{ message.id }}" value="{{ message.id }}"> {{message.name }}</option>
+                                 {% endfor %}
+                              </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+
+    {% if email_form %}
+        <form method="POST" action ="" enctype="multipart/form-data">
+            {% csrf_token %}
+                <div class="row">
+                    <div class="col">
+                    {{email_form|crispy}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-auto">
+                        <table class="table">
+                    <thead>
+                        <tr> <th>User</th><th>Email Address</th><th>Role</th> </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                            <tr>
+                                <td><input type="checkbox" name="user_selection" value="{{u.id}}" checked></td>
+                               <td>{{ u.profile}}</td> <td>{{ u.email }}</td><td>{{ u|groups }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                        <button type="submit" class="btn btn-sm btn-ISEIblue3">Send Email</button>
+                    </div>
+                    <div class="col-sm-auto" style="float:right" >
+                        {% include 'dynamic_email_content.html' %}
+                    </div>
+                </div>
+        </form>
+    {% endif %}
+
+
+
 
         <div class="col-sm-auto" style="float:right" >
             {% include 'dynamic_email_content.html' %}
         </div>
 
-    </div>
-
-
-</div>
 
 <script>
 

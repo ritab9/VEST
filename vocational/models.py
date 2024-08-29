@@ -299,7 +299,7 @@ class VocationalSkill(models.Model):
     weight = models.DecimalField(decimal_places=2, max_digits=4, default=1)
     # TODO these are optional, need to ask school if they want those fields or not
     level = models.ForeignKey(EthicsLevel, on_delete=models.CASCADE, null=True, blank=True)
-    code = models.CharField(max_length=10, null=True, blank=True)
+    code = models.CharField(max_length=50, null=True, blank=True)
     def __str__(self):
         return self.name
 

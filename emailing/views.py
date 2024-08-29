@@ -192,13 +192,19 @@ def delete_local_message(request, message_id):
 
 def get_subject(request):
     message_id = request.GET.get('message_id')
-    subject = LocalMessage.objects.get(id=message_id).subject
+    try:
+        subject = LocalMessage.objects.get(id=message_id).subject
+    except:
+        subject=SystemMessage.objects.get(id=message_id).subject
     return render(request, 'get_subject.html', {'subject': subject})
 
 
 def get_message(request):
     message_id = request.GET.get('message_id')
-    message = LocalMessage.objects.get(id=message_id).message
+    try:
+        message = LocalMessage.objects.get(id=message_id).message
+    except:
+        message = SystemMessage.objects.get(id=message_id).message
     return render(request, 'get_message.html', {'message': message})
 
 
@@ -222,7 +228,11 @@ def send_email(request):
 
     if request.method == "GET":
         form = form_used
+
         message_names = LocalMessage.objects.filter(school=school)
+        if not message_names:
+            message_names = SystemMessage.objects.all()
+
         return render(request, 'sendemail.html',
                       {'email_form': form, 'user_emails':user_emails,
                        'user_filter': user_filter, 'users': users,
@@ -231,6 +241,10 @@ def send_email(request):
 
     if request.method == "POST":
         form = form_used(request.POST, request.FILES)
+        selected_users = request.POST.getlist('user_selection')
+        users = User.objects.filter(id__in=selected_users)
+
+
         if form.is_valid():
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']

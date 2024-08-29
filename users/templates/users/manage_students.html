@@ -48,7 +48,8 @@
     <div style="overflow-y: auto; max-height: 800px;"> -->
     <table class="table table-striped" style="white-space: nowrap">
         <thead class="thead-dark">
-        <tr><th></th>
+        <tr><th>#</th>
+            <th></th>
             <th>Name <div class="span80">Username</div></th>
             <th>Email</th> <th>Birthday</th><th>Grad Year</th><th>Gender</th>
             <th colspan="5" class="text-center">Parents</th><th></th>
@@ -58,6 +59,7 @@
         <tbody>
         {% for s in student %}
             <tr>
+                <td>{{ forloop.counter }}</td>
                 <td>
                     <a class = "btn btn-sm btn-ISEIblue3 span80" href="{% url 'update_student' s.user.id  %}">Edit </a>
                 </td>
