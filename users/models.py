@@ -29,6 +29,7 @@ class School(models.Model):
     email_update= models.DateField(null=True, blank=True)
     phone_number = models.CharField(max_length= 20, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.PROTECT)
+    timezone = models.CharField(max_length=128, null=True, blank=True)  # e.g. "America/Chicago"
 
     def code(self):
         return self.country.code + "_" + self.abbreviation

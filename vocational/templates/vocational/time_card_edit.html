@@ -1,0 +1,47 @@
+{%  extends 'base.html' %}
+  {% load static %}
+ {% load crispy_forms_field %}
+
+  {% block title %} Time Card Edit {% endblock title %}
+
+
+{% block content %}
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <p>Student: {{ timecard.student.name }}</p>
+    <p>Department: {{ timecard.student_assignment.department.name }}</p>
+    <p>Quarter: {{ timecard.student_assignment.quarter }}</p>
+
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save changes</button>
+    </form>
+
+
+
+
+    <script>
+
+
+    /* Calculate duration of vocational activity */
+    function calculateDuration(checkIn, checkOut) {
+        var difference = checkOut - checkIn;
+        var hoursDifference = Math.floor(difference / 1000 / 60 / 60);
+        difference -= hoursDifference * 1000 * 60 * 60;
+        var minutesDifference = Math.floor(difference / 1000 / 60);
+        return hoursDifference + " hours and " + minutesDifference + " minutes";
+    }
+
+
+    </script>
+
+{% endblock %}

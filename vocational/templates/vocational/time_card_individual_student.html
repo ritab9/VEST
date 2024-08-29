@@ -1,0 +1,68 @@
+{%  extends 'base.html' %}
+  {% load static %}
+    {% load template_tags %}
+
+
+  {% block title %} {{ student.name }}'s Timecards {% endblock title %}
+
+
+{% block content %}
+
+   <div class="row">
+        <div class="col-md-12 text-right">
+            <h6>{{ student.name }}'s Timecards</h6>
+        </div>
+    </div>
+
+    {% regroup timecards by student_assignment.quarter as timecards_by_quarter %}
+
+  <div class="row">
+    {% for quarter in timecards_by_quarter %}
+        <div class="col-auto">
+            <h6>{{ quarter.grouper }}</h6> <!-- Quarter Name -->
+
+            {% regroup quarter.list by week_range as timecards_by_week %}
+
+                {% for week in timecards_by_week %}
+                    <div class="text-ISEIblue4 text-center">{{ week.grouper }}
+                        {{ weekly_totals|get_item:week.grouper }} hours
+                    </div> <!-- Week Range -->
+
+
+                    {% regroup week.list by student_assignment.department as timecards_by_department %}
+
+                    {% for department in timecards_by_department %}
+                        <p>{{ department.grouper }}</p> <!-- Department Name -->
+
+                        <div style="display: inline-block;">
+                            <table class="table table-sm">
+                                <thead class="table-ISEIblue">
+                                    <th>Date</th>
+                                    <th>Time-in</th>
+                                    <th>Time-out</th>
+                                    <th>Time</th>
+                                </thead>
+                                <tbody>
+                                    {% for timecard in department.list %}
+                                    <tr>
+                                        <td>{{ timecard.get_date_no_year }}</td>
+                                        <td>{{ timecard.get_time_in }}</td>
+                                        <td>{{ timecard.get_time_out }}</td>
+                                        <td>{{ timecard.duration.0 }}hrs{{ timecard.duration.1 }}min</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+        </div> <!-- End of .col-auto -->
+    {% endfor %}
+</div>
+
+
+<script type="text/javascript">
+
+</script>
+
+{% endblock %}

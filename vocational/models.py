@@ -1,5 +1,11 @@
 from users.models import *
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+import pytz
+from pytz import timezone as pytz_timezone
+from django.db.models import Func
+from datetime import timedelta
+
 
 
 # isei_admin managed
@@ -100,11 +106,15 @@ class VocationalStatus(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE)
     vocational_level = models.ForeignKey(EthicsLevel, on_delete=models.CASCADE)
     vocational_class = models.ForeignKey(VocationalClass, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.student.name + ", " + self.vocational_level.name
 
 class InstructorAssignment(models.Model):
     updated_at = models.DateTimeField(auto_now=True,)
     department = models.OneToOneField(Department, on_delete=models.CASCADE)
     instructor = models.ManyToManyField(Profile, related_name="instructor_assignments", blank=True)
+    def __str__(self):
+        return self.department.name
 
 class StudentAssignment(models.Model):
     updated_at = models.DateTimeField(auto_now=True,)
@@ -113,9 +123,94 @@ class StudentAssignment(models.Model):
     student = models.ManyToManyField(Student, related_name="student_assignment", blank=True,)
     class Meta:
         unique_together = ('quarter', 'department')
+    def __str__(self):
+        return str(self.quarter) + ", " + self.department.name
+
+class TimeCard(models.Model):
+    student_assignment = models.ForeignKey(StudentAssignment, on_delete=models.CASCADE)
+    student=models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
+    time_in = models.DateTimeField(null=True, blank=True)
+    time_out = models.DateTimeField(null=True, blank=True)
+    timezone = models.CharField(max_length=255, null=True, blank=True)
+    week_range = models.CharField(max_length=30, blank=True, null=True)
+
+    def update_week_range(self):
+        if self.time_in:
+            start = self.time_in - timedelta(days=self.time_in.weekday())
+            start_date = start.date()
+            end_date = start_date + timedelta(days=6)
+
+            if start_date.month == end_date.month:
+                # If it's the same month, format the end date as just the day
+                self.week_range = f'{start_date.strftime("%B %-d")}-{end_date.strftime("%-d")}'
+            else:
+                # If it's different months, include the month name in the end date
+                self.week_range = f'{start_date.strftime("%B %-d")}-{end_date.strftime("%B %-d")}'
+        else:
+            self.week_range = None
+
+    @property
+    def tz(self):
+        return pytz_timezone(self.timezone)
+
+    def save(self, *args, **kwargs):
+        self.update_week_range()
+        if self.student and self.student.user and self.student.user.profile and self.student.user.profile.school:
+            self.timezone = self.student.user.profile.school.timezone
+        super().save(*args, **kwargs)
+
+    def duration(self):
+        if self.time_in and self.time_out:
+            duration = self.time_out - self.time_in
+            duration_in_s = duration.total_seconds()
+            hours, remainder = divmod(duration_in_s, 3600)
+            hours=int(hours)
+            minutes, _ = divmod(remainder, 60)
+            minutes = round(minutes)
+            if minutes == 60:
+                hours += 1
+                minutes = 0
+            return hours, minutes
+        else:
+            return None
+
+    def duration_in_hours(self):
+        if self.time_in and self.time_out:
+            duration = self.time_out - self.time_in
+            duration_in_s = duration.total_seconds()
+            hours = round(duration_in_s/ 3600, 2)
+            return hours
+        else:
+            return None
+
+
+    def get_time_in(self):
+        if self.time_in:
+            return timezone.localtime(self.time_in, self.tz).strftime('%I:%M %p')
+
+    def get_time_out(self):
+        if self.time_out:
+            return timezone.localtime(self.time_out, self.tz).strftime('%I:%M %p')
+
+    def get_date(self):
+        if self.time_in:
+            return timezone.localtime(self.time_in, self.tz).strftime('%B %d, %Y')
+
+    def get_date_no_year(self):
+        if self.time_in:
+            return timezone.localtime(self.time_in, self.tz).strftime('%B %-d')
+
+
+    def __str__(self):
+        department = str(self.student_assignment.department) if self.student_assignment else "No department"
+        student = str(self.student) if self.student else "No student"
+        date = self.get_date() or "No date"
+        time_in = self.get_time_in() or "?"
+        time_out = self.get_time_out() or "?"
+        return f"{student} - {department} - {date} ({time_in}-{time_out})"
+
 
 #Grades
-
 class EthicsGradeRecord(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=False, null=False)
     level = models.ForeignKey(EthicsLevel, on_delete=models.PROTECT, blank=False, null=False)

@@ -25,3 +25,7 @@ def shortened_username(username):
 def get_nested_dict_value(dict, keys):
     keys = keys.split(",")
     return reduce(operator.getitem, keys, dict)
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)

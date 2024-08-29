@@ -9,6 +9,9 @@
     {% if error_message %}
         <span class="spanred">{{ error_message }}</span>
     {% endif %}
+
+    {% if department %}
+
   <div class ="card card-body border-0 col-sm-auto">
       <form method="POST">
       {% csrf_token %}
@@ -58,6 +61,12 @@
         </div>
     </form>
   </div>
+
+    {% else %}
+    <p class="error">
+        It looks like there are no departments assigned to you as an instructor yet. If you think there's been an error, please reach out to your Vocational Supervisor
+    </p>
+    {% endif %}
 
     <script>
     $(document).ready( function() {

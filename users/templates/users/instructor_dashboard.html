@@ -7,8 +7,74 @@
 
 {% block content %}
 
-   <div class="card-body text-center">
-    <h6>Instructor Dashboard</h6>
-   </div>
+     <h6>This is leftover from timecard things</h6>
+
+   <div class="card-body">
+  <h6>Time Card - Automatic</h6>
+
+  <form id="automatic-form" method="get" action="/time_card/0/0">
+        <select class="form-select" id="id_quarter_auto" name="quarter_id">
+              {% for q in active_quarter %}
+                  {% if q.id == current_quarter_id %}
+                      <option value="{{ q.id }}" selected="selected">{{ q }}</option>
+                  {% else %}
+                      <option value="{{ q.id }}">{{ q }}</option>
+                  {% endif %}
+              {% endfor %}
+          </select>
+
+          <select class="form-select" id="id_department_auto" name="department_id">
+              {% for d in department %}
+                  <option value="{{d.id}}"> {{d}} </option>
+              {% endfor %}
+          </select>
+          <button class="btn btn-sm btn-ISEIblue2" type="submit">Today's Time Card</button>
+     </form>
+</div>
+
+<div class="card-body">
+  <h6>Time Card - Manual Entry</h6>
+
+  <form id="manual-form" method="get" action="/time_card_manual/0/0">
+        <select class="form-select" id="id_quarter_manual" name="quarter_id">
+              {% for q in active_quarter %}
+                  {% if q.id == current_quarter_id %}
+                      <option value="{{ q.id }}" selected="selected">{{ q }}</option>
+                  {% else %}
+                      <option value="{{ q.id }}">{{ q }}</option>
+                  {% endif %}
+              {% endfor %}
+          </select>
+
+          <select class="form-select" id="id_department_manual" name="department_id">
+              {% for d in department %}
+                  <option value="{{d.id}}"> {{d}} </option>
+              {% endfor %}
+          </select>
+          <button class="btn btn-sm btn-ISEIblue2" type="submit">Add Time Cards Manually</button>
+     </form>
+</div>
+
+<script type="text/javascript">
+    document.getElementById("automatic-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let quarter_id = document.getElementById("id_quarter_auto").value;
+        let department_id = document.getElementById("id_department_auto").value;
+
+        this.action = "/time_card/" + department_id + "/" + quarter_id;
+        this.submit();
+    });
+
+    document.getElementById("manual-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let quarter_id = document.getElementById("id_quarter_manual").value;
+        let department_id = document.getElementById("id_department_manual").value;
+
+        this.action = "/time_card_manual/" + department_id + "/" + quarter_id;
+        this.submit();
+    });
+</script>
 
 {% endblock %}

@@ -10,6 +10,7 @@
                 <h6>{{ student.name }}</h6>
                 <div class="col">
                     <a class="btn btn-ISEIblue btn-sm mb-3" href="{% url 'student_vocational_info' student.id %}"> Vocational Summary</a> <br>
+                    <a class="btn btn-ISEIblue btn-sm mb-3" href="{% url 'time_card_individual_student' student_id=student.id %}">Timecards</a><br>
                     <a class="btn btn-ISEIblue btn-sm mb-3" href="{% url 'student_grades' student.id %}"> Ethics Grades</a> <br>
                     <a class="btn btn-ISEIblue btn-sm" href="{% url 'student_skill_grades' student.id %}"> Skill Grades</a>
 

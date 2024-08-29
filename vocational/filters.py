@@ -5,8 +5,9 @@ from django.shortcuts import render
 from django import forms
 import vocational.models
 from .models import StudentAssignment, EthicsGradeRecord, Department, Quarter
-from users.models import User
+from users.models import User, Student
 from users.functions import in_group
+import datetime
 
 
 class DateInput(forms.DateInput):
@@ -122,3 +123,25 @@ class GradeFilterStudentParent(django_filters.FilterSet):
     class Meta:
         model = EthicsGradeRecord
         fields = ['department', 'type', 'quarter', ]
+
+
+class TimeCardFilterForm(forms.Form):
+    department = forms.ModelChoiceField(queryset=Department.objects.none(), required=False)
+    quarter = forms.ModelChoiceField(queryset=Quarter.objects.none(), required=False)
+    from_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    to_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    student = forms.ModelChoiceField(queryset=Student.objects.none(), required=False)
+
+    def __init__(self, *args, department_qs=None, quarter_qs=None, student_qs=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if department_qs is not None:
+            self.fields['department'].queryset = department_qs
+        if quarter_qs is not None:
+            self.fields['quarter'].queryset = quarter_qs
+        if student_qs is not None:
+            self.fields['student'].queryset = student_qs
+
+        #today = datetime.date.today()
+        #last_week = today - datetime.timedelta(days=7)
+        #self.fields['from_date'].initial = last_week
+        #self.fields['to_date'].initial = today

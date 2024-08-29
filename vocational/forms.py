@@ -3,7 +3,9 @@ from django.forms import ModelForm
 from django.forms.models import inlineformset_factory, modelformset_factory
 import datetime
 from django.core.exceptions import ValidationError
-
+from django.forms.widgets import SplitDateTimeWidget
+from django.utils import timezone
+import pytz
 
 from django.contrib.auth.models import User
 from .models import *
@@ -204,3 +206,90 @@ class SkillGradeForm(forms.ModelForm):
         fields = ('score',)
 
 SkillGradeFormSet = inlineformset_factory(SkillGradeRecord, SkillGrade, form=SkillGradeForm, extra=0)
+
+
+class TimeCardForm(forms.Form):
+    pass
+
+class DateTimeInput(forms.DateTimeInput):
+    input_type = 'datetime-local'
+
+class ManualTimeCardForm(forms.ModelForm):
+    class Meta:
+        model = TimeCard
+        fields = ['student','time_in', 'time_out']
+        widgets = {
+            'student': forms.Select(),
+            'time_in': DateTimeInput(),
+            'time_out': DateTimeInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        student_choices = kwargs.pop('students', None)
+        self.timezone = kwargs.pop('timezone', None)
+        super(ManualTimeCardForm, self).__init__(*args, **kwargs)
+        if student_choices is not None:
+            self.fields['student'].queryset = student_choices
+
+    def clean_time_in(self):
+        time_in = self.cleaned_data.get('time_in', None)
+        if not time_in:
+            return None
+        time_in = time_in.replace(tzinfo=None)
+        user_tz = pytz.timezone(self.timezone)  # Replace with actual timezone
+        time_in = user_tz.localize(time_in)
+        return time_in
+
+    def clean_time_out(self):
+        time_out = self.cleaned_data.get('time_out', None)
+        if not time_out:
+            return None
+        time_out = time_out.replace(tzinfo=None)
+        user_tz = pytz.timezone(self.timezone)  # Replace with actual timezone
+        time_out = user_tz.localize(time_out)
+        return time_out
+
+
+class CustomDateTimeInput(forms.DateTimeInput):
+    input_type = 'datetime-local'
+
+    def __init__(self, *args, **kwargs):
+        self.timezone = kwargs.pop('timezone', None)
+        super(CustomDateTimeInput, self).__init__(*args, **kwargs)
+
+    def format_value(self, value):
+        if value and isinstance(value, datetime.datetime):
+            user_tz = pytz.timezone(self.timezone)  # School specific timezone
+            value = value.astimezone(user_tz)  # Convert it to the school timezone
+            return value.strftime('%Y-%m-%dT%H:%M')  # Format it in ISO 8601 (not including seconds)
+        return super().format_value(value)
+
+class TimeCardEditForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.timezone = kwargs.pop('timezone', None)
+        super(TimeCardEditForm, self).__init__(*args, **kwargs)
+        self.fields['time_in'].widget = CustomDateTimeInput(timezone=self.timezone)
+        self.fields['time_out'].widget = CustomDateTimeInput(timezone=self.timezone)
+
+    class Meta:
+        model = TimeCard
+        fields = ['time_in', 'time_out']
+
+
+    def clean_time_in(self):
+        time_in = self.cleaned_data.get('time_in', None)
+        if not time_in:
+            return None
+        time_in = time_in.replace(tzinfo=None)
+        user_tz = pytz.timezone(self.timezone)  # Replace with actual timezone
+        time_in = user_tz.localize(time_in)
+        return time_in
+
+    def clean_time_out(self):
+        time_out = self.cleaned_data.get('time_out', None)
+        if not time_out:
+            return None
+        time_out = time_out.replace(tzinfo=None)
+        user_tz = pytz.timezone(self.timezone)  # Replace with actual timezone
+        time_out = user_tz.localize(time_out)
+        return time_out

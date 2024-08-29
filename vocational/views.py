@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.db import IntegrityError
 import datetime
 from users.decorators import allowed_users
@@ -16,7 +16,13 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from emailing.functions import send_system_email_from_school
 now=timezone.now()
-
+from django.contrib.auth import logout
+from django.views import generic
+from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms import formset_factory, BaseFormSet
+from django.db.models import Q, Sum, ExpressionWrapper, F, fields, Prefetch
+from django.db.models.functions import ExtractWeek
 
 
 # School Admin Views
@@ -355,6 +361,7 @@ def grade_list_all(request, userid):
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
 def initiate_grade_entry(request, schoolid):
     error_message=None
+
     if request.method == 'POST':
         departmentid = request.POST.get('department')
         quarterid = request.POST.get('quarter')
@@ -558,7 +565,7 @@ def finalize_skill_grade(request, gradeid):
     selected_grade_record_ids = [record.id for record in skill_grade_records]
 
     vocational_skills = VocationalSkill.objects.filter(skillgrade__grade_record__id__in=selected_grade_record_ids).distinct().order_by('id')
-    print(vocational_skills)
+    #print(vocational_skills)
 
     result_dict ={}
 
@@ -972,3 +979,338 @@ def average_quarter_grades(request, schoolid, quarterid):
 
     context=dict(student_summaries=student_summaries, quarter=quarter)
     return render(request, 'vocational/average_quarter_grades.html', context)
+
+
+#time card views
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'instructor', 'vocational_coordinator', 'school_admin'])
+def time_card_dashboard(request, userid, vc='no'):
+
+    # Fetch the profile, assignments, departments, and active quarter as before
+    profile = Profile.objects.get(user=userid)
+    school_id = profile.school.id
+    #school_year_id = SchoolYear.objects.values_list('id', flat=True).filter(school_id=school_id, active=True).first()
+
+
+    if vc.lower() == "yes":
+        departments = Department.objects.filter(school_id=school_id, is_active=True)
+    else:
+        assignments = InstructorAssignment.objects.filter(instructor__id=profile.id)
+        departments = Department.objects.filter(school__id=school_id, is_active=True, instructorassignment__in=assignments)
+
+    active_quarter = Quarter.objects.filter(
+        school_year__school_id=school_id, school_year__active=True).order_by('name')
+
+    # Fetch unique students directly without intermediary lists
+    students_ids = StudentAssignment.objects.filter(quarter__in=active_quarter,
+                                                    department__in=departments
+                                                    ).values_list('student__id', flat=True).distinct()
+    unique_students_qs = Student.objects.filter(id__in=students_ids)
+
+    # Initialize the TimeCardFilterForm as before
+    filter = TimeCardFilterForm(request.POST or None, department_qs=departments, quarter_qs=active_quarter,
+                                student_qs=unique_students_qs)
+
+    # If the form is submitted (POST request) and is valid, fetch the timecards
+    if request.method == 'POST' and filter.is_valid():
+        department = filter.cleaned_data.get('department')
+        quarter = filter.cleaned_data.get('quarter')
+        from_date = filter.cleaned_data.get('from_date')
+        to_date = filter.cleaned_data.get('to_date')
+        student = filter.cleaned_data.get('student')
+
+        timecards = TimeCard.objects.filter(
+            Q(student_assignment__quarter=quarter) if quarter else Q(),
+            Q(student_assignment__department=department) if department else Q(),
+            Q(student=student) if student else Q(),
+            Q(time_in__range=(from_date, to_date)) if (from_date and to_date) else Q()
+        ).order_by('-time_in','student_assignment__department')
+    else:
+        # This is the initial GET request, fetch only the last 7 day timecards
+        #today = datetime.today()
+        today=timezone.now()
+        last_week = today - timedelta(days=7)
+
+        timecards = TimeCard.objects.filter(
+            student_assignment__quarter__in=active_quarter,
+            student_assignment__department__in=departments,
+            time_in__gte=last_week
+        ).order_by('-time_in','student_assignment__department')
+
+        # Accumulate total time as seconds
+    total_seconds = sum([(t.time_out - t.time_in).total_seconds() for t in timecards if t.time_out])
+
+    # Convert total_seconds to time delta
+    total_time = timedelta(seconds=total_seconds)
+
+    # Convert total_time to total hours, and total minutes
+    total_hours = total_time.days * 24 + total_time.seconds // 3600
+    total_minutes = (total_time.seconds // 60) % 60
+
+    # Same as before
+    context = dict(active_quarter=active_quarter, departments=departments,
+                   timecards=timecards, filter=filter, userid=userid,
+                   total_hours=total_hours, total_minutes=total_minutes,
+                   school_id=school_id)
+    return render(request, 'vocational/time_card_dashboard.html', context)
+
+
+#automatic time card entry
+class TimeCardView(generic.FormView):
+    template_name = 'vocational/time_card.html'
+    form_class = TimeCardForm
+
+    def get(self, request, *args, **kwargs):
+
+        department_id = kwargs.get('department_id', request.GET.get('department_id'))
+        quarter_id = kwargs.get('quarter_id', request.GET.get('quarter_id'))
+        self.kwargs.update({
+            'department_id': department_id,
+            'quarter_id': quarter_id,
+        })
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        quarter_id = self.kwargs['quarter_id']
+        department_id = self.kwargs['department_id']
+
+        today = timezone.now().date()
+
+        try:
+            assignment = StudentAssignment.objects.get(quarter_id=quarter_id, department_id=department_id)
+        except StudentAssignment.DoesNotExist:
+            assignment = None
+
+
+        if assignment:
+            assignment.students = assignment.student.all()
+            for student in assignment.students:
+                student.active_time_card = TimeCard.objects.filter(
+                        student_assignment=assignment, student=student,
+                        time_in__date=today, time_out=None).order_by('-time_in').first()
+                student.today_time_card = TimeCard.objects.filter(
+                    student_assignment=assignment, student=student,
+                    time_in__date=today, time_out__date=today
+                )
+
+            context['assignment'] = assignment
+        else:
+            context['assignment'] = None
+
+        return context
+
+    def form_valid(self, form):
+        student_id = self.request.POST['student_id']
+        quarter_id = self.kwargs['quarter_id']
+        department_id = self.kwargs['department_id']
+        action = self.request.POST['action']
+
+        assignment = get_object_or_404(StudentAssignment, quarter_id=quarter_id, department_id=department_id)
+        student = get_object_or_404(Student, pk=student_id)
+
+        #time_card, created = TimeCard.objects.get_or_create(student_assignment=assignment, student=student)
+
+        if action == 'checkin':
+            #time_card.time_in = timezone.now()
+            time_card = TimeCard.objects.create(
+                student_assignment=assignment, student=student,
+                time_in=timezone.now())
+        elif action == 'checkout':
+            #time_card.time_out = timezone.now()
+            today = timezone.now().date()
+            time_card = TimeCard.objects.filter(
+                student_assignment=assignment,
+                student=student, time_out=None,
+                time_in__date=today).order_by('-time_in').first()
+            if time_card:
+                time_card.time_out = timezone.now()
+                time_card.save()
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('time_card',
+                       kwargs={'quarter_id': self.kwargs['quarter_id'], 'department_id': self.kwargs['department_id']})
+
+#manual time card entry by instructor or vocational coordinator
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
+def time_card_manual(request, quarter_id, department_id):
+
+    try:
+        model_instance = StudentAssignment.objects.get(quarter=quarter_id, department=department_id)
+        students_qs = model_instance.student.all()
+        got_data=True
+    except StudentAssignment.DoesNotExist:
+        model_instance = None
+        got_data = False
+        students_qs = Student.objects.none()
+        messages.info(request, "No assignments found for this quarter and department.")
+
+    department=Department.objects.get(pk=department_id)
+    quarter = Quarter.objects.get(pk=quarter_id)
+
+    local_timezone=department.school.timezone
+    # Create formset
+    FormSet = formset_factory(ManualTimeCardForm, formset=BaseFormSet, extra=0)
+
+    if request.method == "POST":
+        formset = FormSet(request.POST, form_kwargs={'students': students_qs, 'timezone': local_timezone})
+        if formset.is_valid():
+            instances = []
+            for single_form in formset:
+                if single_form.cleaned_data.get('time_in') is not None:
+                    instance = single_form.save(commit=False)
+                    instance.student_assignment = model_instance
+                    instance.update_week_range()
+                    instance.timezone=local_timezone
+                    instances.append(instance)
+            TimeCard.objects.bulk_create(instances)
+            messages.success(request, "Your time entries were successfully saved.")
+    else:
+        if model_instance is not None:
+            data = [{'student': student} for student in model_instance.student.all()]
+        else:
+            data=[]
+        formset = FormSet(initial=data, form_kwargs={'students': students_qs, 'timezone': local_timezone})
+
+
+    context = dict(formset=formset, department=department, quarter=quarter, got_data=got_data)
+    return render(request, 'vocational/time_card_manual.html', context)
+
+
+#manual time card entry by instructor or vocational coordinator
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
+def time_card_edit(request, pk):
+    timecard = get_object_or_404(TimeCard, pk=pk)
+    local_timezone=timecard.timezone
+    if request.method == "POST":
+        form = TimeCardEditForm(request.POST, instance=timecard, timezone=local_timezone)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your changes were successfully saved.")
+    else:
+        form = TimeCardEditForm(instance=timecard, timezone=local_timezone)
+
+    context = dict(form=form, timecard=timecard)
+    return render(request, 'vocational/time_card_edit.html', context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
+def time_card_delete(request, pk):
+    time_card = TimeCard.objects.get(pk=pk)
+    time_card.delete()
+    return redirect(request.GET.get('next', 'default_redirect_url'))
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
+def student_time_card_summary(request, schoolid):
+    # First we need to annotate each time card with its duration in hours
+    timecards = TimeCard.objects.filter(
+        student__user__profile__school__id=schoolid,student__user__is_active=True,
+        time_in__isnull=False,time_out__isnull=False
+    ).order_by( 'student__user__last_name', 'student_assignment__department__name', 'student_assignment__quarter')
+
+    # We're going to convert the duration in hours and also annotate it with quarter and department
+    timecards = [
+        {
+            'student': tc.student,
+            'quarter': tc.student_assignment.quarter,
+            'department': tc.student_assignment.department,
+            'duration': round(tc.duration()[0] + tc.duration()[1] / 60.0, 2)  # Convert to hours
+        } for tc in timecards
+    ]
+
+    # Now we'll prepare the aggregate data
+    aggregate_data = {}
+
+    for tc in timecards:
+        if tc['student'] not in aggregate_data:
+            aggregate_data[tc['student']] = {}
+
+        if tc['department'] not in aggregate_data[tc['student']]:
+            aggregate_data[tc['student']][tc['department']] = {'total': 0, 'quarters': {}}
+
+        if tc['quarter'] not in aggregate_data[tc['student']][tc['department']]['quarters']:
+            aggregate_data[tc['student']][tc['department']]['quarters'][tc['quarter']] = 0
+
+        # Add the hours to the quarter and to the total
+        aggregate_data[tc['student']][tc['department']]['quarters'][tc['quarter']] = round(
+            aggregate_data[tc['student']][tc['department']]['quarters'][tc['quarter']] + tc['duration'],
+            2)
+
+        # Increment the total duration, rounding the result
+        aggregate_data[tc['student']][tc['department']]['total'] = round(
+            aggregate_data[tc['student']][tc['department']]['total'] + tc['duration'],
+            2)
+
+
+
+    formatted_data = []
+    for student, departments in aggregate_data.items():
+        student_rowspan = 0
+        formatted_departments = []
+        for department, details in departments.items():
+            department_rowspan = len(details['quarters'])
+            student_rowspan += department_rowspan
+            formatted_departments.append({
+                'name': department,
+                'detail': details,
+                'rowspan': department_rowspan
+            })
+        formatted_data.append({
+            'name': student,
+            'departments': formatted_departments,
+            'rowspan': student_rowspan
+        })
+
+    context = dict(formatted_data=formatted_data)
+
+    return render(request, 'vocational/student_time_card_summary.html', context)
+
+
+def get_student_timecards(student):
+    timecards = TimeCard.objects.filter(student=student) \
+        .order_by('student_assignment__quarter',
+                  'student_assignment__department',
+                  'week_range') \
+        .select_related('student_assignment__quarter',
+                        'student_assignment__department') \
+        .order_by('-student_assignment__quarter',
+                  '-time_in')
+
+
+    return timecards
+
+
+@login_required(login_url='login')
+def time_card_individual_student(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    #timecards = get_student_timecards(student)
+
+    timecards_queryset = TimeCard.objects.filter(student=student) \
+        .order_by('-student_assignment__quarter', '-time_in') \
+        .select_related('student_assignment__quarter', 'student_assignment__department')
+
+    # Calculate `duration_in_minutes` for each timecard
+    for timecard in timecards_queryset:
+        timecard.duration_in_hours = timecard.duration_in_hours()
+
+    # Group by week and calculate weekly totals
+    weekly_totals = {}
+    for timecard in timecards_queryset:
+        week = timecard.week_range
+        if week:
+            # Accumulate total duration for the week
+            weekly_totals[week] = weekly_totals.get(week, 0) + timecard.duration_in_hours
+
+    context = {
+        'student': student,
+        'timecards': timecards_queryset,
+        'weekly_totals': weekly_totals,
+    }
+
+    return render(request, 'vocational/time_card_individual_student.html', context)

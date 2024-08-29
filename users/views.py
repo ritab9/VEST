@@ -15,6 +15,7 @@ from vocational.models import SchoolYear, EthicsGradeRecord, \
     Department, Quarter, VocationalStatus, EthicsLevel, VocationalClass
 from emailing.functions import *
 from emailing.models import *
+from vocational.functions import current_quarter
 from .models import Country
 
 
@@ -50,8 +51,9 @@ def loginuser(request):
                         elif request.user.groups.filter(name='vocational_coordinator').exists():
                             return redirect('vocational_coordinator_dashboard', user.profile.school.id)
                         elif request.user.groups.filter(name='instructor').exists():
-                            #return redirect('crash')
-                            return redirect('grade_list', user.id )
+                            return redirect('time_card_dashboard', user.id)
+                            #return redirect('instructor_dashboard', user.id)
+                            #return redirect('grade_list', user.id )
                             #return redirect('initiate_grade_entry', user.profile.school.id )
                         elif request.user.groups.filter(name='parent').exists():
                             return redirect('parent_page', user.id)
@@ -144,7 +146,28 @@ def add_school_admin(request):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'instructor'])
 def instructor_dashboard(request, userid):
-    context = dict(userid=userid)
+
+    #This is leftover from time card things
+    profile=Profile.objects.get(user=userid)
+    school_id=profile.school.id
+
+    assignments = InstructorAssignment.objects.filter(instructor__id=profile.id)
+    department = Department.objects.filter(school__id=school_id, is_active=True, instructorassignment__in=assignments)
+
+    school_year_id = SchoolYear.objects.values_list('id', flat=True).filter(school_id=school_id, active=True).first()
+    active_quarter = Quarter.objects.filter(school_year__school_id=school_id, school_year__active=True).order_by('name')
+
+    q = current_quarter(school_year_id)
+    if q:
+        current_quarter_id = current_quarter(school_year_id).id
+    else:
+        messages.warning(request,
+                         "This school year/quarter is not set up properly for grade entry. \n Please contact school administrator or vocational coordinator. ")
+        return redirect('crash')
+
+
+    context = dict(active_quarter=active_quarter, department=department,
+                   current_quarter_id=current_quarter_id)
     return render(request, 'users/instructor_dashboard.html', context)
 
 

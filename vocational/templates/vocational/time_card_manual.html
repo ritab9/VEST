@@ -1,0 +1,132 @@
+{%  extends 'base.html' %}
+  {% load static %}
+ {% load crispy_forms_field %}
+
+  {% block title %} Time Card {% endblock title %}
+
+
+{% block content %}
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if got_data %}
+        <div class="ml-5 ">
+            {{ department }},
+            {{ quarter }}
+    </div>
+
+        <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        <div style="display: inline-block;">
+        <table class="table">
+            <thead class="table-ISEIblue4">
+                <th>Student</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Duration</th>
+                <th></th>
+            </thead>
+            {% for form in formset %}
+                <tr>
+                    <!-- display field errors -->
+                    <td>{{ form.student.errors }} {{ form.student }}</td>
+                    <td>{{ form.time_in.errors }} {{ form.time_in }}</td>
+                    <td>{{ form.time_out.errors }} {{ form.time_out }}</td>
+                    <td id="id_form-{{ forloop.counter0 }}-duration"></td>
+                    <td>
+                        {% for error in form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+     </div>
+        <button class="btn btn-sm btn-ISEIblue" type="submit">Save</button>
+    </form>
+    {% endif %}
+
+
+
+    <script>
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+
+        let timeInElems = document.querySelectorAll('input[id^="id_form-"][id$="-time_in"]');
+        let timeOutElems = document.querySelectorAll('input[id^="id_form-"][id$="-time_out"]');
+
+        Array.from(timeInElems).forEach((inputElem) => {
+            inputElem.addEventListener('blur', (e) => {
+                let changedValue = e.target.value;
+                Array.from(timeInElems).forEach((otherInputElem) => {
+                    if (otherInputElem.value === '') {
+                        otherInputElem.value = changedValue;
+                        otherInputElem.dispatchEvent(new Event('change', { 'bubbles': true }));
+                    }
+                });
+            });
+        });
+
+        Array.from(timeOutElems).forEach(inputElem => {
+            inputElem.addEventListener('blur', (e) => {
+                let changedValue = e.target.value;
+                Array.from(timeOutElems).forEach(otherInputElem => {
+                    if (otherInputElem.value === '') {
+                        otherInputElem.value = changedValue;
+                        otherInputElem.dispatchEvent(new Event('change', { 'bubbles': true }));
+                    }
+                });
+            });
+        });
+    });
+
+    /* Calculate duration of vocational activity */
+    function calculateDuration(checkIn, checkOut) {
+        var difference = checkOut - checkIn;
+        var hoursDifference = Math.floor(difference / 1000 / 60 / 60);
+        difference -= hoursDifference * 1000 * 60 * 60;
+        var minutesDifference = Math.floor(difference / 1000 / 60);
+        return hoursDifference + " hours and " + minutesDifference + " minutes";
+    }
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const timeInOutElems = document.querySelectorAll('input[id^="id_form-"][id$="-time_out"], input[id^="id_form-"][id$="-time_in"]');
+        Array.from(timeInOutElems).forEach((inputElem) => {
+            inputElem.addEventListener('change', (e) => {
+                let checkInElem, checkOutElem;
+                let rowNumber = e.target.id.split('-')[1];
+                if (e.target.id.endsWith('time_in')) {
+                    checkInElem = e.target;
+                    checkOutElem = document.querySelector(`input[id="id_form-${rowNumber}-time_out"]`);
+                } else if (e.target.id.endsWith('time_out')) {
+                    checkInElem = document.querySelector(`input[id="id_form-${rowNumber}-time_in"]`);
+                    checkOutElem = e.target;
+                }
+
+                let durationElem = document.querySelector(`#id_form-${rowNumber}-duration`);
+                if (durationElem) {
+                    if (checkInElem && checkInElem.value && checkOutElem && checkOutElem.value) {
+                        let checkIn = new Date(checkInElem.value);
+                        let checkOut = new Date(checkOutElem.value);
+                        let duration = calculateDuration(checkIn, checkOut);
+                        durationElem.textContent = duration;
+                    } else {
+                        durationElem.textContent = ""; // Reset duration field if time_out or time_in is blank
+                    }
+                }
+            });
+        });
+    });
+
+    </script>
+
+{% endblock %}

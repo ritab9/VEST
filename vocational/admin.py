@@ -138,3 +138,6 @@ class SkillGradeRecord(admin.ModelAdmin):
     #ordering = ('school',)
     def school(self, obj):
         return obj.student.user.profile.school
+
+
+admin.site.register(TimeCard)

@@ -1,0 +1,141 @@
+{%  extends 'base.html' %}
+  {% load static %}
+
+
+  {% block title %} Time Cards Dashboard {% endblock title %}
+
+
+{% block content %}
+
+ <div class="row">
+    <div class="col-auto">
+        {% if departments %}
+    <!-- Time Card Entry-->
+        <div class="row">
+               <div class="col-auto">
+                  <h6>Time Card - Automatic</h6>
+
+                    <form id="automatic-form" method="get" action="/time_card/0/0">
+                    <select class="form-select" id="id_quarter_auto" name="quarter_id">
+                          {% for q in active_quarter %}
+                              {% if q.id == current_quarter_id %}
+                                  <option value="{{ q.id }}" selected="selected">{{ q }}</option>
+                              {% else %}
+                                  <option value="{{ q.id }}">{{ q }}</option>
+                              {% endif %}
+                          {% endfor %}
+                      </select>
+
+                      <select class="form-select" id="id_department_auto" name="department_id">
+                          {% for d in departments %}
+                              <option value="{{d.id}}"> {{d}} </option>
+                          {% endfor %}
+                      </select>
+                      <button class="btn btn-sm btn-ISEIblue2" type="submit">Today's Time Card</button>
+                 </form>
+               </div>
+                <div class="col-auto">
+                  <h6>Time Card - Manual Entry</h6>
+
+                  <form id="manual-form" method="get" action="/time_card_manual/0/0">
+                        <select class="form-select" id="id_quarter_manual" name="quarter_id">
+                              {% for q in active_quarter %}
+                                  {% if q.id == current_quarter_id %}
+                                      <option value="{{ q.id }}" selected="selected">{{ q }}</option>
+                                  {% else %}
+                                      <option value="{{ q.id }}">{{ q }}</option>
+                                  {% endif %}
+                              {% endfor %}
+                          </select>
+
+                          <select class="form-select" id="id_department_manual" name="department_id">
+                              {% for d in departments %}
+                                  <option value="{{d.id}}"> {{d}} </option>
+                              {% endfor %}
+                          </select>
+                          <button class="btn btn-sm btn-ISEIblue2" type="submit">Add Time Cards Manually</button>
+                     </form>
+                </div>
+        </div>
+
+    <!-- Time Card Display -->
+        <div style="display: inline-block;">
+            <div class="mt-5 card card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ filter.as_table }}
+                    <input class="btn btn-sm btn-ISEIblue" type="submit" value="Filter">
+                    <a href="{% url 'time_card_dashboard' userid %}" class="btn btn-default">Clear</a>
+                </form>
+                <p class="text-ISEIblue1"> See the last seven days' time-cards below. For older records, please use the filter.</p>
+                <table class="table table-striped">
+                    <thead class="table-ISEIblue4">
+                        <tr>
+                            <th>Student</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>Time In</th>
+                            <th>Time Out</th>
+                            <th>Time</th>
+                            <th>Edit</th><th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for timecard in timecards %}
+                        <tr>
+                            <td>{{ timecard.student }}</td>
+                            <td>{{ timecard.student_assignment.department}}</td>
+                            <td>{{ timecard.get_date }}</td>
+                            <td>{{ timecard.get_time_in}}</td>
+                            <td>{{ timecard.get_time_out}}</td>
+                            <td>{% if timecard.duration %}{{ timecard.duration.0 }} hrs. {{ timecard.duration.1 }} min. {% endif %}</td>
+                            <td><a href="{% url 'time_card_edit' pk=timecard.pk %}">Edit</a></td>
+                            <td>
+                                <a href="{% url 'time_card_delete' pk=timecard.pk %}?next={{ request.path }}"
+                                   onclick="return confirm('Are you sure you want to delete this?');">Delete
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">No time cards found</td>
+                        </tr>
+                    {% endfor %}
+                    <tr><td colspan="4"></td><td><strong>Total Time:</strong></td><td> {{ total_hours}} hrs {{ total_minutes }} min<td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+            <p class="error"> It looks like there are no departments assigned to you as an instructor yet. If you think there's been an error, please reach out to your Vocational Supervisor.</p>
+        {% endif %}
+    </div>
+
+    <div class="col-auto">
+        <a href="{% url 'student_time_card_summary' schoolid=school_id %}">Student Summaries</a>
+    </div>
+ </div>
+
+<script type="text/javascript">
+    document.getElementById("automatic-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let quarter_id = document.getElementById("id_quarter_auto").value;
+        let department_id = document.getElementById("id_department_auto").value;
+
+        this.action = "/time_card/" + department_id + "/" + quarter_id;
+        this.submit();
+    });
+
+    document.getElementById("manual-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let quarter_id = document.getElementById("id_quarter_manual").value;
+        let department_id = document.getElementById("id_department_manual").value;
+
+        this.action = "/time_card_manual/" + department_id + "/" + quarter_id;
+        this.submit();
+    });
+</script>
+
+{% endblock %}

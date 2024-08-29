@@ -28,7 +28,7 @@
     <div class="row noprint">
         <div class="card-body">
             <form method="get" id="filterForm" onchange="this.form.submit()">
-                    {{ filter.form}}
+                    {{ filter.form.as_table}}
                <!-- <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp; -->
                 <a href="{%  url 'grade_list' request.user.id %}">Clear all filters</a>
             </form>

@@ -1,0 +1,86 @@
+{%  extends 'base.html' %}
+  {% load static %}
+
+  {% block title %} Time Card {% endblock title %}
+
+
+{% block content %}
+
+    {% if assignment %}
+        <div class="d-flex justify-content-between">
+            <div>
+                {{ assignment.department }}, {% now "F j, Y" %}
+            </div>
+            <div>
+                {{ assignment.quarter }}
+            </div>
+        </div>
+
+       <div style="display: inline-block;">
+            <table class="table ">
+                <thead class="table-ISEIblue4">
+                <th>Student</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Time</th>
+                </thead>
+                <tbody>
+                {% for student in assignment.students %}
+
+                    {% for card in student.today_time_card.all %}
+                        <tr>
+                            {% if forloop.first %}
+                                <td>{{ student }}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                            <td>{{ card.get_time_in }}</td>
+                            <td>{{ card.get_time_out }}</td>
+                            <td>{{ card.duration.0 }} hrs {{ card.duration.1 }} min</td>
+                        </tr>
+                    {% endfor %}
+
+
+                    <tr>
+                        {% if student.today_time_card %}
+                            <td style="border-bottom:1px solid black"></td>
+                        {% else %}
+                            <td style="border-bottom:1px solid black">{{ student }}</td>
+                        {% endif %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+                                    <input type="hidden" name="student_id" value="{{ student.id }}">
+                                    {{ form }}
+                                    {% if student.active_time_card %}
+                                        <td style="border-bottom:1px solid black">
+                                            {{ student.active_time_card.get_time_in }}</td>
+                                        <td style="border-bottom:1px solid black">
+                                            <button type="submit" name="action" value="checkout">Check Out</button></td>
+                                    {% else %}
+                                        <td style="border-bottom:1px solid black">
+                                            <button type="submit" name="action" value="checkin">Check In</button></td>
+                                        <td style="border-bottom:1px solid black">
+                                            <button type="submit" name="action" value="checkout" disabled>Check Out</button></td>
+                                    {% endif %}
+                                </form>
+                                        <td style="border-bottom:1px solid black"></td>
+                    </tr>
+
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% else %}
+        <p>No assignments found for this quarter and department.</p>
+    {% endif %}
+
+    <script>
+
+
+
+    </script>
+
+{% endblock %}

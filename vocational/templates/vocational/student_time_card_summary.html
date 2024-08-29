@@ -1,0 +1,50 @@
+{%  extends 'base.html' %}
+  {% load static %}
+
+
+  {% block title %} Student Time Card Summary {% endblock title %}
+
+
+{% block content %}
+
+    <h6>Student Time Card Summary</h6>
+
+     <div style="display: inline-block;">
+        <table class="table table-bordered">
+        <thead class="table-ISEIblue4">
+            <th>Student</th>
+            <th>Department</th>
+            <th>Hours</th>
+            <th>Quarter</th>
+            <th>Hours</th>
+        </thead>
+
+        <tbody>
+            {% for student_obj in formatted_data %}
+                {% for department_obj in student_obj.departments %}
+                    {% for quarter, duration in department_obj.detail.quarters.items %}
+                        <tr>
+                            {% if forloop.parentloop.first and forloop.first %}
+                                <td rowspan="{{ student_obj.rowspan }}">{{ student_obj.name }}</td>
+                            {% endif %}
+                            {% if forloop.first %}
+                                <td rowspan="{{ department_obj.rowspan }}">{{ department_obj.name }}</td>
+                                <td rowspan="{{ department_obj.rowspan }}">{{ department_obj.detail.total }} hrs</td>
+                            {% endif %}
+                            <td>{{ quarter }}</td>
+                            <td>{{ duration }} hrs</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            {% empty %}
+                <tr><td colspan="5">No student time card data available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+     </div>
+
+<script type="text/javascript">
+
+</script>
+
+{% endblock %}

@@ -17,7 +17,7 @@ class CreateUserForm(ModelForm):
 class SchoolForm(ModelForm):
     class Meta:
         model = School
-        fields = ['name', 'abbreviation', 'email_address', 'email_password', 'country', 'phone_number' ]
+        fields = ['name', 'abbreviation', 'email_address', 'country', 'phone_number', 'timezone' ]
 
 class EmailSettingsForm(ModelForm):
     class Meta:

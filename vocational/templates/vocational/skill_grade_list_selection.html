@@ -15,6 +15,7 @@
         </div>
     {% endif %}
 
+    {% if departments %}
 <form method="POST" action="">
   {% csrf_token %}
   <label for="department">Select Department:</label>
@@ -27,6 +28,8 @@
     <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_skill">Skill Grades by Skill </button>
     <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_student">Skill Grade by Student </button>
 </form>
-
+    {% else %}
+        <p class="error">It looks like there are no departments assigned to you as an instructor yet. If you think there's been an error, please reach out to your Vocational Supervisor.</p>
+    {% endif %}
 
 {% endblock %}
