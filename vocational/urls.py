@@ -17,7 +17,9 @@ urlpatterns = [
     path('manage_department/<int:schoolid>/', views.manage_department, name='manage_department'),
 
     path('skill_list/<int:schoolid>/', views.skill_list, name='skill_list'),
+    path('instructor_skill_list/<int:userid>/', views.instructor_skill_list, name='instructor_skill_list'),
     path('manage_skill/<int:departmentid>/', views.manage_skill, name='manage_skill'),
+    path('manage_skill/<int:departmentid>/<int:userid>/', views.manage_skill, name='manage_skill_instructor'),
 
     path('instructor_assignment/<int:schoolid>/', views.instructor_assignment, name='instructor_assignment'),
     path('manage_instructor_assignment/<int:schoolid>/', views.manage_instructor_assignment,

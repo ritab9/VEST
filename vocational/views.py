@@ -162,10 +162,20 @@ def skill_list(request, schoolid):
     context = dict(department=department)
     return render(request, 'vocational/skill_list.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['instructor', 'isei_admin', 'vocational_coordinator'])
+def instructor_skill_list(request, userid):
+    user = User.objects.get(pk=userid)
+    instructor_assignment = InstructorAssignment.objects.filter(instructor__user=user)
+    department = [assignment.department for assignment in instructor_assignment]
+
+    context = dict(department=department, userid=userid)
+    return render(request, 'vocational/skill_list.html', context)
+
 
 @login_required(login_url='login')
-@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
-def manage_skill(request, departmentid):
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
+def manage_skill(request, departmentid, userid=None):
     department = Department.objects.get(id=departmentid)
     schoolid = School.objects.get(id=department.school.id).id
     SkillFormSet = inlineformset_factory(Department, VocationalSkill, fields=('name', 'description', 'weight', 'level', 'code'),
@@ -177,7 +187,10 @@ def manage_skill(request, departmentid):
             skill_formset.save()
             if request.POST.get("add"):
                 return redirect('manage_skill', departmentid)
-            return redirect('skill_list', schoolid)
+            if not userid:
+                return redirect('skill_list', schoolid)
+            else:
+                return redirect('instructor_skill_list', userid)
     else:
         skill_formset = SkillFormSet(instance=department)
 
@@ -598,8 +611,8 @@ def finalize_skill_grade(request, gradeid):
                 return redirect('add_skill_grade', grade.quarter.id, grade.department.id, grade.evaluation_date, grade.instructor.id)
             #ToDo create skill grade list of some sort
             if request.POST.get("save_r"):
-                return redirect('add_skill_grade', grade.evaluation_date, grade.department.id,  grade.quarter.id, grade.instructor.id)
-                #return redirect('skill_grade_list', grade.instructor.id )
+                #return redirect('skill_grade_list_selection', grade.instructor.id )
+                return redirect('skill_grade_list_by_skill', grade.department.id)
         else:
             print(skill_form.errors)
 
@@ -634,7 +647,7 @@ def skill_grade_list_selection(request, userid):
     if departments:
         skills = VocationalSkill.objects.filter(department__in=departments)
         if not skills:
-            error_message = "There are no skills entered for this department(s) yet. Please contact the Vocational Supervisor"
+            error_message = "There are no skills entered for this department(s) yet. Please add skills or contact Vocational Coordinator"
 
         if departments and request.method == 'POST':
             department_id = request.POST.get('department_id')
@@ -648,6 +661,7 @@ def skill_grade_list_selection(request, userid):
     context = {
         'departments': departments,
         'error_message':error_message,
+        'userid': userid,
     }
     return render(request, 'vocational/skill_grade_list_selection.html', context)
 
@@ -659,14 +673,14 @@ def skill_grade_list_by_skill(request, department_id):
 
     department = Department.objects.get(id=department_id)
     skill_scores = {}
-    error_messsage = None
+    error_message = None
 
     if not department:
         error_message="No departments have been assigned yet. Please contact the Vocational Supervisor."
     else:
         skills = VocationalSkill.objects.filter(department=department)
         if not skills:
-            error_message= "There are no skills entered for this department yet. Please contact the Vocational Supervisor"
+            error_message= "There are no skills entered for this department yet. Please add skills or contact Vocational Coordinator"
         else:
             students = Student.objects.filter(user__is_active=True, student_assignment__department=department).distinct()
 
@@ -701,6 +715,7 @@ def skill_grade_list_by_skill(request, department_id):
     context = {
         'skill_scores': skill_scores,
         'error_message':error_message,
+        'department_id': department_id,
     }
 
     return render(request, 'vocational/skill_grade_list_by_skill.html', context)
@@ -712,8 +727,10 @@ def skill_grade_list_by_student(request, department_id):
 
     department = Department.objects.get(id=department_id)
     skills = VocationalSkill.objects.filter(department=department)
+    error_message=None
+
     if not skills:
-        error_message = "There are no skills entered for this department yet. Please contact the Vocational Supervisor"
+        error_message = "There are no skills entered for this department yet. Please add skills or contact Vocational Coordinator"
 
     students = Student.objects.filter(user__is_active=True, student_assignment__department=department).distinct()
 
@@ -746,7 +763,7 @@ def skill_grade_list_by_student(request, department_id):
                 skill_scores[student][skill] = None
 
     context = {
-        'skill_scores': skill_scores, 'error_message':error_message,
+        'skill_scores': skill_scores, 'error_message':error_message, 'department_id':department_id,
     }
 
     return render(request, 'vocational/skill_grade_list_by_student.html', context)

@@ -24,7 +24,13 @@
                     </table>
                     </td>
 
-                    <td><a href="{% url 'manage_skill' d.id  %}">Manage Skills </a></td>
+                    <td>
+                        {% if userid %}
+                            <a href="{% url 'manage_skill_instructor' d.id userid %}">Manage Skills </a>
+                        {% else %}
+                            <a href="{% url 'manage_skill' d.id  %}">Manage Skills </a>
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
 

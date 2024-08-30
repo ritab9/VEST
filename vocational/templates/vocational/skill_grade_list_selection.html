@@ -15,19 +15,25 @@
         </div>
     {% endif %}
 
-    {% if departments %}
-<form method="POST" action="">
-  {% csrf_token %}
-  <label for="department">Select Department:</label>
-  <select id="department" name="department_id">
-    {% for department in departments %}
-      <option value="{{ department.id }}">{{ department.name }}</option>
-    {% endfor %}
-  </select>
+    <div class="card card-body mt-2 mb-2">
+        <div class="col-auto">
+            <a class="btn btn-sm btn-ISEIblue" href="{% url 'instructor_skill_list' userid=userid %}">Add/Edit skills</a>
+        </div>
+    </div>
 
-    <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_skill">Skill Grades by Skill </button>
-    <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_student">Skill Grade by Student </button>
-</form>
+    {% if departments %}
+        <form method="POST" action="">
+          {% csrf_token %}
+          <label for="department">Select Department:</label>
+          <select id="department" name="department_id">
+            {% for department in departments %}
+              <option value="{{ department.id }}">{{ department.name }}</option>
+            {% endfor %}
+          </select>
+
+            <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_skill">Skill Grades by Skill </button>
+            <button class="btn btn-sm btn-outline-ISEIblue" type="submit" name="by_student">Skill Grade by Student </button>
+        </form>
     {% else %}
         <p class="error">It looks like there are no departments assigned to you as an instructor yet. If you think there's been an error, please reach out to your Vocational Supervisor.</p>
     {% endif %}
