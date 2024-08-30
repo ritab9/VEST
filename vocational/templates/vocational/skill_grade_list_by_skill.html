@@ -15,10 +15,16 @@
         </div>
     {% endif %}
 
-    <head>
-    <title>Skill Scores</title>
-</head>
-<body>
+        <head>
+        <title>Skill Scores</title>
+        </head>
+    <body>
+
+    <div class="row">
+            <div class="col">
+                <a class="btn-outline-ISEIblue4 btn-sm btn" href="{% url 'skill_grade_list_by_student' department_id %}" style="float: right;">List By Student</a>
+            </div>
+    </div>
 
     {% for skill, student_scores in skill_scores.items %}
             <div class="row">

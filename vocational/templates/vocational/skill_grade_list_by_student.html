@@ -15,51 +15,59 @@
     {% endif %}
 
     <head>
-    <title>Skill Scores</title>
-</head>
-<body>
+        <title>Skill Scores</title>
+    </head>
 
-    {% for student, student_scores in skill_scores.items %}
-            <div class="row">
-                <h6>{{ student }}</h6>
+
+    <body>
+
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-sm btn-outline-ISEIblue" href="{% url 'skill_grade_list_by_skill' department_id %}" style="float: right;">List By Skill</a>
             </div>
-            <div class="row">
-                <div class="container-sm">
-                    <table class="table-sm table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Skill</th>
-                            <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for skill, scores_and_dates in student_scores.items %}
-                            <tr>
-                                <td>{{ skill }}</td>
-                                {% if scores_and_dates %}
-                                    <td>
-                                    <table class="">
-                                        {% for score, evaluation_date in scores_and_dates %}
-                                           <tbody>
-                                            <tr>
-                                                <td>{{ score }}</td>
-                                                <td>{{ evaluation_date }}</td>
-                                            </tr>
-                                           </tbody>
-                                        {% endfor %}
-                                    </table>
-                                    </td>
-                                {% else %}
-                                    <td colspan="2"> - </td>
-                                {% endif %}
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        </div>
+
+        {% for student, student_scores in skill_scores.items %}
+                <div class="row">
+                    <h6>{{ student }}</h6>
                 </div>
-            </div>
-    {% endfor %}
-</body>
+                <div class="row">
+                    <div class="container-sm">
+                        <table class="table-sm table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Skill</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for skill, scores_and_dates in student_scores.items %}
+                                <tr>
+                                    <td>{{ skill }}</td>
+                                    {% if scores_and_dates %}
+                                        <td>
+                                        <table class="">
+                                            {% for score, evaluation_date in scores_and_dates %}
+                                               <tbody>
+                                                <tr>
+                                                    <td>{{ score }}</td>
+                                                    <td>{{ evaluation_date }}</td>
+                                                </tr>
+                                               </tbody>
+                                            {% endfor %}
+                                        </table>
+                                        </td>
+                                    {% else %}
+                                        <td colspan="2"> - </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+        {% endfor %}
+    </body>
 
 
     <!--
