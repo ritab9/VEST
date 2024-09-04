@@ -2,3 +2,5 @@
 /VEST/.env
 
 .idea/
+
+db_check.py

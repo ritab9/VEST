@@ -214,7 +214,8 @@ def manage_instructor_assignment(request, schoolid):
     school = School.objects.get(id=schoolid)
 
     if request.method == "POST":
-        instructor_formset = InstructorAssignmentFormSet(request.POST, form_kwargs={'school': school})
+        instructor_formset = InstructorAssignmentFormSet(request.POST, queryset=InstructorAssignment.objects.filter(
+            department__school=school), form_kwargs={'school': school})
         if instructor_formset.is_valid():
             instructor_formset.save()
             if request.POST.get("add"):
@@ -222,8 +223,8 @@ def manage_instructor_assignment(request, schoolid):
             return redirect('instructor_assignment', schoolid)
 
     else:
-        instructor_formset = InstructorAssignmentFormSet(initial=[{'department__school': school}],
-                                                         form_kwargs={'school': school})
+        instructor_formset = InstructorAssignmentFormSet(
+            queryset=InstructorAssignment.objects.filter(department__school=school), form_kwargs={'school': school})
 
     context = dict(instructor_formset=instructor_formset)
     return render(request, 'vocational/manage_instructor_assignment.html', context)
