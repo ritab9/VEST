@@ -100,6 +100,7 @@ class EthicsGradeTimeForm(forms.ModelForm):
         except AttributeError:
             time_track = False
 
+
         self.fields['time'].required = time_track
         if not time_track:
             self.fields['time'].widget = forms.HiddenInput()  # hide the field when not tracking time

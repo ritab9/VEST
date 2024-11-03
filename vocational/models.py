@@ -217,7 +217,7 @@ class EthicsGradeRecord(models.Model):
     department = models.ForeignKey(Department, on_delete=models.PROTECT, blank=False, null=False)
     instructor = models.ForeignKey(User, on_delete=models.PROTECT, blank=False, null=False)
     quarter = models.ForeignKey(Quarter, on_delete=models.PROTECT, blank=False, null=False)
-    time = models.IntegerField(blank=True, null=True)
+    time = models.DecimalField(decimal_places=2, max_digits=5, blank=True, null=True)
     suggested_level = models.ForeignKey(EthicsLevel, related_name="suggested_level", on_delete=models.PROTECT, blank=True, null=True)
     accepted_level = models.ForeignKey(EthicsLevel, related_name="accepted_level", on_delete=models.PROTECT, blank=True, null=True)
 
