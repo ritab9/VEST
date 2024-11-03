@@ -10,8 +10,15 @@
           {% for q in new_quarter %}
             <a class="dropdown-item dropdown-menu-sm-left" href="{% url "manage_student_assignment" schoolid q.id %} ">{{ q.school_year }}, {{ q }}</a>
           {% endfor %}
-      </div>
+
+             <form method="POST">
+                {% csrf_token %}
+                <button class ="dropdown-item dropdown-menu-sm-left" type="submit" name="copy_assignments">Copy Assignments from previous quarter</button>
+            </form>
+        </div>
     </div>
+
+
     {% endif %}
     <a class="btn btn-ISEIblue3 btn-sm mt-3 mb-3 ml-3" href="{% url "student_assignment" schoolid %} ">Group by quarter</a>
     <a class="btn btn-ISEIblue3 btn-sm mt-3 mb-3 ml-3" href="{% url "student_assignment_student_filter" schoolid %} ">Group by student</a>

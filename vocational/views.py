@@ -234,12 +234,32 @@ def manage_instructor_assignment(request, schoolid):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
 def student_assignment(request, schoolid):
-    studentassignment = StudentAssignment.objects.filter(department__school__id=schoolid, quarter__school_year__active=True).order_by(
+    studentassignment = StudentAssignment.objects.filter(department__school__id=schoolid,
+                                                         quarter__school_year__active=True).order_by(
         'quarter__school_year', '-quarter__name')
     quarter = Quarter.objects.filter(id__in=studentassignment.values_list('quarter', flat=True)).order_by('-name')
+    latest_quarter = quarter.first()
 
     new_quarter = Quarter.objects.filter(school_year__school_id=schoolid, school_year__active=True).exclude(
         id__in=studentassignment.values_list('quarter', flat=True)).order_by('-school_year', 'name')
+    newest_quarter = new_quarter.first()
+
+    # If this is a POST request, we've got some copying to do
+    if request.method == 'POST':
+
+        # Copy assignments from the latest to the new quarter
+        assignments_to_copy = StudentAssignment.objects.filter(quarter=latest_quarter)
+        for assignment in assignments_to_copy:
+            # Create new assignment with the same values, but attach to the new quarter
+            new_assignment = StudentAssignment.objects.create(
+                quarter=newest_quarter,
+                department=assignment.department,
+                updated_at=assignment.updated_at
+            )
+            new_assignment.student.set(assignment.student.all())
+        return redirect('student_assignment', schoolid=schoolid)
+
+
 
     context = dict(student_assignment=studentassignment,
                    quarter=quarter, new_quarter=new_quarter,
