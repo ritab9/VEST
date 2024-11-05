@@ -19,7 +19,11 @@
             <div class="col-sm-auto">
           <table class="table-sm">
                 <thead>
-                    <th>Quarter</th><th>Date</th><th>Department</th><th>Grade Type</th>
+                    <th>Quarter</th><th>Date</th><th>Department</th>
+                     {% if role == 'vocational_coordinator' %}
+                        <th>Instructor</th>
+                    {% endif %}
+                    <th>Grade Type</th>
                 </thead>
                 <tbody>
                     <tr>
@@ -44,6 +48,17 @@
                                 {% endfor %}
                             </select>
                         </td>
+
+                        {% if role == 'vocational_coordinator' %}
+                        <td>
+                            <select class="form-select" name="instructor">
+                                {% for i in instructor %}
+                                    <option value="{{i.id}}"> {{i}} </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        {% endif %}
+
                         <td>
                             <select class="form-select" name="type">
                                 <option value="F">Ethics Formative</option>

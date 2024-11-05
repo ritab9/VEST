@@ -134,6 +134,9 @@
                                 Grades
                               </a>
                               <ul class="dropdown-menu bg-ISEIblue3" aria-labelledby="navbarDropdown" style = "width: auto">
+                                      <li>
+                                          <a class="nav-link vocational_coordinator" href="{% url 'initiate_grade_entry' request.user.profile.school.id %}?role=vocational_coordinator">Grade Entry</a>
+                                      </li>
                                     <li>
                                         <a class="nav-link vocational_coordinator" href="{% url 'grade_list' request.user.id %}"> Ethics Grade List </a>
                                     </li>

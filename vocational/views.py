@@ -399,6 +399,9 @@ def grade_list_all(request, userid):
 def initiate_grade_entry(request, schoolid):
     error_message=None
 
+    role = request.GET.get('role', None)
+
+
     if request.method == 'POST':
         departmentid = request.POST.get('department')
         quarterid = request.POST.get('quarter')
@@ -417,11 +420,20 @@ def initiate_grade_entry(request, schoolid):
                     else:
                         error_message = 'There are no skills entered for this department. Please contact Vocational Coordinator'
                 else:
-                    return redirect('add_grade', quarterid, type, departmentid, evaluation_date, request.user.id)
+                    if role == 'vocational_coordinator':
+                        profile_id = request.POST.get('instructor')
+                        user = User.objects.get(profile__id=profile_id)
+                        return redirect('add_grade', quarterid, type, departmentid, evaluation_date, user.id)
+                    else:
+                        return redirect('add_grade', quarterid, type, departmentid, evaluation_date, request.user.id)
 
 
     assignments = InstructorAssignment.objects.filter(instructor__id=request.user.profile.id)
-    department = Department.objects.filter(school__id=schoolid, is_active=True, instructorassignment__in=assignments)
+    if role =='vocational_coordinator':
+        department = Department.objects.filter(school__id=schoolid, is_active=True)
+    else:
+        department = Department.objects.filter(school__id=schoolid, is_active=True, instructorassignment__in=assignments)
+
     # quarter_with_grades = Quarter.objects.filter(id__in=grades.values_list('quarter', flat=True))
     # new_quarter = Quarter.objects.filter(school_year__school_id=schoolid, school_year__active=True).exclude(
     #    id__in=grades.values_list('quarter', flat=True)).order_by('name
@@ -435,8 +447,14 @@ def initiate_grade_entry(request, schoolid):
         messages.warning(request, "This school year/quarter is not set up properly for grade entry. \n Please contact school administrator or vocational coordinator. ")
         return redirect('crash')
 
+    if role =='vocational_coordinator':
+        instructor = Profile.objects.filter(user__is_active=True, school_id=schoolid, user__groups__name='instructor')
+    else:
+        instructor=None
+
+
     context = dict(active_quarter=active_quarter, department=department, current_quarter_id=current_quarter_id,
-                   error_message=error_message)
+                   error_message=error_message, role=role, instructor=instructor)
     return render(request, 'vocational/initiate_grade_entry.html', context)
 
 

@@ -30,8 +30,8 @@ def average(grades, school_year=None):
     if time:
         summative_percent_time_pairs = [(s.percent(), s.time) for s in summative if s.time is not None]
         if summative_percent_time_pairs:
-            s1 = sum(percent * time for percent, time in summative_percent_time_pairs) / sum(
-                time for _, time in summative_percent_time_pairs)
+            s1 = sum(percent * float(time) for percent, time in summative_percent_time_pairs) / sum(
+                float(time) for _, time in summative_percent_time_pairs)
         else:
             s1 = None
     else:
@@ -47,8 +47,8 @@ def average(grades, school_year=None):
     if time:
         formative_percent_time_pairs = [(f.percent(), f.time) for f in formative if f.time is not None]
         if formative_percent_time_pairs:
-            s2 = sum(percent * time for percent, time in formative_percent_time_pairs) / sum(
-                time for _, time in formative_percent_time_pairs)
+            s2 = sum(percent * float(time) for percent, time in formative_percent_time_pairs) / sum(
+                float(time) for _, time in formative_percent_time_pairs)
         else:
             s2 = None
     else:
@@ -143,12 +143,12 @@ def calculate_quarter_averages(school, quarter):
 
             total_time += department_time
             if department_time > 0:
-                total_weighted_sum += department_average * department_time
+                total_weighted_sum += department_average * float(department_time)
             else:
                 time=False
 
         if time and total_time > 0:
-            weighted_average = total_weighted_sum / total_time
+            weighted_average = total_weighted_sum / float(total_time)
             total_average = round(weighted_average,2)
         else:
             count = len(student_averages.items())
