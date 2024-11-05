@@ -24,6 +24,9 @@ from django.forms import formset_factory, BaseFormSet
 from django.db.models import Q, Sum, ExpressionWrapper, F, fields, Prefetch
 from django.db.models.functions import ExtractWeek
 
+from django.db.models import OuterRef, FloatField, Subquery
+from django.db.models.functions import ExtractHour, ExtractMinute, ExtractSecond
+
 
 # School Admin Views
 # School Settings
@@ -1305,7 +1308,69 @@ def student_time_card_summary(request, schoolid):
             'rowspan': student_rowspan
         })
 
-    context = dict(formatted_data=formatted_data)
+
+#calculating times from Ethics Grades
+    ethicsgrades = EthicsGradeRecord.objects.filter(
+        student__user__profile__school__id=schoolid,
+        student__user__is_active=True, time__gt=0,
+    ).order_by('student__user__last_name', 'department__name', 'quarter')
+
+
+    # We're going to annotate it with quarter and department
+    ethicsgrades = [
+        {
+            'student': eg.student,
+            'quarter': eg.quarter,
+            'department': eg.department,
+            'time': eg.time or 0,  # no conversion necessary for this model
+        } for eg in ethicsgrades
+    ]
+
+    # Now we'll prepare the aggregate data
+    aggregate_data = {}
+
+    for eg in ethicsgrades:
+        if eg['student'] not in aggregate_data:
+            aggregate_data[eg['student']] = {}
+
+        if eg['department'] not in aggregate_data[eg['student']]:
+            aggregate_data[eg['student']][eg['department']] = {'total': 0, 'quarters': {}}
+
+        if eg['quarter'] not in aggregate_data[eg['student']][eg['department']]['quarters']:
+            aggregate_data[eg['student']][eg['department']]['quarters'][eg['quarter']] = 0
+
+        # Add the hours to the quarter and total
+        aggregate_data[eg['student']][eg['department']]['quarters'][eg['quarter']] = round(
+            aggregate_data[eg['student']][eg['department']]['quarters'][eg['quarter']] + (eg['time'] or 0),
+            2)
+
+        # Increment the total duration, rounding the result
+        aggregate_data[eg['student']][eg['department']]['total'] = round(
+            aggregate_data[eg['student']][eg['department']]['total'] + (eg['time'] or 0),
+            2)
+
+
+    #calculate times from Ethics Grades (entered weekly times)
+    formatted_data_ethicsgrades = []
+    for student, departments in aggregate_data.items():
+        student_rowspan = 0
+        formatted_departments = []
+        for department, details in departments.items():
+            department_rowspan = len(details['quarters'])
+            student_rowspan += department_rowspan
+            formatted_departments.append({
+                'name': department,
+                'detail': details,
+                'rowspan': department_rowspan
+            })
+        formatted_data_ethicsgrades.append({
+            'name': student,
+            'departments': formatted_departments,
+            'rowspan': student_rowspan
+        })
+
+
+    context = dict(formatted_data=formatted_data, formatted_data_ethicsgrades=formatted_data_ethicsgrades)
 
     return render(request, 'vocational/student_time_card_summary.html', context)
 
