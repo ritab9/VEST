@@ -29,7 +29,7 @@
 <div class="row">
     <div class="card card-body ">
         <form method="get">
-                {{ student_filter.form}}
+                {{ student_filter.form.as_table }}
             <button class="btn btn-ISEIblue3 btn-sm" type="submit">Search</button> &nbsp;
             <a href="{%  url 'manage_students' school.id %}">Clear all filters</a>
         </form>

@@ -30,10 +30,11 @@ def crash(request):
 @unauthenticated_user
 def loginuser(request):
     if request.method == 'POST':
-        if not request.POST.get("country_code"):
+        code = request.POST.get("country_code")
+        if not code:
             messages.info(request, 'Please select school.')
         else:
-            username = request.POST.get("country_code") + "_" + request.POST.get('username')
+            username = code + "_" + request.POST.get('username')
             password = request.POST.get('password')
             user = authenticate(request, username=username, password=password)
 
@@ -51,10 +52,12 @@ def loginuser(request):
                         elif request.user.groups.filter(name='vocational_coordinator').exists():
                             return redirect('vocational_coordinator_dashboard', user.profile.school.id)
                         elif request.user.groups.filter(name='instructor').exists():
-                            return redirect('time_card_dashboard', user.id)
+                            if code == "US_TS":
+                                return redirect('time_card_dashboard', user.id)
                             #return redirect('instructor_dashboard', user.id)
                             #return redirect('grade_list', user.id )
-                            #return redirect('initiate_grade_entry', user.profile.school.id )
+                            else:
+                                return redirect('initiate_grade_entry', user.profile.school.id )
                         elif request.user.groups.filter(name='parent').exists():
                             return redirect('parent_page', user.id)
                         elif request.user.groups.filter(name='student').exists():
