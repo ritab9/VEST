@@ -26,7 +26,7 @@ from django.db.models.functions import ExtractWeek
 
 from django.db.models import OuterRef, FloatField, Subquery
 from django.db.models.functions import ExtractHour, ExtractMinute, ExtractSecond
-
+import datetime
 
 # School Admin Views
 # School Settings
@@ -893,9 +893,20 @@ def vc_validate_grades(request, schoolid):
     else:
         formset = VCValidationFormSet(queryset=i_grades)
 
-    context = dict(formset=formset, errors=errors)
+    context = dict(formset=formset, errors=errors, schoolid=schoolid)
     return render(request, 'vocational/vc_validate_grades.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['vocational_coordinator'])
+def vc_validate_all_grades(request, schoolid):
+    i_grades = EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid).order_by(
+        "evaluation_date")
+
+    for ethics_grade_record in i_grades:
+        ethics_grade_record.vc_validated = datetime.date.today()
+        ethics_grade_record.save()
+
+    return redirect('grade_list', request.user.id)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['vocational_coordinator'])
@@ -914,7 +925,7 @@ def vc_unvalidate_grades(request, schoolid):
         formset = VCValidationFormSet(queryset=i_grades)
 
     context = dict(formset=formset)
-    return render(request, 'vocational/vc_validate_grades.html', context)
+    return render(request, 'vocational/vc_unvalidate_grades.html', context)
 
 #not used
 # @login_required(login_url='login')

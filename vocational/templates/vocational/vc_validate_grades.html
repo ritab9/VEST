@@ -15,6 +15,11 @@
     </ul>
   {% endif %}
 
+       <form method="POST" action="{% url 'vc_validate_all_grades' schoolid %}">
+            {% csrf_token %}
+            <input type="submit" value="Validate All Grades">
+        </form>
+
         <form method="POST">
         {% csrf_token %}
                 <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save All">
