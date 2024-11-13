@@ -152,7 +152,9 @@ def calculate_quarter_averages(school, quarter):
             total_average = round(weighted_average,2)
         else:
             count = len(student_averages.items())
-            straight_average = sum([average(grades) for grades in student_averages.values()]) / count if count else 0
+            filtered_averages = (average(grades) for grades in student_averages.values() if average(grades) is not None)
+            straight_average = sum(filtered_averages) / count if count else 0
+            #straight_average = sum([average(grades) for grades in student_averages.values()]) / count if count else 0
             total_average = round(straight_average,2)
 
         student_summary = StudentSummary(student, department_summaries, total_time, total_average)
