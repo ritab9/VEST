@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseRedirect
 from django.db import IntegrityError
-import datetime
+from datetime import datetime
 from users.decorators import allowed_users
 from users.functions import in_group
 from .functions import *
@@ -26,7 +26,6 @@ from django.db.models.functions import ExtractWeek
 
 from django.db.models import OuterRef, FloatField, Subquery
 from django.db.models.functions import ExtractHour, ExtractMinute, ExtractSecond
-import datetime
 
 # School Admin Views
 # School Settings
