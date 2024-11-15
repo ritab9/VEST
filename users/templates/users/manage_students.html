@@ -52,6 +52,7 @@
             <th></th>
             <th>Name <div class="span80">Username</div></th>
             <th>Email</th> <th>Birthday</th><th>Grad Year</th><th>Gender</th>
+            <th>Level</th>
             <th colspan="5" class="text-center">Parents</th><th></th>
         </tr>
         </thead>
@@ -69,6 +70,10 @@
                 <td>{{ s.birthday }}</td>
                 <td>{{ s.graduation_year }} <br> {{ s.grade_level }}</td>
                 <td>{{ s.get_gender_display }}</td>
+                <td> {% if s.vocationalstatus %}
+                    {{ s.vocationalstatus.vocational_level.name }}
+                    {% else %} - {% endif %}
+                </td>
                 <td colspan="5">
  <!-- parent table -->
 

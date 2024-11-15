@@ -107,7 +107,8 @@ class VocationalStatus(models.Model):
     vocational_level = models.ForeignKey(EthicsLevel, on_delete=models.CASCADE)
     vocational_class = models.ForeignKey(VocationalClass, on_delete=models.CASCADE)
     def __str__(self):
-        return self.student.name + ", " + self.vocational_level.name
+        return self.vocational_level.name
+
 
 class InstructorAssignment(models.Model):
     updated_at = models.DateTimeField(auto_now=True,)
