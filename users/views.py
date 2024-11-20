@@ -579,9 +579,14 @@ def add_student(request, schoolid):
             new_user.password="jdbjahbdjhhjdga"
             new_user.save()
 
+            #initial_vocational_level = EthicsLevel.objects.get(name='Level 1') if not form_student.cleaned_data.get(
+            #    'vocational_level') else form_student.cleaned_data.get('vocational_level')
+
             new_student = form_student.save()
             new_student.user = new_user
+            #new_student.vocational_level = initial_vocational_level
             new_student.save()
+
             group = Group.objects.get(name='student')
             new_user.groups.add(group)
             Profile.objects.create(user=new_user, school=school)
@@ -598,6 +603,8 @@ def add_student(request, schoolid):
             if request.POST.get("save_new"):
                 form_user = CreateUserForm()
                 form_student = StudentForm()
+        else:
+            print(form_student.errors)
     else:
         form_user = CreateUserForm()
         form_student = StudentForm()

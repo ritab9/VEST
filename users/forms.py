@@ -45,7 +45,7 @@ class ProfileForm (forms.ModelForm):
         fields =['phone_number', ]
 
 class StudentForm (forms.ModelForm):
-    vocational_level = forms.ModelChoiceField(queryset=EthicsLevel.objects.all().order_by('name'))
+    vocational_level = forms.ModelChoiceField(queryset=EthicsLevel.objects.all().order_by('name'), required=False)
     class Meta:
         model = Student
         fields =['gender', 'birthday', 'graduation_year', 'vocational_level' ]
