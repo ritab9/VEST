@@ -579,12 +579,8 @@ def add_student(request, schoolid):
             new_user.password="jdbjahbdjhhjdga"
             new_user.save()
 
-            #initial_vocational_level = EthicsLevel.objects.get(name='Level 1') if not form_student.cleaned_data.get(
-            #    'vocational_level') else form_student.cleaned_data.get('vocational_level')
-
             new_student = form_student.save()
             new_student.user = new_user
-            #new_student.vocational_level = initial_vocational_level
             new_student.save()
 
             group = Group.objects.get(name='student')
@@ -592,9 +588,12 @@ def add_student(request, schoolid):
             Profile.objects.create(user=new_user, school=school)
             send_system_email_from_school(request, new_user, school, "NewStudent")
 
-            ethics_1 = EthicsLevel.objects.get(id=1)
+            vocational_level = form_student.cleaned_data['vocational_level']
+            if not vocational_level:
+                vocational_level = EthicsLevel.objects.get(id=1)
             class_ethics = VocationalClass.objects.get(id=1)
-            VocationalStatus.objects.create(student=new_student, vocational_level=ethics_1, vocational_class=class_ethics)
+            VocationalStatus.objects.create(student=new_student, vocational_level=vocational_level, vocational_class=class_ethics)
+
 
             if request.POST.get("save_back"):
                 return redirect('manage_students', school.id)
