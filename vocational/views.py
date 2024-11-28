@@ -3,14 +3,13 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseRedirect
 from django.db import IntegrityError
-from datetime import datetime
 from users.decorators import allowed_users
 from users.functions import in_group
 from .functions import *
 from .models import *
 from .forms import *
 from .filters import *
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -902,7 +901,7 @@ def vc_validate_all_grades(request, schoolid):
         "evaluation_date")
 
     for ethics_grade_record in i_grades:
-        ethics_grade_record.vc_validated = datetime.date.today()
+        ethics_grade_record.vc_validated = datetime.today().date()
         ethics_grade_record.save()
 
     return redirect('grade_list', request.user.id)
