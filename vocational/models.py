@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 import pytz
 from pytz import timezone as pytz_timezone
+from django.conf import settings
 from django.db.models import Func
 from datetime import timedelta
 
@@ -152,7 +153,7 @@ class TimeCard(models.Model):
 
     @property
     def tz(self):
-        return pytz_timezone(self.timezone)
+        return pytz_timezone(self.timezone or settings.TIME_ZONE)
 
     def save(self, *args, **kwargs):
         self.update_week_range()
