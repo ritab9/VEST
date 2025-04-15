@@ -6,10 +6,14 @@ django-crispy-forms==1.13.0
 django-environ==0.8.1
 django-filter==24.3
 django-jquery==3.1.0
+et_xmlfile==2.0.0
 Faker==19.3.1
 gender-guesser==0.4.0
 gunicorn==21.2.0
+numpy==2.2.4
+openpyxl==3.1.5
 packaging==23.1
+pandas==2.2.3
 psycopg2-binary==2.9.3
 python-dateutil==2.8.2
 python-decouple==3.5
@@ -18,3 +22,4 @@ six==1.16.0
 soupsieve==2.6
 sqlparse==0.4.2
 typing_extensions==4.12.2
+tzdata==2025.2
