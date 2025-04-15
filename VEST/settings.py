@@ -100,7 +100,7 @@ if DEVELOPMENT_MODE is True:
             'PASSWORD': os.getenv('DATABASE_PASS'),
             'HOST': os.getenv('DATABASE_HOST', ''),
             'PORT': os.getenv('DATABASE_PORT', ''),
-             #'OPTIONS': {'sslmode': 'require'}, #uncomment for digitalocean database
+             'OPTIONS': {'sslmode': 'require'}, #uncomment for digitalocean database
         }
     }
 elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
