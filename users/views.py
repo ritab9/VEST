@@ -827,7 +827,7 @@ def import_students(request, schoolid):
             for _, row in df.iterrows():
                 student_first_name = row['Student First Name']
                 student_last_name = row['Student Last Name']
-                student_username = str(school.country.code)+"_"+ str(school.abbreviation)+ "_" + row['Student Username']
+                student_username = str(school.country.code)+"_"+ str(school.abbreviation)+ "_" + student_first_name + student_last_name
                 student_email = row['Student Email']
                 student_graduation_year=row['Student Graduation Year']
                 student_birthday = row['Student Birthday']
@@ -837,11 +837,19 @@ def import_students(request, schoolid):
                 student_gender = row['Student Gender']
                 vocational_level = EthicsLevel.objects.filter(name=row['Vocational Level']).first()
                 vocational_class = VocationalClass.objects.filter(name=row['Vocational Class']).first()
-                parent_first_name = row['Parent First Name']
-                parent_last_name = row['Parent Last Name']
-                parent_username = str(school.country.code) + "_" + str(school.abbreviation) + "_" + row['Parent Username']
+
+                parent_first_name = str(row['Parent First Name']) if pd.notna(row['Parent First Name']) else ''
+                parent_last_name = str(row['Parent Last Name']) if pd.notna(row['Parent Last Name']) else ''
+
+                if parent_first_name and parent_last_name:
+                    parent_username = f"{school.country.code}_{school.abbreviation}_{parent_first_name}{parent_last_name}"
+                else:
+                    parent_username = None
+
                 parent_email = row['Parent Email']
                 parent_phone_number = row['Parent Phone Number']
+                if pd.isna(parent_phone_number):
+                    parent_phone_number = ''
 
                 if User.objects.filter(username=student_username).exists():
                     messages.warning(request, f"Student {student_username} already exists. Skipping.")
@@ -889,7 +897,7 @@ def import_students(request, schoolid):
                         messages.error(request,
                                        f"Failed to create vocational status: {e}")
                     # Create the parent user
-                    try:
+                    if parent_username:
                         if User.objects.filter(username=parent_username).exists():
                             parent_user = User.objects.get(username=parent_username)
                         else:
@@ -911,9 +919,7 @@ def import_students(request, schoolid):
                         student_instance.parent.add(parent_user)
                         # Send email
                         send_system_email_from_school(request, parent_user, school, "NewParent")
-                    except Exception as e:
-                        messages.error(request,
-                                       f"Failed to create user {parent_username}: {e}")
+
 
                 except Exception as e:
                     messages.error(f"Error: {e}")
@@ -922,7 +928,6 @@ def import_students(request, schoolid):
             return redirect('manage_students', schoolid)
 
         except Exception as e:
-            print(messages)
             messages.error(request, f"Error importing file: {e}")
             return redirect('import_students', schoolid)
 
@@ -934,16 +939,14 @@ def download_template(request):
     data = {
         'Student First Name': ['John'],
         'Student Last Name': ['Doe'],
-        'Student Username': ['jdoe123'],
         'Student Email': ['jdoe@example.com'],
         'Student Graduation Year': [2027],
         'Student Birthday': ['06/23/2010'],
-        'Student Gender': ['M'],
+        'Student Gender': ['m'],
         'Vocational Level': ['Level 1'],
-        'Vocational Class': ['Class A'],
+        'Vocational Class': ['Ethics'],
         'Parent First Name': ['Jane'],
         'Parent Last Name': ['Doe'],
-        'Parent Username': ['jdoe_parent'],
         'Parent Email': ['janedoe@example.com'],
         'Parent Phone Number': ['+1234567890'],
     }
