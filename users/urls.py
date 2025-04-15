@@ -67,4 +67,8 @@ urlpatterns = [
     path('instructor_dashboard/<str:userid>/', views.instructor_dashboard,
          name='instructor_dashboard'),
 
+#import student and parent data from excel
+    path('import-students/<int:schoolid>/', views.import_students, name='import_students'),
+    path('download-template/', views.download_template, name='download_template'),
+
 ]

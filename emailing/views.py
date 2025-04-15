@@ -17,14 +17,14 @@ from .functions import send_email_school
 @allowed_users(allowed_roles=['isei_admin'])
 def system_messages_management(request):
 
-    messages = SystemMessage.objects.all()
+    system_messages = SystemMessage.objects.all()
     if request.method=="POST":
         formset = SystemMessageFormSet(request.POST)
         if formset.is_valid():
             formset.save()
             return redirect('message_list')
     else:
-        formset = SystemMessageFormSet(queryset=messages)
+        formset = SystemMessageFormSet(queryset=system_messages)
 
     context = dict(formset=formset)
     return render(request, 'system_messages_management.html', context)

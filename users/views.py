@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, reverse
-from django.contrib import messages
 # from django.db.models import Q
 from django.forms import modelformset_factory
 
@@ -18,6 +17,9 @@ from emailing.models import *
 from vocational.functions import current_quarter
 from .models import Country
 
+import pandas as pd
+from django.http import HttpResponse
+from django.contrib import messages
 
 
 # landing page for everyone. Introduced it to allow for role transition
@@ -803,3 +805,155 @@ def delete_parent(request, userid, studentid):
 
     context = dict(user=user, school=school, student=student)
     return render(request, 'users/delete_parent.html', context)
+
+
+#import student and parent info from Excel
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def import_students(request, schoolid):
+    school = School.objects.get(id=schoolid)
+
+    student_group = Group.objects.get(name='student')
+    parent_group = Group.objects.get(name='parent')
+
+    if request.method == 'POST' and request.FILES['excel_file']:
+        excel_file = request.FILES['excel_file']
+
+        try:
+            # Read the uploaded Excel file using pandas
+            df = pd.read_excel(excel_file)
+
+            # Process each row
+            for _, row in df.iterrows():
+                student_first_name = row['Student First Name']
+                student_last_name = row['Student Last Name']
+                student_username = str(school.country.code)+"_"+ str(school.abbreviation)+ "_" + row['Student Username']
+                student_email = row['Student Email']
+                student_graduation_year=row['Student Graduation Year']
+                student_birthday = row['Student Birthday']
+                student_birthday = pd.to_datetime(student_birthday, format='%m/%d/%Y').date()
+                if isinstance(student_birthday, str):
+                    student_birthday = pd.to_datetime(student_birthday).date()
+                student_gender = row['Student Gender']
+                vocational_level = EthicsLevel.objects.filter(name=row['Vocational Level']).first()
+                vocational_class = VocationalClass.objects.filter(name=row['Vocational Class']).first()
+                parent_first_name = row['Parent First Name']
+                parent_last_name = row['Parent Last Name']
+                parent_username = str(school.country.code) + "_" + str(school.abbreviation) + "_" + row['Parent Username']
+                parent_email = row['Parent Email']
+                parent_phone_number = row['Parent Phone Number']
+
+                if User.objects.filter(username=student_username).exists():
+                    messages.warning(request, f"Student {student_username} already exists. Skipping.")
+                    continue
+
+                try:
+                    student_user = User.objects.create(
+                        username=student_username,
+                        email=student_email,
+                        first_name=student_first_name,
+                        last_name=student_last_name,
+                    )
+                    student_user.set_password("temporary_password")
+                    student_user.save()
+                    # Add to student group
+                    student_user.groups.add(student_group)
+                    # Create student profile
+                    if not hasattr(student_user, 'profile'):
+                        Profile.objects.create(user=student_user, school=school)
+                    # Send email to student
+                    send_system_email_from_school(request, student_user, school, "NewStudent")
+
+                    # Create student instance
+                    try:
+                        student_instance = Student.objects.create(
+                            user=student_user,
+                            birthday=student_birthday,
+                            gender=student_gender,
+                            graduation_year=student_graduation_year,
+                        )
+
+                        if not vocational_level:
+                            vocational_level = EthicsLevel.objects.get(id=1)
+
+                        if not vocational_class:
+                            vocational_class = VocationalClass.objects.get(id=1)
+
+                        VocationalStatus.objects.create(
+                            student=student_instance,
+                            vocational_level=vocational_level,
+                            vocational_class=vocational_class
+                        )
+
+                    except Exception as e:
+                        messages.error(request,
+                                       f"Failed to create vocational status: {e}")
+                    # Create the parent user
+                    try:
+                        if User.objects.filter(username=parent_username).exists():
+                            parent_user = User.objects.get(username=parent_username)
+                        else:
+                            parent_user = User.objects.create(
+                                username=parent_username,
+                                email=parent_email,
+                                first_name=parent_first_name,
+                                last_name=parent_last_name,
+                            )
+                        # Set a temporary password
+                        parent_user.set_password("temporary_password")  # Optional: you can use a more secure generated one
+                        parent_user.save()
+                        # Add to parent group
+                        parent_user.groups.add(parent_group)
+                        # Create Profile
+                        if not hasattr(parent_user, 'profile'):
+                            Profile.objects.create(user=parent_user, phone_number=parent_phone_number, school=school)
+                        # Link parent to student
+                        student_instance.parent.add(parent_user)
+                        # Send email
+                        send_system_email_from_school(request, parent_user, school, "NewParent")
+                    except Exception as e:
+                        messages.error(request,
+                                       f"Failed to create user {parent_username}: {e}")
+
+                except Exception as e:
+                    messages.error(f"Error: {e}")
+
+            messages.success(request, 'Students and parents imported successfully!')
+            return redirect('manage_students', schoolid)
+
+        except Exception as e:
+            print(messages)
+            messages.error(request, f"Error importing file: {e}")
+            return redirect('import_students', schoolid)
+
+    return render(request, 'users/import_students.html', {'school': school})
+
+
+def download_template(request):
+    # Create a simple Excel template
+    data = {
+        'Student First Name': ['John'],
+        'Student Last Name': ['Doe'],
+        'Student Username': ['jdoe123'],
+        'Student Email': ['jdoe@example.com'],
+        'Student Graduation Year': [2027],
+        'Student Birthday': ['06/23/2010'],
+        'Student Gender': ['M'],
+        'Vocational Level': ['Level 1'],
+        'Vocational Class': ['Class A'],
+        'Parent First Name': ['Jane'],
+        'Parent Last Name': ['Doe'],
+        'Parent Username': ['jdoe_parent'],
+        'Parent Email': ['janedoe@example.com'],
+        'Parent Phone Number': ['+1234567890'],
+    }
+
+    df = pd.DataFrame(data)
+
+    # Create an HTTP response with the content type for Excel files
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="student_parent_template.xlsx"'
+
+    # Write the Excel file to the response
+    df.to_excel(response, index=False, sheet_name='VEST Data Template')
+    return response
