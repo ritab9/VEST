@@ -1116,11 +1116,20 @@ def time_card_dashboard(request, userid, vc='no'):
     total_hours = total_time.days * 24 + total_time.seconds // 3600
     total_minutes = (total_time.seconds // 60) % 60
 
+    school_year_id=SchoolYear.objects.values_list('id', flat=True).filter(school_id=school_id, active=True).first()
+    q = current_quarter(school_year_id)
+    if q:
+        current_quarter_id = current_quarter(school_year_id).id
+    else:
+        messages.warning(request,
+                         "This school year/quarter is not set up properly for grade entry. \n Please contact school administrator or vocational coordinator. ")
+        return redirect('crash')
+
     # Same as before
     context = dict(active_quarter=active_quarter, departments=departments,
                    timecards=timecards, filter=filter, userid=userid,
                    total_hours=total_hours, total_minutes=total_minutes,
-                   school_id=school_id)
+                   school_id=school_id, current_quarter_id=current_quarter_id)
     return render(request, 'vocational/time_card_dashboard.html', context)
 
 
