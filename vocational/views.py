@@ -1176,6 +1176,8 @@ class TimeCardView(generic.FormView):
         else:
             context['assignment'] = None
 
+        quarter = get_object_or_404(Quarter, pk=quarter_id)
+        context['quarter'] =quarter
         return context
 
     def form_valid(self, form):

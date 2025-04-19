@@ -6,13 +6,12 @@
 
 {% block content %}
 
+
     {% if assignment %}
         <div class="d-flex justify-content-between">
             <div>
-                {{ assignment.department }}, {% now "F j, Y" %}
-            </div>
-            <div>
-                {{ assignment.quarter }}
+                {{ assignment.department }}, {% now "F j" %} <br>
+                {{ quarter }}
             </div>
         </div>
 
