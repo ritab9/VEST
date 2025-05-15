@@ -64,6 +64,9 @@
             <th>Name <div class="span80">Username</div></th>
             <th>Email</th> <th>Birthday</th><th>Grad Year</th><th>Gender</th>
             <th>Level</th>
+                {%  if school.abbreviation == "BMA" %}
+                    <th>Class</th>
+                {% endif %}
             <th colspan="5" class="text-center">Parents</th><th></th>
         </tr>
         </thead>
@@ -85,6 +88,9 @@
                     {{ s.vocationalstatus.vocational_level.name }}
                     {% else %} - {% endif %}
                 </td>
+                {%  if school.abbreviation == "BMA" %}
+                    <td>{{ s.vocationalstatus.vocational_class }}</td>
+                {% endif %}
                 <td colspan="5">
  <!-- parent table -->
 

@@ -24,6 +24,9 @@
                 {{ form_student.birthday|as_crispy_field }}
                 {{ form_student.graduation_year|as_crispy_field }}
                 {{ form_student.vocational_level|as_crispy_field }}
+                {% if school.abbreviation == "BMA" %}
+                    {{ form_student.vocational_class|as_crispy_field }}
+                {% endif %}
             </div>
             <div class="col-sm-auto">
                 <tag>Username</tag><br><input type="text" id="internal_username" value="{{ form_user.instance.username|shortened_username }}" >

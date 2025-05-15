@@ -106,7 +106,7 @@ class Department(models.Model):
 class VocationalStatus(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE)
     vocational_level = models.ForeignKey(EthicsLevel, on_delete=models.CASCADE)
-    vocational_class = models.ForeignKey(VocationalClass, on_delete=models.CASCADE)
+    vocational_class = models.ForeignKey(VocationalClass, on_delete=models.CASCADE, null=True, blank=True)
     def __str__(self):
         return self.vocational_level.name
 

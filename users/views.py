@@ -639,7 +639,9 @@ def update_student(request, userid):
             student = form_student.save()
             vocational_status = VocationalStatus.objects.get(student=student)
             vocational_status.vocational_level = form_student.cleaned_data['vocational_level']
+            vocational_status.vocational_class = form_student.cleaned_data['vocational_class']
             vocational_status.save()
+
 
 #adjusting parent status based on students
             if user.is_active != active:

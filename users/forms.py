@@ -4,7 +4,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
 
 from .models import School, Profile, Student
-from vocational.models import EthicsLevel, VocationalStatus
+from vocational.models import EthicsLevel, VocationalStatus, VocationalClass
 
 class CreateUserForm(ModelForm):
     first_name = forms.CharField()
@@ -46,9 +46,10 @@ class ProfileForm (forms.ModelForm):
 
 class StudentForm (forms.ModelForm):
     vocational_level = forms.ModelChoiceField(queryset=EthicsLevel.objects.all().order_by('name'), required=False)
+    vocational_class = forms.ModelChoiceField(queryset=VocationalClass.objects.all().order_by('name'), required=False)
     class Meta:
         model = Student
-        fields =['gender', 'birthday', 'graduation_year', 'vocational_level' ]
+        fields =['gender', 'birthday', 'graduation_year', 'vocational_level', 'vocational_class' ]
         widgets = {
             'birthday': forms.DateInput(
                 attrs={'type': 'date', 'placeholder': 'mm/dd/yyyy', }),
@@ -63,6 +64,7 @@ class StudentForm (forms.ModelForm):
             student_instance = kwargs.get('instance')
             try:
                 self.fields['vocational_level'].initial = student_instance.vocationalstatus.vocational_level
+                self.fields['vocational_class'].initial = student_instance.vocationalstatus.vocational_class
             except VocationalStatus.DoesNotExist:
                 # Handle the case where Student does not have associated VocationalStatus
                 self.fields['vocational_level'].initial = EthicsLevel.objects.get(name='Level 1')
