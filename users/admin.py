@@ -76,6 +76,7 @@ class Student(admin.ModelAdmin):
     inlines = [VocationalStatusInline,]
     list_display = ('user','graduation_year', 'birthday', 'gender', 'is_active', "vocational_level")
     list_editable = ('gender', 'graduation_year')
+    search_fields = ('user__first_name', 'user__last_name')
 
     def is_active(self, obj):
         return obj.user.is_active

@@ -48,11 +48,21 @@
 </div>
 
     {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
+      <ul class="messages">
+        {# Show error messages first #}
+        {% for message in messages %}
+          {% if 'error' in message.tags %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+          {% endif %}
+        {% endfor %}
+
+        {# Then show non-error messages #}
+        {% for message in messages %}
+          {% if 'error' not in message.tags %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
     {% endif %}
 
 <!-- table

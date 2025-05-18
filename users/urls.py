@@ -69,6 +69,10 @@ urlpatterns = [
 
 #import student and parent data from excel
     path('import-students/<int:schoolid>/', views.import_students, name='import_students'),
+    path('import-students/chunk/<int:schoolid>/<int:chunk_index>/', views.import_students_chunk,
+         name='import_students_chunk'),
+    path('import-students/parse/<int:schoolid>/', views.parse_excel_ajax, name='parse_excel_ajax'),
+
     path('download-template/', views.download_template, name='download_template'),
 
 ]

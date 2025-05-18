@@ -18,8 +18,14 @@ from vocational.functions import current_quarter
 from .models import Country
 
 import pandas as pd
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+
+import json
+import numpy as np
+from django.views.decorators.csrf import csrf_exempt
+from openpyxl import load_workbook
+from io import BytesIO
 
 
 # landing page for everyone. Introduced it to allow for role transition
@@ -809,7 +815,164 @@ def delete_parent(request, userid, studentid):
     return render(request, 'users/delete_parent.html', context)
 
 
-#import student and parent info from Excel
+@login_required
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def import_students(request, schoolid):
+    school = School.objects.get(id=schoolid)
+    return render(request, 'users/import_students.html', {'school': school})
+
+from django.contrib import messages  # 👈 Add this import
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+@csrf_exempt
+@login_required
+@allowed_users(allowed_roles=['isei_admin', 'school_admin'])
+def import_students_chunk(request, schoolid, chunk_index):
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        rows = data.get('chunk', [])
+        school = School.objects.get(id=schoolid)
+        student_group = Group.objects.get(name='student')
+        parent_group = Group.objects.get(name='parent')
+
+        results = {
+            'imported': [],
+            'errors': [],
+        }
+
+        for idx, row in enumerate(rows):
+            try:
+                student_first_name = row.get('Student First Name')
+                student_last_name = row.get('Student Last Name')
+                student_username = f"{school.country.code}_{school.abbreviation}_{student_first_name}{student_last_name}"
+                student_email = row.get('Student Email')
+                student_graduation_year = row.get('Student Graduation Year')
+
+                student_birthday = pd.to_datetime(row.get('Student Birthday')).date()
+                student_gender = row.get('Student Gender')
+                vocational_level = EthicsLevel.objects.filter(name=row.get('Vocational Level')).first()
+                vocational_class = VocationalClass.objects.filter(name=row.get('Vocational Class')).first()
+
+                parent_first_name = row.get('Parent First Name', '') or ''
+                parent_last_name = row.get('Parent Last Name', '') or ''
+                parent_username = f"{school.country.code}_{school.abbreviation}_{parent_first_name}{parent_last_name}" if parent_first_name and parent_last_name else None
+                parent_email = row.get('Parent Email')
+                parent_phone_number = row.get('Parent Phone Number') or ''
+
+                if User.objects.filter(username=student_username).exists():
+                    results['errors'].append({
+                        'row': idx,
+                        'student_name': f"{student_first_name} {student_last_name}",
+                        'error': f"Student already exists: {student_username}"
+                    })
+                    continue
+
+                student_user = User.objects.create(
+                    username=student_username,
+                    email=student_email,
+                    first_name=student_first_name,
+                    last_name=student_last_name,
+                )
+                student_user.set_password("temporary_password")
+                student_user.save()
+                student_user.groups.add(student_group)
+                Profile.objects.get_or_create(user=student_user, school=school)
+
+                send_system_email_from_school(request, student_user, school, "NewStudent")
+
+                student_instance = Student.objects.create(
+                    user=student_user,
+                    birthday=student_birthday,
+                    gender=student_gender,
+                    graduation_year=student_graduation_year,
+                )
+
+                if not vocational_level:
+                    vocational_level = EthicsLevel.objects.get(id=1)
+                if not vocational_class:
+                    vocational_class = VocationalClass.objects.get(id=1)
+
+                VocationalStatus.objects.create(
+                    student=student_instance,
+                    vocational_level=vocational_level,
+                    vocational_class=vocational_class
+                )
+
+                if parent_username:
+                    parent_user, _ = User.objects.get_or_create(
+                        username=parent_username,
+                        defaults={
+                            'email': parent_email,
+                            'first_name': parent_first_name,
+                            'last_name': parent_last_name,
+                        }
+                    )
+                    parent_user.set_password("temporary_password")
+                    parent_user.save()
+                    parent_user.groups.add(parent_group)
+                    Profile.objects.get_or_create(user=parent_user, defaults={
+                        'phone_number': parent_phone_number,
+                        'school': school
+                    })
+                    student_instance.parent.add(parent_user)
+                    send_system_email_from_school(request, parent_user, school, "NewParent")
+
+                results['imported'].append(student_username)
+
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                results['errors'].append({
+                    'row': idx,
+                    'student_name': row.get('Student First Name', 'Unknown'),
+                    'error': str(e)
+                })
+
+        # Add errors to Django messages
+        for error in results['errors']:
+            messages.error(
+                request,
+                f"Row {error['row']}: {error.get('student_name')} – {error['error']}"
+            )
+
+        return JsonResponse({'message': f"Processed {len(rows)} students.", 'errors': results['errors']})
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
+@csrf_exempt  # optional: only if CSRF is failing on POST
+def parse_excel_ajax(request, schoolid):
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file']
+        #print("Received file:", excel_file.name, "Size:", excel_file.size)
+        try:
+            df = pd.read_excel(excel_file)
+
+            #print("Excel columns:", df.columns.tolist())
+            #print("First 5 rows of data:\n", df.head())
+
+            # Check column names (adjust if needed)
+            required_columns = ['Student First Name', 'Student Last Name', 'Student Email']
+            if not all(col in df.columns for col in required_columns):
+                return JsonResponse({'error': 'Invalid column headers in Excel'}, status=400)
+
+            # Convert rows to list of dicts
+            students_data = df.replace({np.nan: None}).to_dict(orient='records')
+            #students_data = df.to_dict(orient='records')
+            #print(f"Parsed {len(students_data)} student records")
+
+            return JsonResponse({'students': students_data})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+#import student and parent info from Excel - OLD function
+'''
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def import_students(request, schoolid):
@@ -934,7 +1097,7 @@ def import_students(request, schoolid):
             return redirect('import_students', schoolid)
 
     return render(request, 'users/import_students.html', {'school': school})
-
+'''
 
 def download_template(request):
     # Create a simple Excel template
