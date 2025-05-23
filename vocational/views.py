@@ -1119,7 +1119,7 @@ def time_card_dashboard(request, userid, vc='no'):
     school_year_id=SchoolYear.objects.values_list('id', flat=True).filter(school_id=school_id, active=True).first()
     q = current_quarter(school_year_id)
     if q:
-        current_quarter_id = current_quarter(school_year_id).id
+        current_quarter_id = q.id
     else:
         messages.warning(request,
                          "This school year/quarter is not set up properly for grade entry. \n Please contact school administrator or vocational coordinator. ")

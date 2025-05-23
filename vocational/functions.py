@@ -6,7 +6,7 @@ from django.db.models import Prefetch
 
 
 def current_quarter(school_year_id):
-    q = Quarter.objects.filter(start_date__lt=timezone.now()+timezone.timedelta(days=5), end_date__gt=timezone.now()+timezone.timedelta(days=5), school_year_id=school_year_id).first()
+    q = Quarter.objects.filter(start_date__lt=timezone.now()+timezone.timedelta(days=5), end_date__gt=timezone.now()-timezone.timedelta(days=5), school_year_id=school_year_id).first()
     if not q:
         q=Quarter.objects.filter(school_year_id=school_year_id).first()
     return q
