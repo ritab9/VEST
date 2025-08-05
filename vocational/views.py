@@ -1154,23 +1154,30 @@ class TimeCardView(generic.FormView):
         department_id = self.kwargs['department_id']
 
         today = timezone.now().date()
+        week_ago = today - timedelta(days=6)
 
         try:
             assignment = StudentAssignment.objects.get(quarter_id=quarter_id, department_id=department_id)
         except StudentAssignment.DoesNotExist:
             assignment = None
 
-
         if assignment:
             assignment.students = assignment.student.all()
             for student in assignment.students:
+                #Active card for today
                 student.active_time_card = TimeCard.objects.filter(
                         student_assignment=assignment, student=student,
                         time_in__date=today, time_out=None).order_by('-time_in').first()
+                #completed time cards for today
                 student.today_time_card = TimeCard.objects.filter(
                     student_assignment=assignment, student=student,
                     time_in__date=today, time_out__date=today
                 )
+                # All time cards in the past week (any assignment)
+                student.week_time_cards = TimeCard.objects.filter(
+                    student=student,
+                    time_in__date__range=[week_ago, today]
+                ).order_by('-time_in')
 
             context['assignment'] = assignment
         else:

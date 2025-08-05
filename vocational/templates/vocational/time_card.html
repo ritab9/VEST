@@ -10,71 +10,141 @@
     {% if assignment %}
         <div class="d-flex justify-content-between">
             <div>
-                {{ assignment.department }}, {% now "F j" %} <br>
-                {{ quarter }}
+                <h6>{{ assignment.department }}, {% now "F j" %} <br>
+                    {{ quarter }} </h6>
             </div>
         </div>
 
-       <div style="display: inline-block;">
-            <table class="table ">
-                <thead class="table-ISEIblue4">
-                <th>Student</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Time</th>
-                </thead>
-                <tbody>
-                {% for student in assignment.students %}
+        <div class="row">
+            <div class="col-auto">
+               <div style="display: inline-block;">
+                    <table class="table ">
+                        <thead class="table-ISEIblue4">
+                        <th>Student</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Time</th>
+                        <th>7 day History </th>
+                        </thead>
+                        <tbody>
+                        {% for student in assignment.students %}
 
-                    {% for card in student.today_time_card.all %}
-                        <tr>
-                            {% if forloop.first %}
-                                <td>{{ student }}</td>
-                            {% else %}
-                                <td></td>
-                            {% endif %}
-                            <td>{{ card.get_time_in }}</td>
-                            <td>{{ card.get_time_out }}</td>
-                            <td>{{ card.duration.0 }} hrs {{ card.duration.1 }} min</td>
-                        </tr>
-                    {% endfor %}
-
-
-                    <tr>
-                        {% if student.today_time_card %}
-                            <td style="border-bottom:1px solid black"></td>
-                        {% else %}
-                            <td style="border-bottom:1px solid black">{{ student }}</td>
-                        {% endif %}
-                                <form method="post">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
-                                    <input type="hidden" name="student_id" value="{{ student.id }}">
-                                    {{ form }}
-                                    {% if student.active_time_card %}
-                                        <td style="border-bottom:1px solid black">
-                                            {{ student.active_time_card.get_time_in }}</td>
-                                        <td style="border-bottom:1px solid black">
-                                            <button type="submit" name="action" value="checkout">Check Out</button></td>
+                            {% for card in student.today_time_card.all %}
+                                <tr>
+                                    {% if forloop.first %}
+                                        <td>{{ student }}</td>
                                     {% else %}
-                                        <td style="border-bottom:1px solid black">
-                                            <button type="submit" name="action" value="checkin">Check In</button></td>
-                                        <td style="border-bottom:1px solid black">
-                                            <button type="submit" name="action" value="checkout" disabled>Check Out</button></td>
+                                        <td></td>
                                     {% endif %}
-                                </form>
-                                        <td style="border-bottom:1px solid black"></td>
-                    </tr>
+                                    <td>{{ card.get_time_in }}</td>
+                                    <td>{{ card.get_time_out }}</td>
+                                    <td>{{ card.duration.0 }} hrs {{ card.duration.1 }} min</td>
+                                    <td></td>
+                                </tr>
+                            {% endfor %}
+
+                            <tr>
+                                {% if student.today_time_card %}
+                                    <td style="border-bottom:1px solid black"></td>
+                                {% else %}
+                                    <td style="border-bottom:1px solid black">{{ student }}</td>
+                                {% endif %}
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+                                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                                            {{ form }}
+                                            {% if student.active_time_card %}
+                                                <td style="border-bottom:1px solid black">
+                                                    {{ student.active_time_card.get_time_in }}</td>
+                                                <td style="border-bottom:1px solid black">
+                                                    <button class="btn btn-sm btn-ISEIblue4" type="submit" name="action" value="checkout">Check Out</button></td>
+                                            {% else %}
+                                                <td style="border-bottom:1px solid black">
+                                                    <button class="btn btn-sm btn-ISEIblue4" type="submit" name="action" value="checkin">Check In</button></td>
+                                                <td style="border-bottom:1px solid black">
+                                                    <button class="btn btn-sm btn-ISEIblue4" type="submit" name="action" value="checkout" disabled>Check Out</button></td>
+                                            {% endif %}
+                                        </form>
+                                                <td style="border-bottom:1px solid black"></td>
+
+                                        <!-- View last 7 days' timecards -->
+
+                                        <td style="border-bottom:1px solid black">
+                                                <!-- Trigger Button -->
+                                                <button type="button" class="btn btn-sm btn-outline-ISEIblue4" data-bs-toggle="modal" data-bs-target="#weekModal-{{ student.id }}">
+                                                    View history
+                                                </button>
+                                        </td>
+                            </tr>
 
 
-                {% endfor %}
-                </tbody>
-            </table>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-auto">
+    <!-- Modal for 7 day history -->
+                {% for student in assignment.students %}
+                      <div class="modal fade" id="weekModal-{{ student.id }}" tabindex="-1" aria-labelledby="weekModalLabel-{{ student.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="weekModalLabel-{{ student.id }}">Last 7 Days: {{ student }}</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              {% if student.week_time_cards %}
+                                <table class="table table-sm">
+                                  <thead>
+                                    <tr>
+                                      <th>Date</th>
+                                      <th>Department</th>
+                                      <th>Time In</th>
+                                      <th>Time Out</th>
+                                      <th>Duration</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for card in student.week_time_cards %}
+                                      <tr>
+                                        <td>{{ card.get_date }}</td>
+                                        <td>{{ card.student_assignment.department }}</td>
+                                        <td>{{ card.get_time_in }}</td>
+                                        <td>{{ card.get_time_out }}</td>
+                                        <td>
+                                          {% if card.duration %}
+                                            {{ card.duration.0 }} hrs {{ card.duration.1 }} min
+                                          {% else %}
+                                            -
+                                          {% endif %}
+                                        </td>
+                                      </tr>
+                                    {% endfor %}
+                                  </tbody>
+                                </table>
+                              {% else %}
+                                <p>No time cards in the past 7 days.</p>
+                              {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                              <button class="btn btn-sm btn-ISEIblue4" type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+            </div>
+
         </div>
 
     {% else %}
         <p>No assignments found for this quarter and department.</p>
     {% endif %}
+
+
 
     <script>
 
