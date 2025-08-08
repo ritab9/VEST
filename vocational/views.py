@@ -26,6 +26,10 @@ from django.db.models.functions import ExtractWeek
 from django.db.models import OuterRef, FloatField, Subquery
 from django.db.models.functions import ExtractHour, ExtractMinute, ExtractSecond
 
+from vocational.functions import current_quarter
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
 # School Admin Views
 # School Settings
 @login_required(login_url='login')
@@ -338,37 +342,86 @@ def manage_student_assignment(request, schoolid, quarterid, years_to_grad=None):
     context = dict(student_formset=student_formset, quarter=quarter, schoolid=schoolid, quarterid=quarterid, years_to_grad = years_to_grad)
     return render(request, 'vocational/manage_student_assignment.html', context)
 
-
-
-# Manage Grades
-#just grades from current school year
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])
 def grade_list(request, userid):
+    #import time
+
     user = User.objects.get(id=userid)
-    current_year = SchoolYear.objects.filter(school_id = user.profile.school.id, active=True).first()
-    quarter = Quarter.objects.filter(school_year=current_year).order_by("name")
+    current_year = SchoolYear.objects.filter(school_id=user.profile.school.id, active=True).first()
+    track_time = current_year.gradesettings.track_time
 
-    if in_group(user,"vocational_coordinator"):
-        grades = EthicsGradeRecord.objects.filter(quarter__school_year=current_year).order_by('-vc_validated','-quarter','student')
-        filter = GradeFilterVocationalCoordinator(request.GET, request=request, queryset=grades)
-        student_assignment = StudentAssignment.objects.filter(quarter__in =quarter).order_by("quarter")
+    # Get all quarters for current year (for filter choices in template)
+    quarter_qs = Quarter.objects.filter(school_year=current_year).order_by("name")
+
+    # Get quarter filter from request, else use current_quarter
+    quarter_filter = request.GET.get('quarter', None)
+    if quarter_filter:
+        try:
+            selected_quarter = Quarter.objects.get(id=quarter_filter, school_year=current_year)
+        except Quarter.DoesNotExist:
+            selected_quarter = current_quarter(current_year.id)
     else:
-        grades = EthicsGradeRecord.objects.filter(instructor_id=userid, quarter__school_year=current_year).order_by('-vc_validated','-quarter','student')
-        filter = GradeFilterInstructor(request.GET, request=request, queryset=grades)
-        department = InstructorAssignment.objects.filter(instructor=user.profile).values("department")
-        student_assignment = StudentAssignment.objects.filter(quarter__in =quarter, department__in=department).order_by(quarter)
+        selected_quarter = current_quarter(current_year.id)
 
-    for obj in grades:
-        if (obj.score() == 0 and obj.created_at + timedelta(days=1) < now):
-            obj.delete()
+    if in_group(user, "vocational_coordinator"):
+        grades_qs = EthicsGradeRecord.objects.filter(
+            quarter=selected_quarter,
+            quarter__school_year=current_year
+        ).order_by('-vc_validated', '-quarter', 'student').select_related(
+            'quarter', 'instructor', 'student__user', 'student__vocationalstatus', 'student__vocationalstatus__vocational_level', 'department'
+        ).prefetch_related('ethicssummativegrade_set', 'ethicsformativegrade_set')
+
+        filter = GradeFilterVocationalCoordinator(request.GET, request=request, queryset=grades_qs)
+
+        student_assignment = StudentAssignment.objects.filter(quarter=selected_quarter)
+
+    else:
+        department = InstructorAssignment.objects.filter(instructor=user.profile).values_list("department", flat=True)
+
+        grades_qs = EthicsGradeRecord.objects.filter(
+            instructor_id=userid,
+            quarter=selected_quarter,
+            quarter__school_year=current_year,
+            department__in=department
+        ).order_by('-vc_validated', '-quarter', 'student').select_related(
+            'quarter', 'instructor', 'student__user', 'student__vocationalstatus', 'student__vocationalstatus__vocational_level', 'department'
+        ).prefetch_related('ethicssummativegrade_set', 'ethicsformativegrade_set')
+
+        filter = GradeFilterInstructor(request.GET, request=request, queryset=grades_qs)
+
+        student_assignment = StudentAssignment.objects.filter(quarter=selected_quarter, department__in=department).order_by("quarter")
 
     grades = filter.qs
-    all=False
 
-    context = dict(grades=grades, filter=filter, all=all, quarter = quarter, student_assignment=student_assignment)
+    # Pagination setup
+    page = request.GET.get('page', 1)
+    paginator = Paginator(grades, 20)  # Show 20 grades per page
+    try:
+        grades_page = paginator.page(page)
+    except PageNotAnInteger:
+        grades_page = paginator.page(1)
+    except EmptyPage:
+        grades_page = paginator.page(paginator.num_pages)
 
-    return render(request, 'vocational/grade_list.html', context)
+    context = dict(
+        grades=grades_page,
+        paginator=paginator,
+        page_obj=grades_page,
+        filter=filter,
+        all=False,
+        quarter=quarter_qs,  # full list for filter display
+        selected_quarter=selected_quarter,  # pass selected quarter for UI highlight etc.
+        student_assignment=student_assignment,
+        track_time=track_time,
+    )
+
+    #start = time.time()
+    return render(request, "vocational/grade_list.html", context)
+    #print(f"Template render took {time.time() - start:.3f} seconds")
+    #return response
+
+
 
 #all grades ever entered
 @login_required(login_url='login')

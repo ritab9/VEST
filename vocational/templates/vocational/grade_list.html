@@ -10,21 +10,20 @@
 {% block content %}
 
 <div class="col-sm-auto">
-    <!-- show/hide previous school year grades -->
+    <!-- show/hide previous school year grades
     <div class="row noprint">
         <div class="col">
             <div class="text-left mt-2">
-                {% if all %}
-                    <a class="btn btn-sm btn-outline-ISEIblue3" href="{%  url 'grade_list' request.user.id %}">Show grades for current school year only</a>
-                {% else %}
-                    <a class="btn btn-sm btn-outline-ISEIblue3" href="{%  url 'grade_list_all' request.user.id %}">Show grades from all school years</a>
-                {% endif %}
+                { % if all %}
+                    <a class="btn btn-sm btn-outline-ISEIblue3" href="{ %  url 'grade_list' request.user.id %}">Show grades for current school year only</a>
+                { % else %}
+                    <a class="btn btn-sm btn-outline-ISEIblue3" href="{ %  url 'grade_list_all' request.user.id %}">Show grades from all school years</a>
+                { % endif %}
             </div>
         </div>
+    </div-->
 
-    </div>
-
-    <!--filter -->
+<!--filter -->
     <div class="row noprint">
         <div class="card-body">
             <form method="get" id="filterForm" onchange="this.form.submit()">
@@ -37,19 +36,59 @@
 </div>
 
 
-    <div class="row col-sm-auto">
+<!-- Pagination -->
+    <div class="row pagination text-center">
+        <span class="col step-links">
+            {% if page_obj.has_previous %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page=1">&laquo; first</a>
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">&lsaquo; previous</a>
+            {% endif %}
 
-    {% include "vocational/grades.html" %}
+            <span class="current">
+                Page {{ page_obj.number }} of {{ paginator.num_pages }}.
+            </span>
 
+            {% if page_obj.has_next %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">next &rsaquo;</a>
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+<br>
+
+<!-- Grades -->
+    <div class="row col">
+         {% include "vocational/grades.html" %}
+    </div>
+
+<!-- Pagination -->
+    <div class="row pagination text-center">
+        <span class="col step-links">
+            {% if page_obj.has_previous %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page=1">&laquo; first</a>
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">&lsaquo; previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">next &rsaquo;</a>
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+
+<!-- Student Assignments -->
      <div class="col-sm-auto card-body pl-5">
         <table class="table" style="width: auto">
         <thead>Student Assignments</thead>
             <tbody>
-                {% for q in quarter %}
                     <tr>
-                        <td><button class="btn btn-sm btn-outline-ISEIblue3 span80 quarter_button" id={{ q.id }}>{{ q }}</button>
-                            <table class = "table" id="quarter_table{{ q.id }}" style="display: none;">
-                            {% for a in q.studentassignment_set.all %}
+                        <td><button class="btn btn-sm btn-outline-ISEIblue3 span80 quarter_button" id={{ selected_quarter.id }}>{{ selected_quarter }}</button>
+                            <table class = "table" id="quarter_table{{ selected_quarter.id }}" style="display: none;">
+                            {% for a in selected_quarter.studentassignment_set.all %}
                                <tr>
                                     <td>{{ a.department }}</td>
                                     <td>{%  for i in a.student.all %}
@@ -58,14 +97,13 @@
                                </tr>
                             {% endfor %}
                             </table>
-                        </td></tr>
-                {% endfor %}
+                        </td>
+                    </tr>
             </tbody>
         </table>
  </div>
 
 
-    </div>
 
     <script>
 

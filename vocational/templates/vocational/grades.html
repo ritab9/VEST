@@ -9,7 +9,7 @@
             <tr><th></th>
                 <th>Quarter</th><th>Student</th><th>Department</th><th>Instructor</th>
                 <th>Type</th><th>Grade</th><th>Score</th>
-                {% if grades.first.student.user.profile.school.id|track_time %}
+                {% if track_time %}
                     <th>Time</th>
                 {% endif %}
                 <th>Student Discussed</th> <th>VC Validated</th>
