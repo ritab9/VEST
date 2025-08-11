@@ -36,7 +36,7 @@ urlpatterns = [
          name='student_assignment_department_filter'),
     path('vc_validate_grades/<int:schoolid>/', views.vc_validate_grades, name="vc_validate_grades"),
     path('vc_unvalidate_grades/<int:schoolid>/', views.vc_unvalidate_grades, name="vc_unvalidate_grades"),
-    path('vc_validate_all_grades/<int:schoolid>/', views.vc_validate_all_grades, name="vc_validate_all_grades"),
+    #path('vc_validate_all_grades/<int:schoolid>/', views.vc_validate_all_grades, name="vc_validate_all_grades"),
 
     # Instructor links
     path('grade_list/<int:userid>/', views.grade_list, name='grade_list'),

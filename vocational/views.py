@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseRedirect
 from django.db import IntegrityError
-from users.decorators import allowed_users
+from users.decorators import *
 from users.functions import in_group
 from .functions import *
 from .models import *
@@ -910,8 +910,18 @@ def vc_validate_grades(request, schoolid):
     school = School.objects.get(id=schoolid)
     errors=None
 
+    # Pagination setup
+    paginator = Paginator(i_grades, 40)  # Show 10 grades per page
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
     if request.method == 'POST':
-        formset = VCValidationFormSet(request.POST)
+        formset = VCValidationFormSet(request.POST, queryset=page_obj.object_list)
         if formset.is_valid():
             for form in formset:
                 ethics_grade_record = form.save(commit=False)
@@ -942,28 +952,40 @@ def vc_validate_grades(request, schoolid):
         else:
             errors = formset.non_form_errors()
     else:
-        formset = VCValidationFormSet(queryset=i_grades)
+        formset = VCValidationFormSet(queryset=page_obj.object_list)
 
-    context = dict(formset=formset, errors=errors, schoolid=schoolid)
+    context = dict(formset=formset, errors=errors, schoolid=schoolid, page_obj=page_obj)
     return render(request, 'vocational/vc_validate_grades.html', context)
 
-@login_required(login_url='login')
-@allowed_users(allowed_roles=['vocational_coordinator'])
-def vc_validate_all_grades(request, schoolid):
-    i_grades = EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid).order_by(
-        "evaluation_date")
 
-    for ethics_grade_record in i_grades:
-        ethics_grade_record.vc_validated = datetime.today().date()
-        ethics_grade_record.save()
 
-    return redirect('grade_list', request.user.id)
+#not used
+#@login_required(login_url='login')
+#@allowed_users(allowed_roles=['vocational_coordinator'])
+#def vc_validate_all_grades(request, schoolid):
+    #i_grades = EthicsGradeRecord.objects.filter(vc_validated=None, vc_comment__isnull=False, instructor__profile__school__id=schoolid).order_by(
+    #    "evaluation_date")
+#    i_grades = EthicsGradeRecord.objects.filter(
+#        vc_validated=None, instructor__profile__school__id=schoolid
+#    ).filter(Q(vc_comment__isnull=True) | Q(vc_comment="")
+#    ).order_by("evaluation_date")
+#    for ethics_grade_record in i_grades:
+#        ethics_grade_record.vc_validated = datetime.today().date()
+#        ethics_grade_record.save()
+#    return redirect('grade_list', request.user.id)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['vocational_coordinator'])
 def vc_unvalidate_grades(request, schoolid):
+    one_week_ago = timezone.now().date() - timedelta(days=7)
 
-    i_grades= EthicsGradeRecord.objects.filter(~Q(vc_validated = None), instructor__profile__school__id=schoolid).order_by("-evaluation_date")
+    i_grades = EthicsGradeRecord.objects.filter(
+        vc_validated__isnull=False,
+        vc_validated__gte=one_week_ago,
+        instructor__profile__school__id=schoolid
+    ).order_by("-evaluation_date")
+
+    #i_grades= EthicsGradeRecord.objects.filter(~Q(vc_validated = None), instructor__profile__school__id=schoolid).order_by("-evaluation_date")
 
     if request.method == 'POST':
         formset = VCValidationFormSet(request.POST)
@@ -1103,7 +1125,9 @@ def average_quarter_grades(request, schoolid, quarterid):
 
 
 #time card views
+from django.views.decorators.cache import never_cache
 
+@never_cache
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'instructor', 'vocational_coordinator', 'school_admin'])
 def time_card_dashboard(request, userid, vc='no'):
@@ -1188,8 +1212,9 @@ def time_card_dashboard(request, userid, vc='no'):
 
 #automatic time card entry
 class TimeCardView(generic.FormView):
+
     template_name = 'vocational/time_card.html'
-    form_class = TimeCardForm
+    form_class = (TimeCardForm)
 
     def get(self, request, *args, **kwargs):
 
@@ -1272,6 +1297,11 @@ class TimeCardView(generic.FormView):
     def get_success_url(self):
         return reverse('time_card',
                        kwargs={'quarter_id': self.kwargs['quarter_id'], 'department_id': self.kwargs['department_id']})
+
+    def dispatch(self, request, *args, **kwargs):
+        # Log out the current user
+        logout(request)
+        return super().dispatch(request, *args, **kwargs)
 
 #manual time card entry by instructor or vocational coordinator
 @login_required(login_url='login')

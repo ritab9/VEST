@@ -6,6 +6,10 @@
 
 {% block content %}
 
+    {% block navbar %}
+        {% include 'navbar_logged_out.html' %}
+    {% endblock %}
+
 
     {% if assignment %}
         <div class="d-flex justify-content-between">
@@ -147,8 +151,6 @@
 
 
     <script>
-
-
 
     </script>
 

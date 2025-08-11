@@ -1,6 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import redirect
-
+from django.shortcuts import redirect, reverse
 
 def unauthenticated_user(view_func):
     def wrapper_func(request, *args, **kwargs):
@@ -24,5 +23,6 @@ def allowed_users(allowed_roles=[]):
                 return HttpResponse('You are not authorized to view this page')
         return wrapper_func
     return decorator
+
 
 

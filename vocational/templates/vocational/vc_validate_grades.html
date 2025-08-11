@@ -2,29 +2,67 @@
 
 {% load static %}
 
-{% block title %}{{ student }} Validate grades {% endblock title %}
+{% block title %} Validate grades {% endblock title %}
 
 
    {% block content %}
 
        {% if errors %}
-    <ul class="errors">
-      {% for error in errors %}
-        <li>{{ error }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+            <ul class="errors">
+              {% for error in errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+       {% endif %}
 
-       <form method="POST" action="{% url 'vc_validate_all_grades' schoolid %}">
-            {% csrf_token %}
-            <input type="submit" value="Validate All Grades">
-        </form>
+       {% for message in messages %}
+        {%  if message.tags == "info" %}
+            <div class="alert-warning spangreen" role="alert" >{{message}}</div>
+        {% else %}
+            <div class="alert-warning spanred" role="alert" >{{message}}</div>
+        {% endif %}
+    {% endfor %}
+
+ <!--   Automatic Grade Validation -->
+       <!--form method="POST" action="{ % url 'vc_validate_all_grades' schoolid %}">
+            { % csrf_token %}
+            <input type="submit" class="btn btn-sm btn-danger" value="Validate All Grades">
+                    <p class="error">This button will automatically validate all grades except those with SAVED comments in the ‘Not Valid’ section.
+                        Please review and SAVE all invalid grades before using this!
+                </p>
+        </form-->
+
+       <div class="alert alert-info text-muted mb-2">
+             Click <em>Fill Today's Date for Quick Validation</em> to approve all grades
+            with no issues.
+            If a grade is incomplete, leave a comment instead describing what needs to be fixed.
+       </div>
+
+       <button type="button" class="btn btn-sm btn-ISEIyellow" id="fill-today-btn" class="btn btn-primary mb-2">
+            Fill Today's Date for Quick Validation
+        </button>
 
         <form method="POST">
         {% csrf_token %}
                 <input class = "btn btn-sm btn-ISEIblue3 mt-3" name="save" type= "submit" value = "Save All">
 
             {{ formset.management_form }}
+
+            <div>
+                <div class="pagination">
+                  {% if page_obj.has_previous %}
+                    <a href="?page=1"> << First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}"> < Previous</a>
+                  {% endif %}
+
+                  <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                  {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Next > </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">Last >> </a>
+                  {% endif %}
+                </div>
+            </div>
 
             <div>
                 {% for form in formset %}
@@ -126,7 +164,7 @@
                                 New Level: {{ form.accepted_level }}
                             </td>
                             <td colspan="2" class="spangreen">Enter date to validate: {{ form.vc_validated }}</td>
-                            <td colspan="7" class="spanred">If not valid, please explain what needs to be changed: {{ form.vc_comment }}</td>
+                            <td colspan="7" class="spanred">Not Valid! Please explain what needs to be changed: {{ form.vc_comment }}</td>
                         </tr>
                     </tbody>
                         {% for hidden in form.hidden_fields %}
@@ -139,4 +177,56 @@
             </div>
         </form>
 
+
+        <script>
+            document.getElementById("fill-today-btn").addEventListener("click", function() {
+                // Get today's date in YYYY-MM-DD format
+                const today = new Date().toISOString().slice(0,10);
+
+                // Match both textarea and input in case widgets change
+                const commentFields = document.querySelectorAll(
+                    "input[name$='vc_comment'], textarea[name$='vc_comment']"
+                );
+
+                commentFields.forEach(function(commentField) {
+                    // Get the matching date field name (form-0-vc_comment → form-0-vc_validated)
+                    const dateName = commentField.name.replace(/vc_comment$/, 'vc_validated');
+
+                    // Find that date field anywhere in the DOM
+                    const dateField = document.querySelector(`[name="${dateName}"]`);
+
+                    if (!dateField) {
+                        alert(`No vc_validated field found for ${commentField.name}`);
+                        return;
+                    }
+
+                    // Only fill in if comment is empty and date is empty
+                    if (commentField.value.trim() === "" && dateField.value.trim() === "") {
+                        dateField.value = today;
+
+                        // Trigger change/input event so any JS listeners see it
+                        dateField.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+            });
+
+            document.querySelectorAll("input[name$='vc_comment'], textarea[name$='vc_comment']")
+              .forEach(function(commentField) {
+                commentField.addEventListener("input", function() {
+                  const dateName = commentField.name.replace(/vc_comment$/, 'vc_validated');
+                  const dateField = document.querySelector(`[name="${dateName}"]`);
+
+                  if (commentField.value.trim() !== "" && dateField && dateField.value.trim() !== "") {
+                    dateField.value = "";
+                    dateField.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+                });
+            });
+        </script>
+
     {% endblock content %}
+
+{% block script %}
+
+
+{% endblock %}
