@@ -9,6 +9,9 @@
     {% if error_message %}
         <span class="spanred">{{ error_message }}</span>
     {% endif %}
+    {% if no_grade_settings_message %}
+        <p class="error">{{ no_grade_settings_message }}</p>
+    {% endif %}
 
     {% if department %}
 

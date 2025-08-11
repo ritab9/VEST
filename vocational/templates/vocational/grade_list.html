@@ -9,6 +9,10 @@
 
 {% block content %}
 
+    {% if no_grade_settings_message %}
+        <p class="error">{{ no_grade_settings_message }}</p>
+    {% endif %}
+
 <div class="col-sm-auto">
     <!-- show/hide previous school year grades
     <div class="row noprint">

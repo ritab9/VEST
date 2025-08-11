@@ -349,7 +349,10 @@ def grade_list(request, userid):
 
     user = User.objects.get(id=userid)
     current_year = SchoolYear.objects.filter(school_id=user.profile.school.id, active=True).first()
-    track_time = current_year.gradesettings.track_time
+    if hasattr(current_year, 'grade_settings'):
+        track_time = current_year.gradesettings.track_time
+    else:
+        track_time = None
 
     # Get all quarters for current year (for filter choices in template)
     quarter_qs = Quarter.objects.filter(school_year=current_year).order_by("name")
@@ -416,6 +419,9 @@ def grade_list(request, userid):
         track_time=track_time,
     )
 
+    if not hasattr(current_year, 'grade_settings'):
+        context['no_grade_settings_message'] = "Please set Grade Settings for the current school year."
+
     #start = time.time()
     return render(request, "vocational/grade_list.html", context)
     #print(f"Template render took {time.time() - start:.3f} seconds")
@@ -451,7 +457,6 @@ def initiate_grade_entry(request, schoolid):
     error_message=None
 
     role = request.GET.get('role', None)
-
 
     if request.method == 'POST':
         departmentid = request.POST.get('department')
@@ -503,9 +508,13 @@ def initiate_grade_entry(request, schoolid):
     else:
         instructor=None
 
-
     context = dict(active_quarter=active_quarter, department=department, current_quarter_id=current_quarter_id,
                    error_message=error_message, role=role, instructor=instructor)
+
+    school_year = SchoolYear.objects.get(id=school_year_id)
+    if not hasattr(school_year, 'grade_settings'):
+        context['no_grade_settings_message'] = "Please ask the Vocational Coordinator to set Grade Settings for the current school year."
+
     return render(request, 'vocational/initiate_grade_entry.html', context)
 
 
