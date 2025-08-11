@@ -80,6 +80,40 @@ class StudentAssignmentForm(forms.ModelForm):
 StudentAssignmentFormSet = inlineformset_factory(Quarter, StudentAssignment, form=StudentAssignmentForm,
                                                  can_delete=True, can_order=True, extra=2)
 
+class DepartmentStudentMatrixForm(forms.Form):
+    def __init__(self, school, quarter, graduation_year=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Get departments
+        departments = Department.objects.filter(school=school, is_active=True)
+
+        # Get students
+        if graduation_year:
+            students = Student.objects.filter(
+                user__profile__school=school,
+                graduation_year__in=graduation_year,
+                user__is_active=True
+            ).order_by('user__last_name')
+        else:
+            students = Student.objects.filter(
+                user__profile__school=school,
+                user__is_active=True
+            ).order_by('user__last_name')
+
+        # For each department, create a MultiCheckbox field for its students
+        for dept in departments:
+            field_name = f"dept_{dept.id}"
+            assignment, _ = StudentAssignment.objects.get_or_create(
+                quarter=quarter, department=dept
+            )
+            self.fields[field_name] = forms.ModelMultipleChoiceField(
+                queryset=students,
+                widget=forms.CheckboxSelectMultiple,
+                required=False,
+                initial=assignment.student.all()
+            )
+            self.fields[field_name].label = dept.name
+
 
 class EthicsGradeInstructorForm(forms.ModelForm):
     class Meta:

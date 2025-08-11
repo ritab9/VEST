@@ -8,8 +8,11 @@
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           {% for q in new_quarter %}
-            <a class="dropdown-item dropdown-menu-sm-left" href="{% url "manage_student_assignment" schoolid q.id %} ">{{ q.school_year }}, {{ q }}</a>
+            <!--a class="dropdown-item dropdown-menu-sm-left" href="{ % url "manage_student_assignment" schoolid q.id %} ">{ { q.school_year }}, { { q }}</a-->
+              <a class="dropdown-item dropdown-menu-sm-left" href="{% url "manage_student_assignment_matrix" schoolid q.id %} ">{{ q }}</a>
+
           {% endfor %}
+
 
              <form method="POST">
                 {% csrf_token %}

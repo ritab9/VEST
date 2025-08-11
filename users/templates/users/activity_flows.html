@@ -66,7 +66,11 @@
                         <td>
                             Edit grade calculation settings for current school year.
                         </td>
-                        <td class="datetime"> {{ grade_settings_update|default_if_none:" "}}</td>
+                        <td class="datetime"> {% if grade_settings_update %}
+                            {{ grade_settings_update|default_if_none:" "}}
+                            {% else %} <span class="error">Manage Grade Settings for current school year!</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <td>6.</td>
@@ -117,7 +121,12 @@
                     <td>
                         Assign students to the departments they will be working at.
                     </td>
-                    <td class="datetime"> {{ student_assignment_update|default_if_none:"" }}</td>
+                    <td class="datetime"> {% if student_assignment_update  %}
+                        {{ student_assignment_update|default_if_none:"" }}
+                        {% else %}
+                            <span class="error">Assign students to their areas</span>
+                        {% endif %}
+                    </td>
 
                 </tr>
 

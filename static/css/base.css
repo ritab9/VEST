@@ -204,6 +204,29 @@ input[type='number'] {
     -moz-appearance:textfield; /* Firefox */
 }
 
-/*.tableFixHead          { overflow: auto; height: 100px; }*/
-/*.tableFixHead thead th { position: sticky; top: 0; z-index: 1; }*/
+.matrix-table th,
+.matrix-table td {
+    border: 1px solid #dee2e6;
+}
 
+/* Sticky header row (keep solid background) */
+.matrix-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa; /* Solid for header */
+    z-index: 2;
+}
+
+/* Sticky first column — no fixed background so stripes show */
+.matrix-table th:first-child,
+.matrix-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05); /* Subtle separation */
+}
+
+/* Top-left cell: header + first column */
+.matrix-table thead th:first-child {
+    z-index: 3;
+}

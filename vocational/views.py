@@ -309,7 +309,7 @@ def student_assignment_department_filter(request, schoolid):
                    department_filter=department_filter, active_school_year = active_school_year)
     return render(request, 'vocational/student_assignment_department_filter.html', context)
 
-
+"""
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
 def manage_student_assignment(request, schoolid, quarterid, years_to_grad=None):
@@ -341,6 +341,80 @@ def manage_student_assignment(request, schoolid, quarterid, years_to_grad=None):
 
     context = dict(student_formset=student_formset, quarter=quarter, schoolid=schoolid, quarterid=quarterid, years_to_grad = years_to_grad)
     return render(request, 'vocational/manage_student_assignment.html', context)
+"""
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator'])
+def manage_student_assignment_matrix(request, schoolid, quarterid):
+    school = School.objects.get(id=schoolid)
+    quarter = Quarter.objects.get(id=quarterid)
+    active_school_year = SchoolYear.objects.get(school_id=schoolid, active=True)
+    start_year = active_school_year.start_date.year
+
+    # Get multi-select values (can be multiple or single)
+    years_to_grad_get = request.GET.getlist('years_to_grad') or ['all']
+
+    if 'all' in years_to_grad_get:
+        graduation_year = None
+    else:
+        graduation_year = [int(start_year) + int(y) for y in years_to_grad_get]
+
+    # Departments
+    departments = Department.objects.filter(school=school, is_active=True)
+
+    # Students filtered by graduation year(s)
+    if graduation_year:
+        students = Student.objects.filter(
+            user__profile__school=school,
+            graduation_year__in=graduation_year,
+            user__is_active=True
+        ).order_by('user__last_name')
+    else:
+        students = Student.objects.filter(
+            user__profile__school=school,
+            user__is_active=True
+        ).order_by('user__last_name')
+
+    # POST - same as before
+    if request.method == "POST":
+        for dept in departments:
+            assignment, _ = StudentAssignment.objects.get_or_create(
+                quarter=quarter, department=dept
+            )
+            selected_ids = request.POST.getlist(f"dept_{dept.id}")
+            assignment.student.set(selected_ids)
+        return redirect('student_assignment', schoolid)
+
+    # Prepare matrix data
+    matrix_data = []
+    for dept in departments:
+        assignment, _ = StudentAssignment.objects.get_or_create(
+            quarter=quarter, department=dept
+        )
+        selected_ids = set(assignment.student.values_list('id', flat=True))
+        matrix_data.append({
+            "department": dept,
+            "selected_ids": selected_ids
+        })
+
+    grade_options = [
+        ("1", "Senior (12)"),
+        ("2", "Junior (11)"),
+        ("3", "Sophomore (10)"),
+        ("4", "Freshman (9)"),
+    ]
+
+    context = dict(
+        quarter=quarter,
+        schoolid=schoolid,
+        quarterid=quarterid,
+        students=students,
+        matrix_data=matrix_data,
+        selected_years_to_grad=years_to_grad_get,
+        grade_options=grade_options,
+    )
+    return render(request, "vocational/manage_student_assignment_matrix.html", context)
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'vocational_coordinator', 'instructor'])

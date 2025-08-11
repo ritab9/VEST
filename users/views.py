@@ -206,15 +206,15 @@ def vocational_coordinator_dashboard(request, schoolid):
 
     instructor_assignment_update = InstructorAssignment.objects.values_list('updated_at', flat=True).filter(instructor__school=school).order_by(
         "-updated_at").first()
-    student_assignment_update = StudentAssignment.objects.values_list('updated_at', flat=True).filter(student__user__profile__school=school).order_by(
+    student_assignment_update = StudentAssignment.objects.values_list('updated_at', flat=True).filter(student__user__profile__school=school, quarter__in=quarters).order_by(
         "-updated_at").first()
-    grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(school_year__school=school).order_by(
+    grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(school_year=active_school_year).order_by(
         "-updated_at").first()
     customized_system_message_update = CustomizedSystemMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
     local_message_update = LocalMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
         "-updated_at").first()
-    system_message_update = SystemMessage.objects.values_list('updated_at', flat=True).order_by("-updated_at").first()
+    #system_message_update = SystemMessage.objects.values_list('updated_at', flat=True).order_by("-updated_at").first()
     message_update = max(filter(None.__ne__, [customized_system_message_update,local_message_update]), default=None)
 
 
@@ -255,9 +255,9 @@ def school_admin_dashboard(request, schoolid):
     instructor_assignment_update = InstructorAssignment.objects.values_list('updated_at', flat=True).filter(
         instructor__school=school).order_by("-updated_at").first()
     student_assignment_update = StudentAssignment.objects.values_list('updated_at', flat=True).filter(
-        student__user__profile__school=school).order_by("-updated_at").first()
+        student__user__profile__school=school, quarter__in=quarters).order_by("-updated_at").first()
     grade_settings_update = GradeSettings.objects.values_list('updated_at', flat=True).filter(
-        school_year__school=school).order_by("-updated_at").first()
+        school_year=active_school_year).order_by("-updated_at").first()
     customized_system_message_update = CustomizedSystemMessage.objects.values_list('updated_at', flat=True).filter(
         school=school).order_by("-updated_at").first()
     local_message_update = LocalMessage.objects.values_list('updated_at', flat=True).filter(school=school).order_by(
