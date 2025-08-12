@@ -1,132 +1,220 @@
-{%  extends 'base.html' %}
-  {% load static %}
- {% load crispy_forms_field %}
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_field %}
+{% load custom_filters %}
 
-  {% block title %} Time Card {% endblock title %}
-
+{% block title %} Time Card {% endblock title %}
 
 {% block content %}
 
     {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
     {% endif %}
 
-    {% if got_data %}
-        <div class="ml-5 ">
-            {{ department }},
-            {{ quarter }}
+    <div class="justify-content-right">
+          <!-- Back button -->
+          <a href="javascript:history.back()" class="btn btn-sm btn-ISEIblue2">
+            &laquo; Back
+          </a>
+
+          <!-- New entry button -->
+          <a href="{% url 'time_card_manual' department.id quarter.id %}" class="btn btn-sm btn-ISEIblue4">
+            New Entry
+          </a>
     </div>
 
-        <form method="post">
+    {% if got_data %}
+    <div class="card-body align-content-center"><h6>{{ department }}, {{ quarter }}</h6></div>
+
+    <form method="post">
         {% csrf_token %}
+        <div class="card-body" style="display: inline-block;">
+             <!-- Render the global date input -->
+              <div class="mb-3 d-flex align-items-center">
+                  <label for="{{ global_date_form.global_date.id_for_label }}" class="me-2 mb-0">Date:</label>
+                  <div style="width: auto;">
+                    {{ global_date_form.global_date }}
+                  </div>
+                  {% if global_date_form.global_date.errors %}
+                    <div class="text-danger ms-3">{{ global_date_form.global_date.errors }}</div>
+                  {% endif %}
+              </div>
+            <hr>
+
         {{ formset.management_form }}
-        <div style="display: inline-block;">
-        <table class="table">
-            <thead class="table-ISEIblue4">
-                <th>Student</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Duration</th>
-                <th></th>
-            </thead>
-            {% for form in formset %}
-                <tr>
-                    <!-- display field errors -->
-                    <td>{{ form.student.errors }} {{ form.student }}</td>
-                    <td>{{ form.time_in.errors }} {{ form.time_in }}</td>
-                    <td>{{ form.time_out.errors }} {{ form.time_out }}</td>
-                    <td id="id_form-{{ forloop.counter0 }}-duration"></td>
-                    <td>
-                        {% for error in form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ error }}
-                            </div>
-                        {% endfor %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-     </div>
+
+        <div class="col-auto">
+            <table class="table">
+                <thead class="table-ISEIblue4">
+                    <tr>
+                        <th>Student</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Duration</th>
+                        <th>History</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td></td>
+                        <td><button type="button" id="fill-down-time-in" class="small btn btn-outline-ISEIblue btn-sm me-2">Fill Down Check-in</button></td>
+                        <td><button type="button" id="fill-down-time-out" class="small btn btn-outline-ISEIblue btn-sm">Fill Down Check-out</button></td>
+                        <td></td><td></td><td></td>
+                    </tr>
+                {% for form in formset %}
+                    <tr>
+                        <td>{{ form.student.errors }} {{ form.student }}</td>
+                        <td>{{ form.time_in.errors }} {{ form.time_in_time }}</td>
+                        <td>{{ form.time_out.errors }} {{ form.time_out_time }}</td>
+                        <td id="id_form-{{ forloop.counter0 }}-duration"></td>
+                        <td>
+                            <button type="button" class="btn-sm btn btn-link p-0"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#past-week-{{ forloop.counter0 }}">
+                                    Show past 7 days
+                                </button>
+                            </td>
+                        <td>
+                            {% for error in form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </td>
+                    </tr>
+
+                    {% with past_week_data|get_item:forloop.counter0 as past_cards %}
+                    {% if past_cards %}
+                        <tr id="past-week-{{ forloop.counter0 }}" class="collapse mt-2">
+                            <td colspan="5">
+                                    <table class="table table-sm table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Department</th>
+                                                <th>Check-in</th>
+                                                <th>Check-out</th>
+                                                <th>Duration</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for card in past_cards %}
+                                            <tr>
+                                                <td>{{ card.date }}</td>
+                                                <td>{{ card.department }}</td>
+                                                <td>{{ card.time_in }}</td>
+                                                <td>{{ card.time_out }}</td>
+                                                <td>{{ card.duration }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="text-muted text-center">No past records</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    {% endwith %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <button class="btn btn-sm btn-ISEIblue" type="submit">Save</button>
     </form>
-    {% endif %}
 
+{% endif %}
 
+<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 
-    <script>
+<script>
+const SCHOOL_TIMEZONE = "{{ school_timezone|escapejs }}";
 
-    document.addEventListener('DOMContentLoaded', (event) => {
+    document.addEventListener('DOMContentLoaded', () => {
+        const { DateTime } = luxon;
 
-        let timeInElems = document.querySelectorAll('input[id^="id_form-"][id$="-time_in"]');
-        let timeOutElems = document.querySelectorAll('input[id^="id_form-"][id$="-time_out"]');
+        function parseLocalInput(value) {
+            if (!value) return null;
+            return DateTime.fromISO(value, { zone: SCHOOL_TIMEZONE });
+        }
 
-        Array.from(timeInElems).forEach((inputElem) => {
-            inputElem.addEventListener('blur', (e) => {
-                let changedValue = e.target.value;
-                Array.from(timeInElems).forEach((otherInputElem) => {
-                    if (otherInputElem.value === '') {
-                        otherInputElem.value = changedValue;
-                        otherInputElem.dispatchEvent(new Event('change', { 'bubbles': true }));
-                    }
-                });
+        function calculateDuration(checkIn, checkOut) {
+            if (!checkIn || !checkOut) return "";
+            let diff = checkOut.diff(checkIn, ['hours', 'minutes']).toObject();
+            let hours = Math.floor(diff.hours);
+            let minutes = Math.round(diff.minutes);
+            return `${hours}h ${minutes}m`;
+        }
+
+        function updateDuration(rowNumber) {
+            let checkInElem = document.querySelector(`#id_form-${rowNumber}-time_in_time`);
+            let checkOutElem = document.querySelector(`#id_form-${rowNumber}-time_out_time`);
+            let durationElem = document.querySelector(`#id_form-${rowNumber}-duration`);
+            if (!durationElem) return;
+
+            let checkIn = parseLocalInput(checkInElem.value);
+            let checkOut = parseLocalInput(checkOutElem.value);
+            durationElem.textContent = calculateDuration(checkIn, checkOut);
+        }
+
+        function updateAllDurations() {
+            let totalForms = document.querySelectorAll('input[id$="-time_in_time"]').length;
+            for (let i = 0; i < totalForms; i++) {
+                updateDuration(i);
+            }
+        }
+
+        // Add input listeners for per-row recalculation only
+        function setupInputListeners() {
+            let timeInElems = document.querySelectorAll('input[id$="-time_in_time"]');
+            let timeOutElems = document.querySelectorAll('input[id$="-time_out_time"]');
+
+            timeInElems.forEach((inputElem, idx) => {
+                inputElem.addEventListener('input', () => updateDuration(idx));
             });
-        });
 
-        Array.from(timeOutElems).forEach(inputElem => {
-            inputElem.addEventListener('blur', (e) => {
-                let changedValue = e.target.value;
-                Array.from(timeOutElems).forEach(otherInputElem => {
-                    if (otherInputElem.value === '') {
-                        otherInputElem.value = changedValue;
-                        otherInputElem.dispatchEvent(new Event('change', { 'bubbles': true }));
-                    }
-                });
+            timeOutElems.forEach((inputElem, idx) => {
+                inputElem.addEventListener('input', () => updateDuration(idx));
             });
-        });
+        }
+
+        // Fill down function for a column (time_in or time_out)
+        function fillDown(columnSuffix) {
+            let elems = document.querySelectorAll(`input[id$="-` + columnSuffix + `"]`);
+            let firstValue = null;
+            for (const el of elems) {
+                if (el.value) {
+                    firstValue = el.value;
+                    break;
+                }
+            }
+            if (!firstValue) return;  // nothing to fill down
+            elems.forEach(el => {
+                if (!el.value) {
+                    el.value = firstValue;
+                }
+            });
+            updateAllDurations();
+        }
+
+        // Setup button click listeners
+        function setupFillDownButtons() {
+            const btnTimeIn = document.getElementById('fill-down-time-in');
+            const btnTimeOut = document.getElementById('fill-down-time-out');
+
+            btnTimeIn.addEventListener('click', () => fillDown('time_in_time'));
+            btnTimeOut.addEventListener('click', () => fillDown('time_out_time'));
+        }
+
+        setupInputListeners();
+        setupFillDownButtons();
     });
 
-    /* Calculate duration of vocational activity */
-    function calculateDuration(checkIn, checkOut) {
-        var difference = checkOut - checkIn;
-        var hoursDifference = Math.floor(difference / 1000 / 60 / 60);
-        difference -= hoursDifference * 1000 * 60 * 60;
-        var minutesDifference = Math.floor(difference / 1000 / 60);
-        return hoursDifference + " hours and " + minutesDifference + " minutes";
-    }
-
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const timeInOutElems = document.querySelectorAll('input[id^="id_form-"][id$="-time_out"], input[id^="id_form-"][id$="-time_in"]');
-        Array.from(timeInOutElems).forEach((inputElem) => {
-            inputElem.addEventListener('change', (e) => {
-                let checkInElem, checkOutElem;
-                let rowNumber = e.target.id.split('-')[1];
-                if (e.target.id.endsWith('time_in')) {
-                    checkInElem = e.target;
-                    checkOutElem = document.querySelector(`input[id="id_form-${rowNumber}-time_out"]`);
-                } else if (e.target.id.endsWith('time_out')) {
-                    checkInElem = document.querySelector(`input[id="id_form-${rowNumber}-time_in"]`);
-                    checkOutElem = e.target;
-                }
-
-                let durationElem = document.querySelector(`#id_form-${rowNumber}-duration`);
-                if (durationElem) {
-                    if (checkInElem && checkInElem.value && checkOutElem && checkOutElem.value) {
-                        let checkIn = new Date(checkInElem.value);
-                        let checkOut = new Date(checkOutElem.value);
-                        let duration = calculateDuration(checkIn, checkOut);
-                        durationElem.textContent = duration;
-                    } else {
-                        durationElem.textContent = ""; // Reset duration field if time_out or time_in is blank
-                    }
-                }
-            });
-        });
-    });
-
-    </script>
+</script>
 
 {% endblock %}
+

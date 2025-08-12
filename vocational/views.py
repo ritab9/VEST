@@ -1390,47 +1390,110 @@ class TimeCardView(generic.FormView):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
 def time_card_manual(request, quarter_id, department_id):
-
     try:
         model_instance = StudentAssignment.objects.get(quarter=quarter_id, department=department_id)
         students_qs = model_instance.student.all()
-        got_data=True
+        got_data = True
     except StudentAssignment.DoesNotExist:
         model_instance = None
         got_data = False
         students_qs = Student.objects.none()
         messages.info(request, "No assignments found for this quarter and department.")
 
-    department=Department.objects.get(pk=department_id)
+    department = Department.objects.get(pk=department_id)
     quarter = Quarter.objects.get(pk=quarter_id)
 
-    local_timezone=department.school.timezone
-    # Create formset
-    FormSet = formset_factory(ManualTimeCardForm, formset=BaseFormSet, extra=0)
+    local_timezone = department.school.timezone
+    tz = pytz.timezone(local_timezone)
+
+    # Prepare past week data per student index for the template
+    past_week_data = {}
+    today = timezone.localtime(timezone.now(), tz).date()
+
+    for idx, student in enumerate(students_qs):
+        past_cards = TimeCard.objects.filter(
+            student=student,
+            time_in__date__gte=today - timedelta(days=7),
+            time_in__date__lt=today
+        ).order_by('-time_in')
+
+        past_week_data[idx] = [{
+            'date': card.get_date_no_year(),
+            'time_in': card.get_time_in(),
+            'time_out': card.get_time_out(),
+            'duration': f"{card.duration()[0]}h {card.duration()[1]}m" if card.duration() else '',
+            'department': card.student_assignment.department.name,
+        } for card in past_cards]
+
+    FormSet = formset_factory(TimeEntryForm, extra=0)
 
     if request.method == "POST":
-        formset = FormSet(request.POST, form_kwargs={'students': students_qs, 'timezone': local_timezone})
-        if formset.is_valid():
-            instances = []
-            for single_form in formset:
-                if single_form.cleaned_data.get('time_in') is not None:
-                    instance = single_form.save(commit=False)
-                    instance.student_assignment = model_instance
-                    instance.update_week_range()
-                    instance.timezone=local_timezone
-                    instances.append(instance)
-            TimeCard.objects.bulk_create(instances)
-            messages.success(request, "Your time entries were successfully saved.")
-    else:
-        if model_instance is not None:
-            data = [{'student': student} for student in model_instance.student.all()]
+        global_date_form = GlobalDateForm(request.POST)
+        if global_date_form.is_valid():
+            global_date = global_date_form.cleaned_data['global_date']  # already a date object
         else:
-            data=[]
-        formset = FormSet(initial=data, form_kwargs={'students': students_qs, 'timezone': local_timezone})
+            global_date = None
+            print("Please select a valid date")
+            messages.error(request, "Please select a valid date - Version 1.")
 
+        formset = FormSet(
+            request.POST,
+            form_kwargs={'students': students_qs}
+        )
 
-    context = dict(formset=formset, department=department, quarter=quarter, got_data=got_data)
+        if global_date is None:
+            messages.error(request, "Please select a date.")
+        elif formset.is_valid():
+            for form in formset:
+                instance = form.save(commit=False)
+
+                # Combine global_date and the time fields
+                time_in_time = form.cleaned_data.get('time_in_time')
+                time_out_time = form.cleaned_data.get('time_out_time')
+                if time_in_time:
+                    dt_in = datetime.combine(global_date, time_in_time)
+                    instance.time_in = dt_in
+                else:
+                    instance.time_in = None
+
+                if time_out_time:
+                    dt_out = datetime.combine(global_date, time_out_time)
+                    instance.time_out = dt_out
+                else:
+                    instance.time_out = None
+
+                instance.student_assignment = model_instance
+                instance.timezone = local_timezone
+                instance.update_week_range()
+                instance.save()
+
+            messages.success(request, "Your time entries were successfully saved.")
+
+        else:
+            if not global_date_form.is_valid():
+                messages.error(request, "Please select a valid date Version 2.")
+            print("Formset not valid")
+            for form in formset:
+                print(form.errors.as_json())
+    else:
+        global_date_form = GlobalDateForm()
+        initial_data = [{'student': student} for student in students_qs]
+        formset = FormSet(initial=initial_data, form_kwargs={'students': students_qs})
+
+    context = {
+        'global_date_form': global_date_form,
+        'formset': formset,
+        'department': department,
+        'quarter': quarter,
+        'got_data': got_data,
+        'school_timezone': local_timezone,
+        'past_week_data': past_week_data,
+    }
     return render(request, 'vocational/time_card_manual.html', context)
+
+
+
+
 
 
 #manual time card entry by instructor or vocational coordinator

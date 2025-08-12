@@ -212,6 +212,8 @@ class TimeCard(models.Model):
         return f"{student} - {department} - {date} ({time_in}-{time_out})"
 
 
+
+
 #Grades
 class EthicsGradeRecord(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=False, null=False)

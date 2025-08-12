@@ -1,6 +1,6 @@
 from django import forms
-from django.forms import ModelForm
-from django.forms.models import inlineformset_factory, modelformset_factory
+from django.forms import ModelForm, TimeField
+from django.forms.models import inlineformset_factory, modelformset_factory, formset_factory
 import datetime
 from django.core.exceptions import ValidationError
 from django.forms.widgets import SplitDateTimeWidget
@@ -9,6 +9,8 @@ import pytz
 
 from django.contrib.auth.models import User
 from .models import *
+from datetime import date, datetime
+from django.forms.widgets import DateTimeInput, TimeInput
 
 
 
@@ -246,43 +248,47 @@ SkillGradeFormSet = inlineformset_factory(SkillGradeRecord, SkillGrade, form=Ski
 class TimeCardForm(forms.Form):
     pass
 
-class DateTimeInput(forms.DateTimeInput):
-    input_type = 'datetime-local'
 
-class ManualTimeCardForm(forms.ModelForm):
+class GlobalDateForm(forms.Form):
+    global_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        required=True,
+    )
+
+
+class TimeEntryForm(forms.ModelForm):
+    time_in_time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+        label="Time In"
+    )
+    time_out_time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+        label="Time Out"
+    )
+
     class Meta:
         model = TimeCard
-        fields = ['student','time_in', 'time_out']
+        fields = ['student']  # Only student tied directly to model here
         widgets = {
-            'student': forms.Select(),
-            'time_in': DateTimeInput(),
-            'time_out': DateTimeInput(),
+            'student': forms.Select(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
-        student_choices = kwargs.pop('students', None)
-        self.timezone = kwargs.pop('timezone', None)
-        super(ManualTimeCardForm, self).__init__(*args, **kwargs)
-        if student_choices is not None:
-            self.fields['student'].queryset = student_choices
+        students = kwargs.pop('students', None)
+        super().__init__(*args, **kwargs)
+        if students is not None:
+            self.fields['student'].queryset = students
 
-    def clean_time_in(self):
-        time_in = self.cleaned_data.get('time_in', None)
-        if not time_in:
-            return None
-        time_in = time_in.replace(tzinfo=None)
-        user_tz = pytz.timezone(self.timezone)  # Replace with actual timezone
-        time_in = user_tz.localize(time_in)
-        return time_in
 
-    def clean_time_out(self):
-        time_out = self.cleaned_data.get('time_out', None)
-        if not time_out:
-            return None
-        time_out = time_out.replace(tzinfo=None)
-        user_tz = pytz.timezone(self.timezone)  # Replace with actual timezone
-        time_out = user_tz.localize(time_out)
-        return time_out
+
+
+
+
+# formset factory for view usage
+TimeEntryFormSet = formset_factory(TimeEntryForm, extra=0)
+
 
 
 class CustomDateTimeInput(forms.DateTimeInput):
@@ -293,7 +299,7 @@ class CustomDateTimeInput(forms.DateTimeInput):
         super(CustomDateTimeInput, self).__init__(*args, **kwargs)
 
     def format_value(self, value):
-        if value and isinstance(value, datetime.datetime):
+        if value and isinstance(value, datetime):
             user_tz = pytz.timezone(self.timezone)  # School specific timezone
             value = value.astimezone(user_tz)  # Convert it to the school timezone
             return value.strftime('%Y-%m-%dT%H:%M')  # Format it in ISO 8601 (not including seconds)
