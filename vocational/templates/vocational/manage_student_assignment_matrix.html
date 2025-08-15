@@ -8,67 +8,66 @@
 {% block content %}
 <h6>Assign Students to Departments ({{ quarter }})</h6>
 
-    <form method="get" class="mb-3">
-      <label for="years_to_grad">Filter by Grade Level(s):</label>
-      <select
-          name="years_to_grad"
-          id="years_to_grad"
-          multiple
-          class="select2-filter"
-          style="width: 300px;"
-          onchange="this.form.submit()"
-        >
-          <option value="all" {% if "all" in selected_years_to_grad %}selected{% endif %}>All</option>
-          {% for years, label in grade_options %}
-            <option value="{{ years }}" {% if years in selected_years_to_grad %}selected{% endif %}>
-              {{ label }}
-            </option>
-          {% endfor %}
-        </select>
-    </form>
+        <form method="get" class="mb-3">
+          <label for="years_to_grad">Filter by Grade Level(s):</label>
+          <select
+              name="years_to_grad"
+              id="years_to_grad"
+              multiple
+              class="select2-filter"
+              style="width: 300px;"
+              onchange="this.form.submit()"
+            >
+              <option value="all" {% if "all" in selected_years_to_grad %}selected{% endif %}>All</option>
+              {% for years, label in grade_options %}
+                <option value="{{ years }}" {% if years in selected_years_to_grad %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+        </form>
 
-
-<form method="post">
-    {% csrf_token %}
-    <div class="table-responsive">
-        <table class="table table-bordered table-sm align-middle matrix-table table-striped">
-            <thead class="table-light">
+        <form method="post">
+          {% csrf_token %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle matrix-table table-striped">
+              <thead class="table-light">
                 <tr>
-                    <th>Department</th>
-                    {% for student in students %}
-                        <th class="text-center">{{ student.user.last_name }}<br>{{ student.user.first_name }}</th>
-                    {% endfor %}
+                  <th>Student</th>
+                  {% for dept_row in matrix_data %}
+                    <th class="text-center">{{ dept_row.department.name }}</th>
+                  {% endfor %}
                 </tr>
-            </thead>
-            <tbody>
-                {% for row in matrix_data %}
-                    <tr>
-                        <td>{{ row.department.name }}</td>
-                        {% for student in students %}
-                            <td class="text-center">
-                                <input type="checkbox"
-                                       name="dept_{{ row.department.id }}"
-                                       value="{{ student.id }}"
-                                       {% if student.id in row.selected_ids %}checked{% endif %}>
-                            </td>
-                        {% endfor %}
-                    </tr>
+              </thead>
+              <tbody>
+                {% for student in students %}
+                  <tr>
+                    <td>{{ student.user.last_name }}, {{ student.user.first_name }}</td>
+                    {% for dept_row in matrix_data %}
+                      <td class="text-center">
+                        <input type="checkbox"
+                               name="dept_{{ dept_row.department.id }}"
+                               value="{{ student.id }}"
+                               {% if student.id in dept_row.selected_ids %}checked{% endif %}>
+                      </td>
+                    {% endfor %}
+                  </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <button type="submit" class="btn btn-sm btn-ISEIblue">Save Assignments</button>
-</form>
+              </tbody>
+            </table>
+          </div>
+          <button type="submit" class="btn btn-sm btn-ISEIblue">Save Assignments</button>
+        </form>
 
-
-    <script>
-        $(document).ready(function() {
-          $('.select2-filter').select2({
-            placeholder: "Select Grade Level(s)",
-            allowClear: true,
-            closeOnSelect: false
+        <script>
+          $(document).ready(function() {
+            $('.select2-filter').select2({
+              placeholder: "Select Grade Level(s)",
+              allowClear: true,
+              closeOnSelect: false
+            });
           });
-        });
-    </script>
+        </script>
+
 
 {% endblock %}

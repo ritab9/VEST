@@ -282,7 +282,15 @@ class TimeEntryForm(forms.ModelForm):
             self.fields['student'].queryset = students
 
 
+class AddTemporaryStudentForm(forms.Form):
+    student = forms.ModelChoiceField(queryset=Student.objects.none())
 
+    def __init__(self, *args, school=None, exclude_students=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        qs = Student.objects.filter(user__profile__school=school, user__is_active=True) if school else Student.objects.all()
+        if exclude_students:
+            qs = qs.exclude(id__in=exclude_students)
+        self.fields['student'].queryset = qs
 
 
 

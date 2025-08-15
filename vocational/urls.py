@@ -1,6 +1,5 @@
 from django.urls import path, re_path, register_converter
 from . import views
-from .views import TimeCardView
 
 
 urlpatterns = [
@@ -74,7 +73,7 @@ urlpatterns = [
     path('average_quarter_grades/<int:schoolid>/<int:quarterid>/', views.average_quarter_grades, name="average_quarter_grades"),
 
     #time_card paths
-    path('time_card/<int:department_id>/<int:quarter_id>/', TimeCardView.as_view(), name='time_card'),
+    path('time_card/<int:department_id>/<int:quarter_id>/', views.time_card_view, name='time_card'),
     path('time_card_manual/<int:department_id>/<int:quarter_id>/', views.time_card_manual, name='time_card_manual'),
     path('time_card_dashboard/<str:userid>/', views.time_card_dashboard, name='time_card_dashboard'),
     path('time_card_dashboard/<str:userid>/<str:vc>', views.time_card_dashboard, name='time_card_dashboard'),

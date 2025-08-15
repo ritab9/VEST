@@ -81,6 +81,13 @@ class StudentAssignment(admin.ModelAdmin):
     model=StudentAssignment
     list_display = ('quarter','department', )
 
+@admin.register(TemporaryStudentAssignment)
+class TemporaryStudentAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('student_assignment', 'student')
+    list_filter = ('student_assignment__quarter', 'student_assignment__department')
+    search_fields = ('student__first_name', 'student__last_name', 'student_assignment__department__name')
+
+
 # @admin.register(VocationalAssignment)
 # class VocationalAssignment(admin.ModelAdmin):
 #     model=VocationalAssignment

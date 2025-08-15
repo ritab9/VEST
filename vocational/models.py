@@ -6,6 +6,7 @@ from pytz import timezone as pytz_timezone
 from django.conf import settings
 from django.db.models import Func
 from datetime import timedelta
+from itertools import chain
 
 
 
@@ -127,6 +128,42 @@ class StudentAssignment(models.Model):
         unique_together = ('quarter', 'department')
     def __str__(self):
         return str(self.quarter) + ", " + self.department.name
+
+    def permanent_and_temporary_students(self):
+        permanent = self.student.all()
+        temporary = Student.objects.filter(
+            temporarystudentassignment__student_assignment=self
+        )
+        combined = list(chain(permanent, temporary))
+        return combined
+
+    def permanent_and_temporary_students_with_flag(self):
+        # Permanent students
+        permanent = list(self.student.all())
+        for s in permanent:
+            s.is_temporary = False  # mark as permanent
+
+        # Temporary students
+        temporary = list(Student.objects.filter(
+            temporarystudentassignment__student_assignment=self
+        ))
+        for s in temporary:
+            s.is_temporary = True  # mark as temporary
+
+        return permanent + temporary
+
+    def permanent_and_temporary_queryset(self):
+        permanent = self.student.all()
+        temporary = Student.objects.filter(temporarystudentassignment__student_assignment=self)
+        combined = (permanent | temporary).distinct()
+        return combined
+
+
+class TemporaryStudentAssignment(models.Model):
+    student_assignment = models.ForeignKey(StudentAssignment, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    class Meta:
+        unique_together = ('student_assignment', 'student')
 
 class TimeCard(models.Model):
     student_assignment = models.ForeignKey(StudentAssignment, on_delete=models.CASCADE)

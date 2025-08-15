@@ -1292,107 +1292,135 @@ def time_card_dashboard(request, userid, vc='no'):
                    school_id=school_id, current_quarter_id=current_quarter_id)
     return render(request, 'vocational/time_card_dashboard.html', context)
 
+from django.utils.http import urlencode
 
-#automatic time card entry
-class TimeCardView(generic.FormView):
+def time_card_view(request, quarter_id, department_id):
+    # Logout current user (kept from your CBV)
+    logout(request)
 
-    template_name = 'vocational/time_card.html'
-    form_class = (TimeCardForm)
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=6)
+    department = Department.objects.get(id=department_id)
+    school = department.school
 
-    def get(self, request, *args, **kwargs):
+    # Get assignment
+    try:
+        assignment = StudentAssignment.objects.get(
+            quarter_id=quarter_id,
+            department_id=department_id
+        )
+    except StudentAssignment.DoesNotExist:
+        assignment = None
 
-        department_id = kwargs.get('department_id', request.GET.get('department_id'))
-        quarter_id = kwargs.get('quarter_id', request.GET.get('quarter_id'))
-        self.kwargs.update({
-            'department_id': department_id,
-            'quarter_id': quarter_id,
-        })
-        return super().get(request, *args, **kwargs)
+    # Determine current show_temp value from GET (default to False)
+    show_temp = request.GET.get('show_temp') == '1'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        quarter_id = self.kwargs['quarter_id']
-        department_id = self.kwargs['department_id']
+    # Handle POST actions
+    if request.method == "POST":
+        # Handle adding a temporary student
+        if 'add_temp' in request.POST:
+            department = assignment.department if assignment else None
+            school_instance = department.school if department else None
 
-        today = timezone.now().date()
-        week_ago = today - timedelta(days=6)
-
-        try:
-            assignment = StudentAssignment.objects.get(quarter_id=quarter_id, department_id=department_id)
-        except StudentAssignment.DoesNotExist:
-            assignment = None
-
-        if assignment:
-            assignment.students = assignment.student.all()
-            for student in assignment.students:
-                #Active card for today
-                student.active_time_card = TimeCard.objects.filter(
-                        student_assignment=assignment, student=student,
-                        time_in__date=today, time_out=None).order_by('-time_in').first()
-                #completed time cards for today
-                student.today_time_card = TimeCard.objects.filter(
-                    student_assignment=assignment, student=student,
-                    time_in__date=today, time_out__date=today
+            temp_form = AddTemporaryStudentForm(request.POST, school=school_instance)
+            if temp_form.is_valid():
+                student = temp_form.cleaned_data['student']
+                TemporaryStudentAssignment.objects.get_or_create(
+                    student_assignment=assignment,
+                    student=student
                 )
-                # All time cards in the past week (any assignment)
-                student.week_time_cards = TimeCard.objects.filter(
+
+        # Handle check-in/check-out
+        student_id = request.POST.get('student_id')
+        action = request.POST.get('action')
+        if student_id:
+            student = get_object_or_404(Student, pk=student_id)
+
+            if action == 'checkin':
+                TimeCard.objects.create(
+                    student_assignment=assignment,
                     student=student,
-                    time_in__date__range=[week_ago, today]
-                ).order_by('-time_in')
+                    time_in=timezone.now()
+                )
+            elif action == 'checkout':
+                time_card = TimeCard.objects.filter(
+                    student_assignment=assignment,
+                    student=student,
+                    time_out=None,
+                    time_in__date=today
+                ).order_by('-time_in').first()
+                if time_card:
+                    time_card.time_out = timezone.now()
+                    time_card.save()
 
-            context['assignment'] = assignment
+        # Redirect with show_temp preserved
+        params = {}
+        if show_temp:
+            params['show_temp'] = '1'
+        redirect_url = reverse('time_card', kwargs={'quarter_id': quarter_id, 'department_id': department_id})
+        if params:
+            redirect_url += '?' + urlencode(params)
+        return redirect(redirect_url)
+
+    # Build context
+    context = dict()
+
+    if assignment:
+        # Include temporary students only if show_temp is True
+        if show_temp:
+            assignment.students = assignment.permanent_and_temporary_students_with_flag()
         else:
-            context['assignment'] = None
+            assignment.students = assignment.student.all()
+            for s in assignment.students:
+                s.is_temporary = False
 
-        quarter = get_object_or_404(Quarter, pk=quarter_id)
-        context['quarter'] =quarter
-        return context
-
-    def form_valid(self, form):
-        student_id = self.request.POST['student_id']
-        quarter_id = self.kwargs['quarter_id']
-        department_id = self.kwargs['department_id']
-        action = self.request.POST['action']
-
-        assignment = get_object_or_404(StudentAssignment, quarter_id=quarter_id, department_id=department_id)
-        student = get_object_or_404(Student, pk=student_id)
-
-        #time_card, created = TimeCard.objects.get_or_create(student_assignment=assignment, student=student)
-
-        if action == 'checkin':
-            #time_card.time_in = timezone.now()
-            time_card = TimeCard.objects.create(
+        for student in assignment.students:
+            # Active card for today
+            student.active_time_card = TimeCard.objects.filter(
                 student_assignment=assignment, student=student,
-                time_in=timezone.now())
-        elif action == 'checkout':
-            #time_card.time_out = timezone.now()
-            today = timezone.now().date()
-            time_card = TimeCard.objects.filter(
-                student_assignment=assignment,
-                student=student, time_out=None,
-                time_in__date=today).order_by('-time_in').first()
-            if time_card:
-                time_card.time_out = timezone.now()
-                time_card.save()
+                time_in__date=today, time_out=None
+            ).order_by('-time_in').first()
 
-        return super().form_valid(form)
+            # Completed time cards for today
+            student.today_time_card = TimeCard.objects.filter(
+                student_assignment=assignment, student=student,
+                time_in__date=today, time_out__date=today
+            )
 
-    def get_success_url(self):
-        return reverse('time_card',
-                       kwargs={'quarter_id': self.kwargs['quarter_id'], 'department_id': self.kwargs['department_id']})
+            # All time cards in the past week (any assignment)
+            student.week_time_cards = TimeCard.objects.filter(
+                student=student,
+                time_in__date__range=[week_ago, today]
+            ).order_by('-time_in')
 
-    def dispatch(self, request, *args, **kwargs):
-        # Log out the current user
-        logout(request)
-        return super().dispatch(request, *args, **kwargs)
+        context['assignment'] = assignment
+    else:
+        context['assignment'] = None
+
+    # For temp student form
+    existing_ids = [s.id for s in assignment.students]
+
+    context['temp_student_form'] = AddTemporaryStudentForm(school=school, exclude_students=existing_ids)
+    context['quarter'] = get_object_or_404(Quarter, pk=quarter_id)
+    context['show_temp'] = show_temp  # pass to template
+
+    return render(request, 'vocational/time_card.html', context)
+
+
 
 #manual time card entry by instructor or vocational coordinator
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
 def time_card_manual(request, quarter_id, department_id):
+    # Determine current show_temp value from GET (default to False)
+    show_temp = request.GET.get('show_temp') == '1'
+
     try:
         model_instance = StudentAssignment.objects.get(quarter=quarter_id, department=department_id)
-        students_qs = model_instance.student.all()
+        #if not show_temp:
+        #    students_qs = model_instance.student.all()
+        #else:
+        students_qs = model_instance.permanent_and_temporary_queryset()
         got_data = True
     except StudentAssignment.DoesNotExist:
         model_instance = None
@@ -1428,12 +1456,24 @@ def time_card_manual(request, quarter_id, department_id):
     FormSet = formset_factory(TimeEntryForm, extra=0)
 
     if request.method == "POST":
+        # Handle adding a temporary student
+        #if 'add_temp' in request.POST:
+        #    department = department if department else None
+        #    school_instance = department.school if department else None
+
+        #   temp_form = AddTemporaryStudentForm(request.POST, school=school_instance)
+        #    if temp_form.is_valid():
+        #        student = temp_form.cleaned_data['student']
+        #        TemporaryStudentAssignment.objects.get_or_create(
+        #            student_assignment=model_instance,
+        #            student=student
+        #        )
+
         global_date_form = GlobalDateForm(request.POST)
         if global_date_form.is_valid():
             global_date = global_date_form.cleaned_data['global_date']  # already a date object
         else:
             global_date = None
-            print("Please select a valid date")
             messages.error(request, "Please select a valid date - Version 1.")
 
         formset = FormSet(

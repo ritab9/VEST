@@ -204,29 +204,47 @@ input[type='number'] {
     -moz-appearance:textfield; /* Firefox */
 }
 
-.matrix-table th,
-.matrix-table td {
-    border: 1px solid #dee2e6;
+
+/* Ensure table layout allows sticky */
+.matrix-table {
+    table-layout: fixed;
+    border-collapse: separate; /* Important for sticky */
 }
 
-/* Sticky header row (keep solid background) */
+/* Sticky header row */
 .matrix-table thead th {
     position: sticky;
     top: 0;
-    background: #f8f9fa; /* Solid for header */
-    z-index: 2;
+    background-color: #f8f9fa;
+    z-index: 4;
 }
 
-/* Sticky first column — no fixed background so stripes show */
+/* Sticky first column */
 .matrix-table th:first-child,
 .matrix-table td:first-child {
     position: sticky;
     left: 0;
-    z-index: 1;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.05); /* Subtle separation */
+    background-color: #fff;
+    z-index: 3;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
 }
 
-/* Top-left cell: header + first column */
+/* Top-left corner cell: highest z-index */
 .matrix-table thead th:first-child {
-    z-index: 3;
+    z-index: 5;
+}
+
+/* Preserve striping in first column */
+.matrix-table tbody tr:nth-of-type(odd) td:first-child {
+    background-color: #f8f9fa;
+}
+.matrix-table tbody tr:nth-of-type(even) td:first-child {
+    background-color: #fff;
+}
+
+/* Make .table-responsive a proper scroll container */
+.table-responsive {
+    overflow: auto;
+    position: relative;
+    max-height: 70vh; /* or whatever height you want to allow vertical scrolling */
 }
