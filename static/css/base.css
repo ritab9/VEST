@@ -246,5 +246,5 @@ input[type='number'] {
 .table-responsive {
     overflow: auto;
     position: relative;
-    max-height: 71vh; /* or whatever height you want to allow vertical scrolling */
+    max-height: 70vh; /* or whatever height you want to allow vertical scrolling */
 }
