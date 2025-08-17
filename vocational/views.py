@@ -1397,6 +1397,7 @@ def time_card_view(request, quarter_id, department_id):
     else:
         context['assignment'] = None
 
+
     # For temp student form
     existing_ids = [s.id for s in assignment.students]
 
