@@ -34,17 +34,39 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="card-body" style="display: inline-block;">
-                         <!-- Render the global date input -->
-                          <div class="mb-3 d-flex align-items-center">
-                              <label for="{{ global_date_form.global_date.id_for_label }}" class="me-2 mb-0">Date:</label>
-                              <div style="width: auto;">
-                                {{ global_date_form.global_date }}
+
+                        <div class="row">
+                             <!-- Render the global date input -->
+                              <div class="col-auto mb-3 d-flex align-items-center">
+                                  <label for="{{ global_date_form.global_date.id_for_label }}" class="me-2 mb-0">Date:</label>
+                                  <div style="width: auto;">
+                                    {{ global_date_form.global_date }}
+                                  </div>
+                                  {% if global_date_form.global_date.errors %}
+                                    <div class="text-danger ms-3">{{ global_date_form.global_date.errors }}</div>
+                                  {% endif %}
                               </div>
-                              {% if global_date_form.global_date.errors %}
-                                <div class="text-danger ms-3">{{ global_date_form.global_date.errors }}</div>
-                              {% endif %}
-                          </div>
-                        <hr>
+                            <div class="col-auto">
+                                <!-- Temporary student toggle -->
+                                <div class="col-auto mb-3">
+                    <label class="me-2">
+                        <input type="checkbox" id="toggle-temp" {% if show_temp %}checked{% endif %}>
+                        Show Temporary Students
+                    </label>
+
+                    <div id="temp-student-form" style="{% if not show_temp %}display:none;{% endif %}">
+                        <form method="post" class="mb-3">
+                            {% csrf_token %}
+                            {{ temp_student_form.student }}
+                            <button type="submit" name="add_temp" class="btn btn-sm btn-outline-ISEIblue4">
+                                Add New Temporary Student
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                            </div>
+                        </div>
+                    <hr>
 
                     {{ formset.management_form }}
 
@@ -131,23 +153,6 @@
             </div>
 
             <div class="col-auto">
-    <!-- Temporary student toggle -->
-                <div class="col-auto mb-3">
-                    <label class="me-2">
-                        <input type="checkbox" id="toggle-temp" {% if show_temp %}checked{% endif %}>
-                        Show Temporary Students
-                    </label>
-
-                    <div id="temp-student-form" style="{% if not show_temp %}display:none;{% endif %}">
-                        <form method="post" class="mb-3">
-                            {% csrf_token %}
-                            {{ temp_student_form.student }}
-                            <button type="submit" name="add_temp" class="btn btn-sm btn-outline-ISEIblue4">
-                                Add Temporary Student
-                            </button>
-                        </form>
-                    </div>
-                </div>
 
             </div>
         </div>
