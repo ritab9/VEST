@@ -1418,10 +1418,11 @@ def time_card_manual(request, quarter_id, department_id):
 
     try:
         model_instance = StudentAssignment.objects.get(quarter=quarter_id, department=department_id)
-        #if not show_temp:
-        #    students_qs = model_instance.student.all()
-        #else:
-        students_qs = model_instance.permanent_and_temporary_queryset()
+        students_list = model_instance.permanent_and_temporary_students_with_flag()
+        if not show_temp:
+            students_qs = [s for s in students_list if not s.is_temporary]
+        else:
+            students_qs = students_list
         got_data = True
     except StudentAssignment.DoesNotExist:
         model_instance = None
@@ -1434,6 +1435,29 @@ def time_card_manual(request, quarter_id, department_id):
 
     local_timezone = department.school.timezone
     tz = pytz.timezone(local_timezone)
+
+    # --- Temporary student form ---
+    existing_ids = [s.id for s in students_qs]
+    temp_student_form = AddTemporaryStudentForm(
+        request.POST or None,
+        school=department.school,
+        exclude_students=existing_ids
+    )
+
+    if request.method == "POST" and 'add_temp' in request.POST and temp_student_form.is_valid():
+        student = temp_student_form.cleaned_data['student']
+        TemporaryStudentAssignment.objects.get_or_create(
+            student_assignment=model_instance,
+            student=student
+        )
+        # Redirect with show_temp preserved
+        params = {}
+        if show_temp:
+            params['show_temp'] = '1'
+        redirect_url = reverse('time_card_manual', kwargs={'quarter_id': quarter_id, 'department_id': department_id})
+        if params:
+            redirect_url += '?' + urlencode(params)
+        return redirect(redirect_url)
 
     # Prepare past week data per student index for the template
     past_week_data = {}
@@ -1457,18 +1481,6 @@ def time_card_manual(request, quarter_id, department_id):
     FormSet = formset_factory(TimeEntryForm, extra=0)
 
     if request.method == "POST":
-        # Handle adding a temporary student
-        #if 'add_temp' in request.POST:
-        #    department = department if department else None
-        #    school_instance = department.school if department else None
-
-        #   temp_form = AddTemporaryStudentForm(request.POST, school=school_instance)
-        #    if temp_form.is_valid():
-        #        student = temp_form.cleaned_data['student']
-        #        TemporaryStudentAssignment.objects.get_or_create(
-        #            student_assignment=model_instance,
-        #            student=student
-        #        )
 
         global_date_form = GlobalDateForm(request.POST)
         if global_date_form.is_valid():
@@ -1529,6 +1541,8 @@ def time_card_manual(request, quarter_id, department_id):
         'got_data': got_data,
         'school_timezone': local_timezone,
         'past_week_data': past_week_data,
+        'temp_student_form':temp_student_form,
+        'show_temp':show_temp
     }
     return render(request, 'vocational/time_card_manual.html', context)
 

@@ -279,7 +279,10 @@ class TimeEntryForm(forms.ModelForm):
         students = kwargs.pop('students', None)
         super().__init__(*args, **kwargs)
         if students is not None:
-            self.fields['student'].queryset = students
+            if isinstance(students, list):
+                self.fields['student'].queryset = Student.objects.filter(pk__in=[s.pk for s in students])
+            else:
+                self.fields['student'].queryset = students
 
 
 class AddTemporaryStudentForm(forms.Form):

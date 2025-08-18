@@ -30,7 +30,7 @@
                 <tbody>
                 {% for student in assignment.students %}
                     {% for card in student.today_time_card.all %}
-                        <tr {% if student.is_temporary %}class="table-warning"{% endif %}>
+                        <tr {% if student.is_temporary %}class="table-ISEIyellow1"{% endif %}>
                             {% if forloop.first %}
                                 <td>{{ student }}
                                 </td>

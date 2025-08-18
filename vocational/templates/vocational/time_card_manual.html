@@ -29,105 +29,129 @@
 
     {% if got_data %}
     <div class="card-body align-content-center"><h6>{{ department }}, {{ quarter }}</h6></div>
+        <div class="row">
+            <div class="col-auto">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body" style="display: inline-block;">
+                         <!-- Render the global date input -->
+                          <div class="mb-3 d-flex align-items-center">
+                              <label for="{{ global_date_form.global_date.id_for_label }}" class="me-2 mb-0">Date:</label>
+                              <div style="width: auto;">
+                                {{ global_date_form.global_date }}
+                              </div>
+                              {% if global_date_form.global_date.errors %}
+                                <div class="text-danger ms-3">{{ global_date_form.global_date.errors }}</div>
+                              {% endif %}
+                          </div>
+                        <hr>
 
-    <form method="post">
-        {% csrf_token %}
-        <div class="card-body" style="display: inline-block;">
-             <!-- Render the global date input -->
-              <div class="mb-3 d-flex align-items-center">
-                  <label for="{{ global_date_form.global_date.id_for_label }}" class="me-2 mb-0">Date:</label>
-                  <div style="width: auto;">
-                    {{ global_date_form.global_date }}
-                  </div>
-                  {% if global_date_form.global_date.errors %}
-                    <div class="text-danger ms-3">{{ global_date_form.global_date.errors }}</div>
-                  {% endif %}
-              </div>
-            <hr>
+                    {{ formset.management_form }}
 
-        {{ formset.management_form }}
+                    <div class="col-auto">
+                        <table class="table">
+                            <thead class="table-ISEIblue4">
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Duration</th>
+                                    <th>History</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td></td>
+                                    <td><button type="button" id="fill-down-time-in" class="small btn btn-outline-ISEIblue btn-sm me-2">Fill Down Check-in</button></td>
+                                    <td><button type="button" id="fill-down-time-out" class="small btn btn-outline-ISEIblue btn-sm">Fill Down Check-out</button></td>
+                                    <td></td><td></td><td></td>
+                                </tr>
+                            {% for form in formset %}
+                                <tr {% if form.initial.student.is_temporary %}class="table-ISEIyellow1"{% endif %}>
+                                    <td>{{ form.student.errors }} {{ form.student }}
+                                    </td>
+                                    <td>{{ form.time_in.errors }} {{ form.time_in_time }}</td>
+                                    <td>{{ form.time_out.errors }} {{ form.time_out_time }}</td>
+                                    <td id="id_form-{{ forloop.counter0 }}-duration"></td>
+                                    <td>
+                                        <button type="button" class="btn-sm btn btn-link p-0"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#past-week-{{ forloop.counter0 }}">
+                                                Show past 7 days
+                                            </button>
+                                        </td>
+                                    <td>
+                                        {% for error in form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
 
-        <div class="col-auto">
-            <table class="table">
-                <thead class="table-ISEIblue4">
-                    <tr>
-                        <th>Student</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Duration</th>
-                        <th>History</th><th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td></td>
-                        <td><button type="button" id="fill-down-time-in" class="small btn btn-outline-ISEIblue btn-sm me-2">Fill Down Check-in</button></td>
-                        <td><button type="button" id="fill-down-time-out" class="small btn btn-outline-ISEIblue btn-sm">Fill Down Check-out</button></td>
-                        <td></td><td></td><td></td>
-                    </tr>
-                {% for form in formset %}
-                    <tr>
-                        <td>{{ form.student.errors }} {{ form.student }}</td>
-                        <td>{{ form.time_in.errors }} {{ form.time_in_time }}</td>
-                        <td>{{ form.time_out.errors }} {{ form.time_out_time }}</td>
-                        <td id="id_form-{{ forloop.counter0 }}-duration"></td>
-                        <td>
-                            <button type="button" class="btn-sm btn btn-link p-0"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#past-week-{{ forloop.counter0 }}">
-                                    Show past 7 days
-                                </button>
-                            </td>
-                        <td>
-                            {% for error in form.non_field_errors %}
-                                <div class="alert alert-danger">
-                                    {{ error }}
-                                </div>
+                                {% with past_week_data|get_item:forloop.counter0 as past_cards %}
+                                {% if past_cards %}
+                                    <tr id="past-week-{{ forloop.counter0 }}" class="collapse mt-2" {% if form.initial.student.is_temporary %}class="table-ISEIyellow1"{% endif %}>
+                                        <td colspan="5">
+                                                <table class="table table-sm table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Date</th>
+                                                            <th>Department</th>
+                                                            <th>Check-in</th>
+                                                            <th>Check-out</th>
+                                                            <th>Duration</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for card in past_cards %}
+                                                        <tr>
+                                                            <td>{{ card.date }}</td>
+                                                            <td>{{ card.department }}</td>
+                                                            <td>{{ card.time_in }}</td>
+                                                            <td>{{ card.time_out }}</td>
+                                                            <td>{{ card.duration }}</td>
+                                                        </tr>
+                                                        {% empty %}
+                                                        <tr>
+                                                            <td colspan="4" class="text-muted text-center">No past records</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                {% endwith %}
                             {% endfor %}
-                        </td>
-                    </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="btn btn-sm btn-ISEIblue" type="submit">Save</button>
+                </form>
+            </div>
 
-                    {% with past_week_data|get_item:forloop.counter0 as past_cards %}
-                    {% if past_cards %}
-                        <tr id="past-week-{{ forloop.counter0 }}" class="collapse mt-2">
-                            <td colspan="5">
-                                    <table class="table table-sm table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Department</th>
-                                                <th>Check-in</th>
-                                                <th>Check-out</th>
-                                                <th>Duration</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for card in past_cards %}
-                                            <tr>
-                                                <td>{{ card.date }}</td>
-                                                <td>{{ card.department }}</td>
-                                                <td>{{ card.time_in }}</td>
-                                                <td>{{ card.time_out }}</td>
-                                                <td>{{ card.duration }}</td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr>
-                                                <td colspan="4" class="text-muted text-center">No past records</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                            </td>
-                        </tr>
-                    {% endif %}
-                    {% endwith %}
-                {% endfor %}
-                </tbody>
-            </table>
+            <div class="col-auto">
+    <!-- Temporary student toggle -->
+                <div class="col-auto mb-3">
+                    <label class="me-2">
+                        <input type="checkbox" id="toggle-temp" {% if show_temp %}checked{% endif %}>
+                        Show Temporary Students
+                    </label>
+
+                    <div id="temp-student-form" style="{% if not show_temp %}display:none;{% endif %}">
+                        <form method="post" class="mb-3">
+                            {% csrf_token %}
+                            {{ temp_student_form.student }}
+                            <button type="submit" name="add_temp" class="btn btn-sm btn-outline-ISEIblue4">
+                                Add Temporary Student
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        <button class="btn btn-sm btn-ISEIblue" type="submit">Save</button>
-    </form>
-
-{% endif %}
+    {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 
@@ -212,6 +236,29 @@ const SCHOOL_TIMEZONE = "{{ school_timezone|escapejs }}";
 
         setupInputListeners();
         setupFillDownButtons();
+    });
+
+
+// Temporary students Toggle
+
+    document.getElementById('toggle-temp').addEventListener('change', function() {
+        const formDiv = document.getElementById('temp-student-form');
+        if (this.checked) {
+            formDiv.style.display = 'block';
+        } else {
+            formDiv.style.display = 'none';
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        if (this.checked) {
+            params.set('show_temp', '1');
+        } else {
+            params.delete('show_temp');
+        }
+        if (!params.has('quarter_id')) params.set('quarter_id', '{{ quarter.id }}');
+        if (!params.has('department_id')) params.set('department_id', '{{ department.id }}');
+
+        window.location.search = params.toString();
     });
 
 </script>
