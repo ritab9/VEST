@@ -423,7 +423,7 @@ def grade_list(request, userid):
 
     user = User.objects.get(id=userid)
     current_year = SchoolYear.objects.filter(school_id=user.profile.school.id, active=True).first()
-    if hasattr(current_year, 'grade_settings'):
+    if hasattr(current_year, 'gradesettings'):
         track_time = current_year.gradesettings.track_time
     else:
         track_time = None
@@ -493,7 +493,7 @@ def grade_list(request, userid):
         track_time=track_time,
     )
 
-    if not hasattr(current_year, 'grade_settings'):
+    if not hasattr(current_year, 'gradesettings'):
         context['no_grade_settings_message'] = "Please set Grade Settings for the current school year."
 
     #start = time.time()
@@ -553,6 +553,7 @@ def initiate_grade_entry(request, schoolid):
                     if role == 'vocational_coordinator':
                         profile_id = request.POST.get('instructor')
                         user = User.objects.get(profile__id=profile_id)
+                        print(user)
                         return redirect('add_grade', quarterid, type, departmentid, evaluation_date, user.id)
                     else:
                         return redirect('add_grade', quarterid, type, departmentid, evaluation_date, request.user.id)
@@ -586,8 +587,10 @@ def initiate_grade_entry(request, schoolid):
                    error_message=error_message, role=role, instructor=instructor)
 
     school_year = SchoolYear.objects.get(id=school_year_id)
-    if not hasattr(school_year, 'grade_settings'):
+
+    if not hasattr(school_year, 'gradesettings'):
         context['no_grade_settings_message'] = "Please ask the Vocational Coordinator to set Grade Settings for the current school year."
+
 
     return render(request, 'vocational/initiate_grade_entry.html', context)
 
@@ -628,9 +631,11 @@ def add_grade(request, quarterid, type, departmentid, evaluation_date, instructo
                 grade = existing_grade
             else:
                 grade = grade_form.save()
+            print(grade.quarter, "from Add Grade")
             return redirect('finalize_grade', grade.id)
         else:
             print("Not valid")
+
 
     #grades=EthicsGradeRecord.objects.filter()
     context = dict(grade_form=grade_form, grade=grade, latest_grades = latest_grades)

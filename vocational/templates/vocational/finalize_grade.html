@@ -41,7 +41,8 @@
     </div>
 
     <div class="col-sm-auto mt-2">
-        <form method = "POST">
+
+        <form  method = "POST">
             {% csrf_token %}
 
             <div class="row">
@@ -88,6 +89,31 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <hr>
+
+                    <div class="row">
+                        <div class="col"> Average: <strong><span id="averageScore"></span></strong>
+                            <br> Percent: <strong><span id="percent"></span></strong></div>
+                    <div class="col">
+                            {% if grade.quarter.school_year.gradesettings.time_unit %}
+                            Time ({{ grade.quarter.school_year.gradesettings.get_time_unit_display}})
+                                <div class="tooltip" style="color: #053A64"><i class="fas fa-info-circle"></i>
+                                 <span class="tooltiptext">
+                                     This is the total time the student spent in this area for this grading period.
+                                     It's pre-filled with the time entered for the last 7 days, including the Evaluation Date.
+                                     You can adjust it manually as needed.
+                                 </span>
+                            </div>
+                            {{ time_form.time}}
+                                {% endif %}
+                    </div>
+
+                        {% if grade.type == "S" %}
+                             <div class="col">
+                                 {{ time_form.suggested_level|as_crispy_field }}
+                             </div>
+                        {% endif %}
+                    </div>
                 </div>
 
                 {% if grade.type == "F" %}
@@ -95,36 +121,15 @@
                         {{ formative_comments_form|crispy }}
                     </div>
                 {% endif %}
-                    <div class="col-sm-auto">
-                        <div class="row mt-2">
-                            {% if grade.quarter.school_year.gradesettings.time_unit %}
-                            Time ({{ grade.quarter.school_year.gradesettings.get_time_unit_display}})
-                            {% endif %}
-                            {{ time_form.time}}
-                        </div>
 
-                        <div class="row mt-4">
-                            <div class="col">
-                                <div class="row mt-2">
-                                    Average: <strong><div id="averageScore"></div></strong>
-                                </div>
-                                <div class="row mt-2">
-                                    Percent: <strong><div id="percent"></div></strong>
-                                </div>
-                            </div>
-                            {% if grade.type == "S" %}
-                                 <div class="col">
-                                     {{ time_form.suggested_level|as_crispy_field }}
-                                 </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="row">
-                            <div class="mt-5" > {{ student_discussion_form|crispy }}</div>
-                        </div>
+                <div class="col-sm-auto">
+                    <div class="row">
+                        <div class="mt-2" > {{ student_discussion_form|crispy }}</div>
                     </div>
-            </div>
+                </div>
+             </div>
 
+            <hr>
 
             <div class="row align-content-right">
                 <div class="col text-left">
@@ -134,6 +139,7 @@
                 </div>
             </div>
         </form>
+
         <div class="row align-content-center">
             <div class="col text-left">
                 <form method = "GET">
@@ -212,6 +218,8 @@ $(document).ready(function () {
 
     updateAverageScore(); // Call updateAverageScore when the page is loaded
 });
+
+
 
 </script>
 

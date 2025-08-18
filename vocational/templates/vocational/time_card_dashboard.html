@@ -72,6 +72,7 @@
                     <thead class="table-ISEIblue4">
                         <tr>
                             <th>Student</th>
+                            <th>Quarter</th>
                             <th>Department</th>
                             <th>Date</th>
                             <th>Time In</th>
@@ -84,6 +85,7 @@
                     {% for timecard in timecards %}
                         <tr>
                             <td>{{ timecard.student }}</td>
+                            <td>{{ timecard.student_assignment.quarter }}</td>
                             <td>{{ timecard.student_assignment.department}}</td>
                             <td>{{ timecard.get_date }}</td>
                             <td>{{ timecard.get_time_in}}</td>
