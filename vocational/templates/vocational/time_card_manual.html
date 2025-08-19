@@ -31,24 +31,8 @@
     <div class="card-body align-content-center"><h6>{{ department }}, {{ quarter }}</h6></div>
         <div class="row">
             <div class="col-auto">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="card-body" style="display: inline-block;">
-
-                        <div class="row">
-                             <!-- Render the global date input -->
-                              <div class="col-auto mb-3 d-flex align-items-center">
-                                  <label for="{{ global_date_form.global_date.id_for_label }}" class="me-2 mb-0">Date:</label>
-                                  <div style="width: auto;">
-                                    {{ global_date_form.global_date }}
-                                  </div>
-                                  {% if global_date_form.global_date.errors %}
-                                    <div class="text-danger ms-3">{{ global_date_form.global_date.errors }}</div>
-                                  {% endif %}
-                              </div>
-                            <div class="col-auto">
-                                <!-- Temporary student toggle -->
-                                <div class="col-auto mb-3">
+                <!-- Temporary student toggle -->
+                <div class="col-auto mb-3">
                     <label class="me-2">
                         <input type="checkbox" id="toggle-temp" {% if show_temp %}checked{% endif %}>
                         Show Temporary Students
@@ -64,7 +48,26 @@
                         </form>
                     </div>
                 </div>
-                            </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-auto">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body" style="display: inline-block;">
+
+                        <div class="row">
+                             <!-- Render the global date input -->
+                              <div class="col-auto mb-3 d-flex align-items-center">
+                                  <label for="{{ global_date_form.global_date.id_for_label }}" class="me-2 mb-0">Date:</label>
+                                  <div style="width: auto;">
+                                    {{ global_date_form.global_date }}
+                                  </div>
+                                  {% if global_date_form.global_date.errors %}
+                                    <div class="text-danger ms-3">{{ global_date_form.global_date.errors }}</div>
+                                  {% endif %}
+                              </div>
                         </div>
                     <hr>
 
