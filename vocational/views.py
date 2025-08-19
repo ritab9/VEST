@@ -1510,13 +1510,17 @@ def time_card_manual(request, quarter_id, department_id):
                 time_out_time = form.cleaned_data.get('time_out_time')
                 if time_in_time:
                     dt_in = datetime.combine(global_date, time_in_time)
-                    instance.time_in = dt_in
+                    # attach the local timezone
+                    dt_in = tz.localize(dt_in)
+                    # convert to UTC before saving
+                    instance.time_in = dt_in.astimezone(pytz.UTC)
                 else:
                     instance.time_in = None
 
                 if time_out_time:
                     dt_out = datetime.combine(global_date, time_out_time)
-                    instance.time_out = dt_out
+                    dt_out = tz.localize(dt_out)
+                    instance.time_out = dt_out.astimezone(pytz.UTC)
                 else:
                     instance.time_out = None
 
