@@ -4,3 +4,13 @@
 .idea/
 
 db_check.py
+
+# Collected static files (NEVER commit)
+/staticfiles/
+
+# Common Django/Mac noise (nice to have)
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+.env
