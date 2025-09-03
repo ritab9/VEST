@@ -207,7 +207,7 @@ input[type='number'] {
 
 /* Ensure table layout allows sticky */
 .matrix-table {
-    table-layout: fixed;
+    /*table-layout: fixed; */
     border-collapse: separate; /* Important for sticky */
 }
 
@@ -240,6 +240,12 @@ input[type='number'] {
 }
 .matrix-table tbody tr:nth-of-type(even) td:first-child {
     background-color: #fff;
+}
+
+.matrix-table th,
+.matrix-table td {
+    min-width: 120px; /* adjust as needed */
+    /* white-space: nowrap; prevent header wrapping */
 }
 
 /* Make .table-responsive a proper scroll container */
