@@ -577,47 +577,58 @@ def graduate_students(request, schoolid):
 def add_student(request, schoolid):
     school = School.objects.get(id=schoolid)
 
-    # add new student
     if request.method == 'POST':
         form_user = CreateUserForm(request.POST)
         form_student = StudentForm(request.POST)
+
         if form_user.is_valid() and form_student.is_valid():
-            new_user = form_user.save(commit=False)
-            new_user.username = str(school.country.code)+"_"+ str(school.abbreviation)+ "_" + request.POST["username"]
-            new_user.password="jdbjahbdjhhjdga"
-            new_user.save()
+            # Construct unique username
+            username = f"{school.country.code}_{school.abbreviation}_{request.POST['username']}"
 
-            new_student = form_student.save()
-            new_student.user = new_user
-            new_student.save()
+            if User.objects.filter(username=username).exists():
+                form_user.add_error("username", "A user with this username already exists.")
+            else:
+                new_user = form_user.save(commit=False)
+                new_user.username = username
+                new_user.set_password("jdbjahbdjhhjdga")  # ✅ hashed password
+                new_user.save()
 
-            group = Group.objects.get(name='student')
-            new_user.groups.add(group)
-            Profile.objects.create(user=new_user, school=school)
-            send_system_email_from_school(request, new_user, school, "NewStudent")
+                new_student = form_student.save(commit=False)
+                new_student.user = new_user
+                new_student.save()
 
-            vocational_level = form_student.cleaned_data['vocational_level']
-            if not vocational_level:
-                vocational_level = EthicsLevel.objects.get(id=1)
-            class_ethics = VocationalClass.objects.get(id=1)
-            VocationalStatus.objects.create(student=new_student, vocational_level=vocational_level, vocational_class=class_ethics)
+                group = Group.objects.get(name='student')
+                new_user.groups.add(group)
 
+                Profile.objects.create(user=new_user, school=school)
+                send_system_email_from_school(request, new_user, school, "NewStudent")
 
-            if request.POST.get("save_back"):
-                return redirect('manage_students', school.id)
-            if request.POST.get("save_add_parent"):
-                return redirect('add_parent', new_user.id)
-            if request.POST.get("save_new"):
-                form_user = CreateUserForm()
-                form_student = StudentForm()
+                # Vocational level & status setup
+                vocational_level = form_student.cleaned_data.get('vocational_level')
+                if not vocational_level:
+                    vocational_level = EthicsLevel.objects.get(id=1)
+                class_ethics = VocationalClass.objects.get(id=1)
+                VocationalStatus.objects.create(
+                    student=new_student,
+                    vocational_level=vocational_level,
+                    vocational_class=class_ethics
+                )
+
+                # Redirects
+                if request.POST.get("save_back"):
+                    return redirect('manage_students', school.id)
+                if request.POST.get("save_add_parent"):
+                    return redirect('add_parent', new_user.id)
+                if request.POST.get("save_new"):
+                    form_user = CreateUserForm()
+                    form_student = StudentForm()
         else:
-            print(form_student.errors)
+            print(form_user.errors, form_student.errors)
     else:
         form_user = CreateUserForm()
         form_student = StudentForm()
 
-    context = dict(form_user=form_user, form_student=form_student,
-                   school=school)
+    context = dict(form_user=form_user, form_student=form_student, school=school)
     return render(request, 'users/add_student.html', context)
 
 

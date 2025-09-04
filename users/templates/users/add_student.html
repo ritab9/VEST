@@ -30,7 +30,13 @@
                     {{ form_student.birthday|as_crispy_field }}
                     {{ form_student.gender|as_crispy_field }}
                     <div class="mt-2">{{ form_student.vocational_level|as_crispy_field }}</div>
-                     <div style="pointer-events: none" > {{ form_user.username|as_crispy_field }}</div>
+                     <div style="" > {{ form_user.username|as_crispy_field }}
+                        {% if form_user.username.errors %}
+                          <div class="text-danger small">
+                            {{ form_user.username.errors.0 }}
+                          </div>
+                        {% endif %}
+                     </div>
 
                    <!-- <div>Edit Username:
                         <div class="mt-2 mb-3"> { { school.abbreviation }}_<input type="text"  id="id_default_username" name="default_username" label = "Default Username" style="border-color: #FFFFFF"></div>
