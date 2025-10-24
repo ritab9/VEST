@@ -47,8 +47,11 @@ def average(grades, school_year=None):
     if time:
         formative_percent_time_pairs = [(f.percent(), f.time) for f in formative if f.time is not None]
         if formative_percent_time_pairs:
-            s2 = sum(percent * float(time) for percent, time in formative_percent_time_pairs) / sum(
-                float(time) for _, time in formative_percent_time_pairs)
+            total_time = sum(float(time) for _, time in formative_percent_time_pairs)
+            if total_time > 0:
+                s2 = sum(percent * float(time) for percent, time in formative_percent_time_pairs) / total_time
+            else:
+                s2 = None  # or 0, depending on your desired behavior
         else:
             s2 = None
     else:
