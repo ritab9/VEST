@@ -26,42 +26,81 @@ def average(grades, school_year=None):
         time = False
 
 
+    s1 = None  # default
     summative = grades.filter(type="S")
-    if time:
-        summative_percent_time_pairs = [(s.percent(), s.time) for s in summative if s.time is not None]
-        if summative_percent_time_pairs:
-            s1 = sum(percent * float(time) for percent, time in summative_percent_time_pairs) / sum(
-                float(time) for _, time in summative_percent_time_pairs)
-        else:
-            s1 = None
-    else:
-        a1=[]
-        for s in summative:
-            a1.append(s.percent())
-        if a1:
-            s1=mean(a1)
-        else:
-            s1=None
 
-    formative=grades.filter(type="F")
     if time:
-        formative_percent_time_pairs = [(f.percent(), f.time) for f in formative if f.time is not None]
-        if formative_percent_time_pairs:
-            total_time = sum(float(time) for _, time in formative_percent_time_pairs)
+        # Only do weighted average if time-based scoring applies
+        summative_percent_time_pairs = [
+            (s.percent(), s.time)
+            for s in summative
+            if s.time not in (None, 0) and s.percent() is not None
+        ]
+        if summative_percent_time_pairs:
+            total_time = sum(float(t) for _, t in summative_percent_time_pairs)
             if total_time > 0:
-                s2 = sum(percent * float(time) for percent, time in formative_percent_time_pairs) / total_time
-            else:
-                s2 = None  # or 0, depending on your desired behavior
-        else:
-            s2 = None
-    else:
-        a2 = []
-        for f in formative:
-            a2.append(f.percent())
-        if a2:
-            s2=mean(a2)
-        else:
-            s2=None
+                s1 = sum(p * float(t) for p, t in summative_percent_time_pairs) / total_time
+
+    # Fallback: simple mean if no valid weighted score was computed
+    if s1 is None:
+        percents = [s.percent() for s in summative if s.percent() is not None]
+        if percents:
+            s1 = mean(percents)
+
+
+
+    s2 = None  # default
+    formative = grades.filter(type="F")
+
+    if time:
+        # Only do weighted average if time-based scoring applies
+        formative_percent_time_pairs = [
+            (f.percent(), f.time)
+            for f in formative
+            if f.time not in (None, 0) and f.percent() is not None
+        ]
+        if formative_percent_time_pairs:
+            total_time = sum(float(t) for _, t in formative_percent_time_pairs)
+            if total_time > 0:
+                s2 = sum(p * float(t) for p, t in formative_percent_time_pairs) / total_time
+
+    # Fallback: simple mean if no valid weighted score was computed
+    if s2 is None:
+        percents = [f.percent() for f in formative if f.percent() is not None]
+        if percents:
+            s2 = mean(percents)
+
+
+    #if time:
+    #    formative_percent_time_pairs = [(f.percent(), f.time) for f in formative if f.time is not None]
+    #    if formative_percent_time_pairs:
+    #        total_time = sum(float(time) for _, time in formative_percent_time_pairs)
+    #        if total_time > 0:
+    #            s2 = sum(percent * float(time) for percent, time in formative_percent_time_pairs) / total_time
+    #        else:
+    #            a2 = []
+    #            for f in formative:
+    #                a2.append(f.percent())
+    #            if a2:
+    #                s2 = mean(a2)
+    #            else:
+    #                s2 = None
+    #    else:
+    #        a2 = []
+    #        for f in formative:
+    #            a2.append(f.percent())
+    #        if a2:
+    #            s2 = mean(a2)
+    #        else:
+    #            s2 = None
+    #else:
+    #    a2 = []
+    #    for f in formative:
+    #        a2.append(f.percent())
+    #    if a2:
+    #        s2=mean(a2)
+    #    else:
+    #        s2=None
 
 
 
