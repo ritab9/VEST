@@ -177,3 +177,31 @@ else:
     EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
     EMAIL_PORT = 587
+
+
+
+LOG_FILE = os.path.join(BASE_DIR, "django_errors.log")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": LOG_FILE,
+        },
+        "console": {  # <— add this
+            "level": "ERROR",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}
