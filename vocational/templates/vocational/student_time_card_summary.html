@@ -6,12 +6,33 @@
 
 
 {% block content %}
+    
+    <div class="row">
+         <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="col-auto">
+              <h5>
+                {% if show_all %}
+                  Showing all time records for active students
+                {% else %}
+                  Showing time records for {{ current_year }} only
+                {% endif %}
+              </h5>
+            </div>
+            <div class="col-auto">
+              {% if show_all %}
+                <a href="?all=0" class="btn btn-outline-danger btn-sm">Show Current Year Only</a>
+              {% else %}
+                <a href="?all=1" class="btn btn-outline-danger btn-sm">Show All Years</a>
+              {% endif %}
+            </div>
+         </div>
+    </div>
+    
 <div class="row">
 
     <div class="col-auto">
-
-        <h6>Student Time Card Summary</h6>
  <!-- Time from Time cards -->
+           <h6>Student Time Card Summary</h6>
         <div style="display: inline-block;">
         <table class="table table-bordered">
         <thead class="table-ISEIblue4">

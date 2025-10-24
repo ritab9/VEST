@@ -597,7 +597,7 @@ def initiate_grade_entry(request, schoolid):
 
     context = dict(active_quarter=active_quarter, department=department, current_quarter_id=current_quarter_id,
                    error_message=error_message, role=role, instructor=instructor,
-                   default_date=default_date)
+                   default_date=default_date, oa=oa)
 
     school_year = SchoolYear.objects.get(id=school_year_id)
 
@@ -1609,59 +1609,88 @@ def time_card_delete(request, pk):
     time_card.delete()
     return redirect(request.GET.get('next', 'default_redirect_url'))
 
-@login_required(login_url='login')
-@allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
-def student_time_card_summary(request, schoolid):
-    # First we need to annotate each time card with its duration in hours
-    timecards = TimeCard.objects.filter(
-        student__user__profile__school__id=schoolid,student__user__is_active=True,
-        time_in__isnull=False,time_out__isnull=False
-    ).order_by( 'student__user__last_name', 'student_assignment__department__name', 'student_assignment__quarter')
 
-    # We're going to convert the duration in hours and also annotate it with quarter and department
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['isei_admin', 'school_admin', 'instructor', 'vocational_coordinator'])
+def student_time_card_summary(request, schoolid):
+    show_all = request.GET.get('all') == '1'
+    school=School.objects.get(id=schoolid)
+    current_year = SchoolYear.objects.filter(school=school, active=True).first()
+
+    # ------------------------------
+    # TimeCard QuerySet
+    # ------------------------------
+    timecards_qs = TimeCard.objects.filter(
+        student__user__profile__school=school,
+        student__user__is_active=True,
+        time_in__isnull=False,
+        time_out__isnull=False
+    )
+
+    if not show_all:
+        timecards_qs = timecards_qs.filter(student_assignment__quarter__school_year=current_year)
+
+    timecards_qs = timecards_qs.select_related(
+        'student',
+        'student_assignment',
+        'student_assignment__department',
+        'student_assignment__quarter',
+        'student__user'
+    ).order_by(
+        'student__user__last_name',
+        'student_assignment__department__name',
+        'student_assignment__quarter'
+    )
+
+    # ------------------------------
+    # Annotate durations in Python
+    # ------------------------------
     timecards = [
         {
             'student': tc.student,
             'quarter': tc.student_assignment.quarter,
             'department': tc.student_assignment.department,
-            'duration': round(tc.duration()[0] + tc.duration()[1] / 60.0, 2)  # Convert to hours
-        } for tc in timecards
+            'duration': round(tc.duration()[0] + tc.duration()[1] / 60.0, 2)
+        }
+        for tc in timecards_qs
     ]
 
-    # Now we'll prepare the aggregate data
+    # ------------------------------
+    # Aggregate TimeCards
+    # ------------------------------
     aggregate_data = {}
-
     for tc in timecards:
-        if tc['student'] not in aggregate_data:
-            aggregate_data[tc['student']] = {}
+        student = tc['student']
+        dept = tc['department']
+        quarter = tc['quarter']
+        dur = tc['duration']
 
-        if tc['department'] not in aggregate_data[tc['student']]:
-            aggregate_data[tc['student']][tc['department']] = {'total': 0, 'quarters': {}}
+        if student not in aggregate_data:
+            aggregate_data[student] = {}
+        if dept not in aggregate_data[student]:
+            aggregate_data[student][dept] = {'total': 0, 'quarters': {}}
+        if quarter not in aggregate_data[student][dept]['quarters']:
+            aggregate_data[student][dept]['quarters'][quarter] = 0
 
-        if tc['quarter'] not in aggregate_data[tc['student']][tc['department']]['quarters']:
-            aggregate_data[tc['student']][tc['department']]['quarters'][tc['quarter']] = 0
+        aggregate_data[student][dept]['quarters'][quarter] += dur
+        aggregate_data[student][dept]['quarters'][quarter] = round(aggregate_data[student][dept]['quarters'][quarter], 2)
 
-        # Add the hours to the quarter and to the total
-        aggregate_data[tc['student']][tc['department']]['quarters'][tc['quarter']] = round(
-            aggregate_data[tc['student']][tc['department']]['quarters'][tc['quarter']] + tc['duration'],
-            2)
+        aggregate_data[student][dept]['total'] += dur
+        aggregate_data[student][dept]['total'] = round(aggregate_data[student][dept]['total'], 2)
 
-        # Increment the total duration, rounding the result
-        aggregate_data[tc['student']][tc['department']]['total'] = round(
-            aggregate_data[tc['student']][tc['department']]['total'] + tc['duration'],
-            2)
-
-
-
+    # ------------------------------
+    # Format data for template
+    # ------------------------------
     formatted_data = []
     for student, departments in aggregate_data.items():
         student_rowspan = 0
         formatted_departments = []
-        for department, details in departments.items():
+        for dept, details in departments.items():
             department_rowspan = len(details['quarters'])
             student_rowspan += department_rowspan
             formatted_departments.append({
-                'name': department,
+                'name': dept,
                 'detail': details,
                 'rowspan': department_rowspan
             })
@@ -1671,58 +1700,68 @@ def student_time_card_summary(request, schoolid):
             'rowspan': student_rowspan
         })
 
+    # ------------------------------
+    # EthicsGradeRecord
+    # ------------------------------
+    ethicsgrades_qs = EthicsGradeRecord.objects.filter(
+        student__user__profile__school=school,
+        student__user__is_active=True,
+        time__gt=0,
+    )
 
-#calculating times from Ethics Grades
-    ethicsgrades = EthicsGradeRecord.objects.filter(
-        student__user__profile__school__id=schoolid,
-        student__user__is_active=True, time__gt=0,
-    ).order_by('student__user__last_name', 'department__name', 'quarter')
+    if not show_all:
+        ethicsgrades_qs= ethicsgrades_qs.filter(quarter__school_year=current_year)
 
+    ethicsgrades_qs = ethicsgrades_qs.select_related(
+        'student',
+        'department',
+        'quarter',
+        'student__user'
+    ).order_by(
+        'student__user__last_name',
+        'department__name',
+        'quarter'
+    )
 
-    # We're going to annotate it with quarter and department
     ethicsgrades = [
         {
             'student': eg.student,
             'quarter': eg.quarter,
             'department': eg.department,
-            'time': eg.time or 0,  # no conversion necessary for this model
-        } for eg in ethicsgrades
+            'time': eg.time or 0
+        }
+        for eg in ethicsgrades_qs
     ]
 
-    # Now we'll prepare the aggregate data
-    aggregate_data = {}
-
+    aggregate_data_ethics = {}
     for eg in ethicsgrades:
-        if eg['student'] not in aggregate_data:
-            aggregate_data[eg['student']] = {}
+        student = eg['student']
+        dept = eg['department']
+        quarter = eg['quarter']
+        t = eg['time']
 
-        if eg['department'] not in aggregate_data[eg['student']]:
-            aggregate_data[eg['student']][eg['department']] = {'total': 0, 'quarters': {}}
+        if student not in aggregate_data_ethics:
+            aggregate_data_ethics[student] = {}
+        if dept not in aggregate_data_ethics[student]:
+            aggregate_data_ethics[student][dept] = {'total': 0, 'quarters': {}}
+        if quarter not in aggregate_data_ethics[student][dept]['quarters']:
+            aggregate_data_ethics[student][dept]['quarters'][quarter] = 0
 
-        if eg['quarter'] not in aggregate_data[eg['student']][eg['department']]['quarters']:
-            aggregate_data[eg['student']][eg['department']]['quarters'][eg['quarter']] = 0
+        aggregate_data_ethics[student][dept]['quarters'][quarter] += t
+        aggregate_data_ethics[student][dept]['quarters'][quarter] = round(aggregate_data_ethics[student][dept]['quarters'][quarter], 2)
 
-        # Add the hours to the quarter and total
-        aggregate_data[eg['student']][eg['department']]['quarters'][eg['quarter']] = round(
-            aggregate_data[eg['student']][eg['department']]['quarters'][eg['quarter']] + (eg['time'] or 0),
-            2)
+        aggregate_data_ethics[student][dept]['total'] += t
+        aggregate_data_ethics[student][dept]['total'] = round(aggregate_data_ethics[student][dept]['total'], 2)
 
-        # Increment the total duration, rounding the result
-        aggregate_data[eg['student']][eg['department']]['total'] = round(
-            aggregate_data[eg['student']][eg['department']]['total'] + (eg['time'] or 0),
-            2)
-
-
-    #calculate times from Ethics Grades (entered weekly times)
     formatted_data_ethicsgrades = []
-    for student, departments in aggregate_data.items():
+    for student, departments in aggregate_data_ethics.items():
         student_rowspan = 0
         formatted_departments = []
-        for department, details in departments.items():
+        for dept, details in departments.items():
             department_rowspan = len(details['quarters'])
             student_rowspan += department_rowspan
             formatted_departments.append({
-                'name': department,
+                'name': dept,
                 'detail': details,
                 'rowspan': department_rowspan
             })
@@ -1732,8 +1771,15 @@ def student_time_card_summary(request, schoolid):
             'rowspan': student_rowspan
         })
 
-
-    context = dict(formatted_data=formatted_data, formatted_data_ethicsgrades=formatted_data_ethicsgrades)
+    # ------------------------------
+    # Context
+    # ------------------------------
+    context = {
+        'formatted_data': formatted_data,
+        'formatted_data_ethicsgrades': formatted_data_ethicsgrades,
+        'show_all': show_all,
+        'current_year': current_year
+    }
 
     return render(request, 'vocational/student_time_card_summary.html', context)
 

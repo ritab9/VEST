@@ -86,11 +86,12 @@
     </p>
     {% endif %}
 
-    
-    <p class="error">
-        Please ensure that the date selected is the Sunday at the end of the week for which you are entering grades.
-        This ensures that student time is calculated accurately based on that week’s time cards.   
-    </p>
+    {% if oa %}
+        <p class="error">
+            Please ensure that the date selected is the Sunday at the end of the week for which you are entering grades.
+            This ensures that student time is calculated accurately based on that week’s time cards.   
+        </p>
+    {% endif %}
     <script>
     
 
