@@ -553,7 +553,6 @@ def initiate_grade_entry(request, schoolid):
                     if role == 'vocational_coordinator':
                         profile_id = request.POST.get('instructor')
                         user = User.objects.get(profile__id=profile_id)
-                        print(user)
                         return redirect('add_grade', quarterid, type, departmentid, evaluation_date, user.id)
                     else:
                         return redirect('add_grade', quarterid, type, departmentid, evaluation_date, request.user.id)
@@ -583,8 +582,22 @@ def initiate_grade_entry(request, schoolid):
     else:
         instructor=None
 
+
+    school=School.objects.get(id=schoolid)
+    today = timezone.now().date()
+    if school.abbreviation == "OA":
+        oa=True
+        if today.weekday() == 6:  # Sunday (Python: Monday=0 ... Sunday=6)
+            default_date = today
+        else:
+            default_date = today - timedelta(days=today.weekday() + 1)
+    else:
+        default_date = today
+        oa=False
+
     context = dict(active_quarter=active_quarter, department=department, current_quarter_id=current_quarter_id,
-                   error_message=error_message, role=role, instructor=instructor)
+                   error_message=error_message, role=role, instructor=instructor,
+                   default_date=default_date)
 
     school_year = SchoolYear.objects.get(id=school_year_id)
 
@@ -631,10 +644,10 @@ def add_grade(request, quarterid, type, departmentid, evaluation_date, instructo
                 grade = existing_grade
             else:
                 grade = grade_form.save()
-            print(grade.quarter, "from Add Grade")
+            #print(grade.quarter, "from Add Grade")
             return redirect('finalize_grade', grade.id)
-        else:
-            print("Not valid")
+        #else:
+            #print("Not valid")
 
 
     #grades=EthicsGradeRecord.objects.filter()
@@ -1272,7 +1285,11 @@ def time_card_dashboard(request, userid, vc='no'):
         ).order_by('-time_in','student_assignment__department')
 
         # Accumulate total time as seconds
-    total_seconds = sum([(t.time_out - t.time_in).total_seconds() for t in timecards if t.time_out])
+    #total_seconds = sum([(t.time_out - t.time_in).total_seconds() for t in timecards if t.time_out])
+    total_seconds = 0
+    for t in timecards:
+        if t.time_in and t.time_out:
+            total_seconds += (t.time_out - t.time_in).total_seconds()
 
     # Convert total_seconds to time delta
     total_time = timedelta(seconds=total_seconds)
@@ -1342,11 +1359,19 @@ def time_card_view(request, quarter_id, department_id):
             student = get_object_or_404(Student, pk=student_id)
 
             if action == 'checkin':
-                TimeCard.objects.create(
+                existing_card = TimeCard.objects.filter(
                     student_assignment=assignment,
                     student=student,
-                    time_in=timezone.now()
-                )
+                    time_in__date=today,
+                    time_out__isnull=True
+                ).exists()
+                if not existing_card:
+                    TimeCard.objects.create(
+                        student_assignment=assignment,
+                        student=student,
+                        time_in=timezone.now()
+                    )
+
             elif action == 'checkout':
                 time_card = TimeCard.objects.filter(
                     student_assignment=assignment,

@@ -42,7 +42,7 @@
                             </select>
                         </td>
                         <td>
-                                <input type="date" id="id_date" name="date">
+                                <input type="date" id="id_date" name="date" value="{{ default_date|date:'Y-m-d' }}">
                         </td>
                         <td>
                             <select class="form-select" name="department">
@@ -86,12 +86,13 @@
     </p>
     {% endif %}
 
+    
+    <p class="error">
+        Please ensure that the date selected is the Sunday at the end of the week for which you are entering grades.
+        This ensures that student time is calculated accurately based on that week’s time cards.   
+    </p>
     <script>
-    $(document).ready( function() {
-        document.getElementById('id_date').valueAsDate = new Date();
-    });
-
-
+    
 
     </script>
 

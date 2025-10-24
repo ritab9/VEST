@@ -175,6 +175,15 @@
         </div>
 
 <script>
+
+
+    document.querySelectorAll('form button[type="submit"]').forEach(button => {
+      button.addEventListener('click', () => {
+        button.disabled = true;
+        button.form.submit();
+      });
+    });
+
     // Show student week content in modal
     const modal = document.getElementById('weekModal');
     modal.addEventListener('show.bs.modal', function (event) {
@@ -204,6 +213,10 @@
 
         window.location.search = params.toString();
     });
+    
+    
+    
+    
 </script>
 
 {% else %}

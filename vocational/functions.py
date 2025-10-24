@@ -11,6 +11,7 @@ def current_quarter(school_year_id):
         q=Quarter.objects.filter(school_year_id=school_year_id).first()
     return q
 
+
 #calculates summative and formative grades average for a given set of numbers, and school year
 def average(grades, school_year=None):
 

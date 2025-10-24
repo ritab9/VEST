@@ -143,32 +143,33 @@ class EthicsGradeTimeForm(forms.ModelForm):
 
         self.fields['suggested_level'].queryset = EthicsLevel.objects.order_by('name')
 
-        # Prefill the time field based on TimeCards
-        if self.instance and self.instance.student and self.instance.quarter and self.instance.department:
-            student = self.instance.student
-            quarter = self.instance.quarter
-            department = self.instance.department
-            eval_date = getattr(self.instance, 'evaluation_date', None)
+        if time_track:
+            # Prefill the time field based on TimeCards
+            if self.instance and self.instance.student and self.instance.quarter and self.instance.department:
+                student = self.instance.student
+                quarter = self.instance.quarter
+                department = self.instance.department
+                eval_date = getattr(self.instance, 'evaluation_date', None)
 
-            try:
-                # Get the relevant assignment
-                assignment = StudentAssignment.objects.get(quarter=quarter, department=department, student=student)
-            except StudentAssignment.DoesNotExist:
-                assignment = None
+                try:
+                    # Get the relevant assignment
+                    assignment = StudentAssignment.objects.get(quarter=quarter, department=department, student=student)
+                except StudentAssignment.DoesNotExist:
+                    assignment = None
 
-            if assignment:
-                start_date = eval_date - timedelta(days=6)
-                # Filter TimeCards for this student in that assignment in the last 7 days
-                timecards = TimeCard.objects.filter(
-                    student_assignment=assignment,
-                    student=student,
-                    time_in__date__gte=start_date,
-                    time_in__date__lte=eval_date
-                )
+                if assignment:
+                    start_date = eval_date - timedelta(days=6)
+                    # Filter TimeCards for this student in that assignment in the last 7 days
+                    timecards = TimeCard.objects.filter(
+                        student_assignment=assignment,
+                        student=student,
+                        time_in__date__gte=start_date,
+                        time_in__date__lte=eval_date
+                    )
 
-                # Sum hours
-                total_hours = round(sum(tc.duration_in_hours() or 0 for tc in timecards),2)
-                self.initial['time'] = total_hours
+                    # Sum hours
+                    total_hours = round(sum(tc.duration_in_hours() or 0 for tc in timecards),2)
+                    self.initial['time'] = total_hours
     class Meta:
         model = EthicsGradeRecord
         fields = ('time', "suggested_level")
