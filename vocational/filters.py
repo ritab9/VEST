@@ -132,6 +132,8 @@ class TimeCardFilterForm(forms.Form):
     to_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     student = forms.ModelChoiceField(queryset=Student.objects.none(), required=False)
 
+    missing_time_in = forms.BooleanField(required=False, label="Missing Time In")
+    missing_time_out = forms.BooleanField(required=False, label="Missing Time Out")
     def __init__(self, *args, department_qs=None, quarter_qs=None, student_qs=None, **kwargs):
         super().__init__(*args, **kwargs)
         if department_qs is not None:

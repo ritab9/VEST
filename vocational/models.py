@@ -173,6 +173,7 @@ class TimeCard(models.Model):
     timezone = models.CharField(max_length=255, null=True, blank=True)
     week_range = models.CharField(max_length=30, blank=True, null=True)
 
+
     def update_week_range(self):
         if self.time_in:
             start = self.time_in - timedelta(days=self.time_in.weekday())

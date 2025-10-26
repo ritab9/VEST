@@ -1259,6 +1259,16 @@ def time_card_dashboard(request, userid, vc='no'):
                                 student_qs=unique_students_qs)
 
     # If the form is submitted (POST request) and is valid, fetch the timecards
+    if request.method == 'POST' and 'delete_selected' in request.POST:
+        # 🧹 Handle batch deletion first
+        selected_ids = request.POST.getlist('selected_timecards')
+        if selected_ids:
+            TimeCard.objects.filter(id__in=selected_ids).delete()
+            messages.success(request, f"{len(selected_ids)} timecard(s) deleted successfully.")
+        else:
+            messages.warning(request, "No timecards selected for deletion.")
+        return redirect('time_card_dashboard', userid=userid, vc=vc)  # redirect after delete
+
     if request.method == 'POST' and filter.is_valid():
         department = filter.cleaned_data.get('department')
         quarter = filter.cleaned_data.get('quarter')
@@ -1266,11 +1276,16 @@ def time_card_dashboard(request, userid, vc='no'):
         to_date = filter.cleaned_data.get('to_date')
         student = filter.cleaned_data.get('student')
 
+        missing_time_in = filter.cleaned_data.get('missing_time_in')
+        missing_time_out = filter.cleaned_data.get('missing_time_out')
+
         timecards = TimeCard.objects.filter(
             Q(student_assignment__quarter=quarter) if quarter else Q(),
             Q(student_assignment__department=department) if department else Q(),
             Q(student=student) if student else Q(),
-            Q(time_in__range=(from_date, to_date)) if (from_date and to_date) else Q()
+            Q(time_in__range=(from_date, to_date)) if (from_date and to_date) else Q(),
+            Q(time_in__isnull=True) if missing_time_in else Q(),
+            Q(time_out__isnull=True) if missing_time_out else Q(),
         ).order_by('-time_in','student_assignment__department')
     else:
         # This is the initial GET request, fetch only the last 7 day timecards
@@ -1316,6 +1331,7 @@ def time_card_dashboard(request, userid, vc='no'):
 
 from django.utils.http import urlencode
 
+'''
 def time_card_view(request, quarter_id, department_id):
     # Logout current user (kept from your CBV)
     logout(request)
@@ -1436,8 +1452,150 @@ def time_card_view(request, quarter_id, department_id):
     context['show_temp'] = show_temp  # pass to template
 
     return render(request, 'vocational/time_card.html', context)
+'''
 
+def time_card_view(request, quarter_id, department_id):
+    # Logout current user (as in your original)
+    logout(request)
 
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=6)
+    department = get_object_or_404(Department, id=department_id)
+    school = department.school
+
+    # Get assignment safely
+    assignment = StudentAssignment.objects.filter(
+        quarter_id=quarter_id,
+        department_id=department_id
+    ).first()
+
+    show_temp = request.GET.get('show_temp') == '1'
+
+    if request.method == "POST":
+        # --- Add temporary student ---
+        if 'add_temp' in request.POST:
+            department = assignment.department if assignment else None
+            school_instance = department.school if department else None
+            temp_form = AddTemporaryStudentForm(request.POST, school=school_instance)
+            if temp_form.is_valid():
+                student = temp_form.cleaned_data['student']
+                TemporaryStudentAssignment.objects.get_or_create(
+                    student_assignment=assignment,
+                    student=student
+                )
+
+        # --- Handle Check-in / Check-out ---
+        student_id = request.POST.get('student_id')
+        action = request.POST.get('action')
+
+        if student_id:
+            student = get_object_or_404(Student, pk=student_id)
+
+            # Check-in
+            if action == 'checkin':
+                # 1️⃣ Check for any open card from previous day(s)
+                open_old_cards = TimeCard.objects.filter(
+                    student_assignment=assignment,
+                    student=student,
+                    time_out__isnull=True,
+                    time_in__date__lt=today
+                )
+                if open_old_cards.exists():
+                    messages.error(
+                        request,
+                        f"{student} has an open time card from a previous day. "
+                        f"Please contact an instructor to close it manually."
+                    )
+                    #return redirect(request.path)
+
+                # 2️⃣ Prevent duplicate open cards today
+                existing_card = TimeCard.objects.filter(
+                    student_assignment=assignment,
+                    student=student,
+                    time_out__isnull=True,
+                    time_in__date=today,
+                ).exists()
+
+                if not existing_card:
+                    TimeCard.objects.create(
+                        student_assignment=assignment,
+                        student=student,
+                        time_in=timezone.now()
+                    )
+                else:
+                    messages.warning(request, f"{student} already has an active time card.")
+
+            # Check-out
+            elif action == 'checkout':
+                open_card = TimeCard.objects.filter(
+                    student_assignment=assignment,
+                    student=student,
+                    time_out=None,
+                    time_in__date=today
+                ).order_by('-time_in').first()
+                if open_card:
+                    open_card.time_out = timezone.now()
+                    open_card.save()
+                else:
+                    messages.warning(request, f"No active time card found for {student}.")
+
+        # Redirect preserving show_temp
+        params = {}
+        if show_temp:
+            params['show_temp'] = '1'
+        redirect_url = reverse('time_card', kwargs={'quarter_id': quarter_id, 'department_id': department_id})
+        if params:
+            redirect_url += '?' + urlencode(params)
+        return redirect(redirect_url)
+
+    # --- Build context ---
+    context = dict()
+
+    if assignment:
+        # Include temporary students only if show_temp is True
+        if show_temp:
+            assignment.students = assignment.permanent_and_temporary_students_with_flag()
+        else:
+            assignment.students = assignment.student.all()
+            for s in assignment.students:
+                s.is_temporary = False
+
+        for student in assignment.students:
+            # Active card for today
+            student.active_time_card = TimeCard.objects.filter(
+                student_assignment=assignment,
+                student=student,
+                time_in__date=today,
+                time_out=None
+            ).order_by('-time_in').first()
+
+            # Completed time cards for today
+            student.today_time_card = TimeCard.objects.filter(
+                student_assignment=assignment,
+                student=student,
+                time_in__date=today,
+                time_out__date=today
+            )
+
+            # All time cards from the past 7 days
+            student.week_time_cards = TimeCard.objects.filter(
+                student=student,
+                time_in__date__range=[week_ago, today]
+            ).order_by('-time_in')
+
+        context['assignment'] = assignment
+    else:
+        context['assignment'] = None
+
+    # --- Temporary student form ---
+    existing_ids = [s.id for s in assignment.students] if assignment else []
+
+    context['temp_student_form'] = AddTemporaryStudentForm(school=school, exclude_students=existing_ids)
+    context['quarter'] = get_object_or_404(Quarter, pk=quarter_id)
+    context['show_temp'] = show_temp
+
+    return render(request, 'vocational/time_card.html', context)
+''''''
 
 #manual time card entry by instructor or vocational coordinator
 @login_required(login_url='login')

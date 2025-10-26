@@ -66,46 +66,58 @@
                     {{ filter.as_table }}
                     <input class="btn btn-sm btn-ISEIblue" type="submit" value="Filter">
                     <a href="{% url 'time_card_dashboard' userid %}" class="btn btn-default">Clear</a>
+                    
+                    <hr>
+                    
+                    <p class="text-ISEIblue1"> See the last seven days' time-cards below. For older records, please use the filter.</p>
+                   
+                    <hr>
+                    <button class="btn btn-sm btn-danger mb-2" type="submit" name="delete_selected"
+                            onclick="return confirm('Are you sure you want to delete the selected timecards?');">
+                        Delete Selected
+                    </button>
+                
+                    <table class="table table-striped">
+                        <thead class="table-ISEIblue4">
+                            <tr>
+                                <th><input type="checkbox" id="select-all"></th>
+                                <th>Student</th>
+                                <th>Quarter</th>
+                                <th>Department</th>
+                                <th>Date</th>
+                                <th>Time In</th>
+                                <th>Time Out</th>
+                                <th>Time</th>
+                                <th>Edit</th><th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for timecard in timecards %}
+                            <tr>
+                                <td><input type="checkbox" name="selected_timecards" value="{{ timecard.id }}"></td>
+                                <td>{{ timecard.student }}</td>
+                                <td>{{ timecard.student_assignment.quarter }}</td>
+                                <td>{{ timecard.student_assignment.department}}</td>
+                                <td>{{ timecard.get_date }}</td>
+                                <td>{{ timecard.get_time_in}}</td>
+                                <td>{{ timecard.get_time_out}}</td>
+                                <td>{% if timecard.duration %}{{ timecard.duration.0 }} hrs. {{ timecard.duration.1 }} min. {% endif %}</td>
+                                <td><a href="{% url 'time_card_edit' pk=timecard.pk %}">Edit</a></td>
+                                <td>
+                                    <a href="{% url 'time_card_delete' pk=timecard.pk %}?next={{ request.path }}"
+                                       onclick="return confirm('Are you sure you want to delete this?');">Delete
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">No time cards found</td>
+                            </tr>
+                        {% endfor %}
+                        <tr><td colspan="4"></td><td><strong>Total Time:</strong></td><td> {{ total_hours}} hrs {{ total_minutes }} min<td></tr>
+                        </tbody>
+                    </table>
                 </form>
-                <p class="text-ISEIblue1"> See the last seven days' time-cards below. For older records, please use the filter.</p>
-                <table class="table table-striped">
-                    <thead class="table-ISEIblue4">
-                        <tr>
-                            <th>Student</th>
-                            <th>Quarter</th>
-                            <th>Department</th>
-                            <th>Date</th>
-                            <th>Time In</th>
-                            <th>Time Out</th>
-                            <th>Time</th>
-                            <th>Edit</th><th>Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for timecard in timecards %}
-                        <tr>
-                            <td>{{ timecard.student }}</td>
-                            <td>{{ timecard.student_assignment.quarter }}</td>
-                            <td>{{ timecard.student_assignment.department}}</td>
-                            <td>{{ timecard.get_date }}</td>
-                            <td>{{ timecard.get_time_in}}</td>
-                            <td>{{ timecard.get_time_out}}</td>
-                            <td>{% if timecard.duration %}{{ timecard.duration.0 }} hrs. {{ timecard.duration.1 }} min. {% endif %}</td>
-                            <td><a href="{% url 'time_card_edit' pk=timecard.pk %}">Edit</a></td>
-                            <td>
-                                <a href="{% url 'time_card_delete' pk=timecard.pk %}?next={{ request.path }}"
-                                   onclick="return confirm('Are you sure you want to delete this?');">Delete
-                                </a>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="6">No time cards found</td>
-                        </tr>
-                    {% endfor %}
-                    <tr><td colspan="4"></td><td><strong>Total Time:</strong></td><td> {{ total_hours}} hrs {{ total_minutes }} min<td></tr>
-                    </tbody>
-                </table>
             </div>
         </div>
         {% else %}
@@ -137,6 +149,14 @@
 
         this.action = "/time_card_manual/" + department_id + "/" + quarter_id;
         this.submit();
+    });
+    
+    // Toggle select all
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="selected_timecards"]');
+        for (const box of checkboxes) {
+            box.checked = this.checked;
+        }
     });
 </script>
 

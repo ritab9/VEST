@@ -10,12 +10,27 @@
 {% endblock %}
 
 {% if assignment %}
+    
+    {% if messages %}
+        <hr>
+      <div class="">
+        {% for message in messages %}
+          <div class="{{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+        <hr>
+    {% endif %}
+
+    
+    
 <div class="d-flex justify-content-between">
     <div class="col">
         <h6>{{ assignment.department }}, {% now "F j" %} <br>{{ quarter }}</h6>
     </div>
 </div>
-
+    
 <div class="row">
     <div class="col-auto">
         <div style="display: inline-block;">
@@ -181,6 +196,16 @@
       button.addEventListener('click', () => {
         button.disabled = true;
         button.form.submit();
+      });
+    });
+    
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function() {
+        const btn = this.querySelector('button[type="submit"]');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Processing...';
+        }
       });
     });
 
