@@ -1279,6 +1279,8 @@ def time_card_dashboard(request, userid, vc='no'):
         missing_time_in = filter.cleaned_data.get('missing_time_in')
         missing_time_out = filter.cleaned_data.get('missing_time_out')
 
+        potential_duplicates = filter.cleaned_data.get('potential_duplicates')
+
         timecards = TimeCard.objects.filter(
             Q(student_assignment__quarter=quarter) if quarter else Q(),
             Q(student_assignment__department=department) if department else Q(),
@@ -1287,6 +1289,25 @@ def time_card_dashboard(request, userid, vc='no'):
             Q(time_in__isnull=True) if missing_time_in else Q(),
             Q(time_out__isnull=True) if missing_time_out else Q(),
         ).order_by('-time_in','student_assignment__department')
+
+        if potential_duplicates:
+            # Annotate duplicates and filter
+            from django.db.models import Count
+            duplicate_tuples = (
+                timecards.values('student', 'student_assignment', 'time_in__date')
+                .annotate(card_count=Count('id'))
+                .filter(card_count__gt=1)
+            )
+            # Get all IDs that are part of duplicates
+            duplicate_ids = []
+            for d in duplicate_tuples:
+                cards = timecards.filter(
+                    student_id=d['student'],
+                    student_assignment_id=d['student_assignment'],
+                    time_in__date=d['time_in__date']
+                ).values_list('id', flat=True)
+                duplicate_ids.extend(cards)
+            timecards = timecards.filter(id__in=duplicate_ids).order_by('student__user__first_name')
     else:
         # This is the initial GET request, fetch only the last 7 day timecards
         #today = datetime.today()

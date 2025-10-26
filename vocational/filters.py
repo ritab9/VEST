@@ -134,6 +134,8 @@ class TimeCardFilterForm(forms.Form):
 
     missing_time_in = forms.BooleanField(required=False, label="Missing Time In")
     missing_time_out = forms.BooleanField(required=False, label="Missing Time Out")
+
+    potential_duplicates = forms.BooleanField(required=False, initial=False, label="Potential Duplicates")
     def __init__(self, *args, department_qs=None, quarter_qs=None, student_qs=None, **kwargs):
         super().__init__(*args, **kwargs)
         if department_qs is not None:
