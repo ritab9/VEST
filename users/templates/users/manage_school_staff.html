@@ -32,7 +32,8 @@
         <tr>
             <th><a onclick="sortTable(0)"><i class="fa-solid fa-arrow-down-a-z"></i></a>  Name</th>
             <th>Username</th><th><a onclick="sortTable(2)"><i class="fa-solid fa-arrow-down-a-z"></i></a>  Role</th>
-            <th>Email</th> <th>Phone Number</th><th><a onclick="sortTable(6)"><i class="fa-solid fa-arrow-down-a-z"></i></a>  Status</th><th><th></th>
+            <th>Email</th> <th>Phone Number</th><th>Edit<th>Resend Email</th>
+            <th><a onclick="sortTable(6)"><i class="fa-solid fa-arrow-down-a-z"></i></a>  Status</th>
         </tr>
         </thead>
 
@@ -44,12 +45,22 @@
                     <td>{% for g in i.groups.all %} {{ g }}<br> {% endfor%}</td>
                 <td>{{ i.email }}</td>
                 <td> {% if i.profile.phone_number %}{{ i.profile.phone_number }}{% endif %}</td>
-                <td> {% if i.is_active %} <div class="spangreen">Active</div>
-                    {% else %} Inactive {% endif %}
-                </td>
                 <td>
                     <a class = "btn btn-sm iseiblue3" href="{% url 'update_school_staff' i.id  %}">Edit</a>
-
+                </td>
+                <td>
+                    <form method="post" action="{% url 'send_staff_email' i.id school.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-sm btn-link p-0 align-baseline spangreen"
+                                onclick="return confirm('Send welcome email to {{ i.get_full_name }}?');">
+                            Resend email
+                        </button>
+                    </form>
+                </td>
+                <td> {% if i.is_active %} <div class="">Active</div>
+                    {% else %} Inactive {% endif %}
+                </td>
             </tr>
         {% endfor %}
         </tbody>

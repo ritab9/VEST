@@ -56,6 +56,9 @@
                           <button class="btn btn-sm btn-ISEIblue2" type="submit">Add Time Cards Manually</button>
                      </form>
                 </div>
+            <div class="col-auto">
+                <a class="btn btn-sm btn-ISEIyellow mt-2" href="{% url 'student_time_card_summary' schoolid=school_id %}">Student Summaries</a>
+            </div>
         </div>
 
     <!-- Time Card Display -->
@@ -124,10 +127,7 @@
             <p class="error"> It looks like there are no departments assigned to you as an instructor yet. If you think there's been an error, please reach out to your Vocational Supervisor.</p>
         {% endif %}
     </div>
-
-    <div class="col-auto">
-        <a class="btn btn-sm btn-ISEIyellow mt-2" href="{% url 'student_time_card_summary' schoolid=school_id %}">Student Summaries</a>
-    </div>
+ 
  </div>
 
 <script type="text/javascript">

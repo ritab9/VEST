@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect, reverse, get_object_or_404
 # from django.db.models import Q
 from django.forms import modelformset_factory
 
@@ -381,6 +381,18 @@ def add_school_staff(request, schoolid):
     context = dict(form=form, school=school)
     return render(request, 'users/add_school_staff.html', context)
 
+def send_staff_email(request, user_id, schoolid):
+    if request.method == "POST":
+        staff_user = get_object_or_404(User, id=user_id)
+        school = get_object_or_404(School, id=schoolid)
+
+        send_system_email_from_school(request, staff_user, school, "NewStaff")
+
+        #messages.success(request, f"Email sent to {staff_user.get_full_name()}.")
+
+    return redirect("manage_school_staff", schoolid=schoolid)
+
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
@@ -630,6 +642,17 @@ def add_student(request, schoolid):
 
     context = dict(form_user=form_user, form_student=form_student, school=school)
     return render(request, 'users/add_student.html', context)
+
+def send_student_email(request, user_id, schoolid):
+    if request.method == "POST":
+        student_user = get_object_or_404(User, id=user_id)
+        school = get_object_or_404(School, id=schoolid)
+
+        send_system_email_from_school(request, student_user, school, "NewStudent")
+
+        #messages.success(request, f"Welcome email sent to {student_user.get_full_name()}.")
+
+    return redirect("manage_students", schoolid=schoolid)  # change to your student list view name
 
 
 @login_required(login_url='login')

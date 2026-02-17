@@ -86,7 +86,16 @@
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>
-                    <a class = "btn btn-sm btn-ISEIblue3 span80" href="{% url 'update_student' s.user.id  %}">Edit </a>
+                    <a class = "btn btn-sm btn-link text-ISEIblue3 span80" href="{% url 'update_student' s.user.id  %}">Edit </a>
+
+                    <form method="post" action="{% url 'send_student_email' s.user.id school.id %}"  class="d-block mt-0">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-sm btn-link p-0 spangreen span80"
+                                onclick="return confirm('Send welcome email to {{ s.user.get_full_name }}?');">
+                            Resend email
+                        </button>
+                    </form>
                 </td>
                 <td>{{ s.user.last_name }}, {{ s.user.first_name }}
                     <p class="span80">{{ s.user.username|shortened_username }}</p></td>

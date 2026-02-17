@@ -46,6 +46,8 @@ urlpatterns = [
     path('delete_school_staff/<str:userid>/', views.delete_school_staff, name='delete_school_staff'),
     path('add_staff_from_parent_list/<str:schoolid>/', views.add_staff_from_parent_list, name='add_staff_from_parent_list'),
 
+    path("staff/<int:user_id>/<int:schoolid>/send-email/",views.send_staff_email,name="send_staff_email",),
+
     path('manage_students/<str:schoolid>/', views.manage_students, name='manage_students'),
     path('manage_inactive_students/<str:schoolid>/', views.manage_inactive_students, name='manage_inactive_students'),
     path('graduate_students/<str:schoolid>/', views.graduate_students, name='graduate_students'),
@@ -53,6 +55,9 @@ urlpatterns = [
     path('update_student/<str:userid>/', views.update_student, name='update_student'),
     path('delete_student/<str:userid>/', views.delete_student, name='delete_student'),
     path('mark_inactive_students/<str:schoolid>/', views.mark_inactive_students, name='mark_inactive_students'),
+
+    path("students/<int:user_id>/<int:schoolid>/send-email/",views.send_student_email, name="send_student_email",),
+
 
     #path('manage_parents/<str:schoolid>/', views.manage_parents, name='manage_parents'),
     #path('manage_inactive_parents/<str:schoolid>/', views.manage_inactive_parents, name='manage_inactive_parents'),
