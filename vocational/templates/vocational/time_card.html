@@ -160,7 +160,8 @@
                 <form method="post" class="mb-3">
                     {% csrf_token %}
                     {{ temp_student_form.student }}
-                    <button type="submit" name="add_temp" class="btn btn-sm btn-outline-ISEIblue4">
+                    <input type="hidden" name="add_temp" value="1">
+                    <button type="submit" class="btn btn-sm btn-outline-ISEIblue4">
                         Add Temporary Student
                     </button>
                 </form>

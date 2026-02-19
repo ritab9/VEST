@@ -1494,7 +1494,7 @@ def time_card_view(request, quarter_id, department_id):
 
     if request.method == "POST":
         # --- Add temporary student ---
-        if 'add_temp' in request.POST:
+        if request.POST.get("add_temp"):
             department = assignment.department if assignment else None
             school_instance = department.school if department else None
             temp_form = AddTemporaryStudentForm(request.POST, school=school_instance)
