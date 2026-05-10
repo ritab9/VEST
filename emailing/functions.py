@@ -27,7 +27,7 @@ def send_email_school_admin(request, user):
 
 
 #school sends email to new users: staff, student, parent
-def send_system_email_from_school(request, user, school, message_name, child=None, extra_message=None):
+def send_system_email_from_school(request, user, school, message_name, child=None, extra_message=None, connection=None):
 
     try:
         customize = CustomizedSystemMessage.objects.filter(name__name=message_name, school=school).first()
@@ -40,7 +40,7 @@ def send_system_email_from_school(request, user, school, message_name, child=Non
         formatted_message = format_message(message, user, child, extra_message)
         send_mail(subject, formatted_message, school.email_address, [user.email], fail_silently=False,
                   auth_user=school.email_address,
-                  auth_password=school.email_password[::-1], connection=None, html_message=None)
+                  auth_password=school.email_password[::-1], connection=connection, html_message=None)
         messages.info(request, "Email(s) sent successfully to " + str(user.email))
     except Exception as e:
         messages.error(request, mark_safe('Email was not sent to ' + str(user.email) + '. <br>' + str(e) + '. <br>' + 'Please contact the website administrator.'))

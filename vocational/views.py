@@ -29,6 +29,7 @@ from django.db.models.functions import ExtractHour, ExtractMinute, ExtractSecond
 from vocational.functions import current_quarter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from django.core.mail import get_connection
 
 # School Admin Views
 # School Settings
@@ -1021,9 +1022,14 @@ def vc_validate_grades(request, schoolid):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
+    BATCH_SIZE = 10
+
     if request.method == 'POST':
         formset = VCValidationFormSet(request.POST, queryset=page_obj.object_list)
         if formset.is_valid():
+            # Collect all (user, message_name, child, extra_message) tuples first
+            email_queue = []
+
             for form in formset:
                 ethics_grade_record = form.save(commit=False)
                 accepted_level = form.cleaned_data['accepted_level']
@@ -1032,28 +1038,52 @@ def vc_validate_grades(request, schoolid):
                     ethics_grade_record.student.vocationalstatus.save()
                 ethics_grade_record.save()
 
-            #grades = formset.save()
-            #for g in grades:
                 if ethics_grade_record.vc_validated:
-                    send_system_email_from_school(request, ethics_grade_record.student.user, school, "GradePostedStudent")
+                    email_queue.append((ethics_grade_record.student.user, "GradePostedStudent", None, None))
                     for p in ethics_grade_record.student.parent.all():
-                        send_system_email_from_school(request, p, school, "GradePostedParent", ethics_grade_record.student)
+                        email_queue.append((p, "GradePostedParent", ethics_grade_record.student, None))
                 else:
                     if ethics_grade_record.vc_comment:
-                        instructor = ethics_grade_record.instructor
-                        send_system_email_from_school(request, instructor, school, "GradeNotValidated", ethics_grade_record.student, ethics_grade_record.vc_comment)
+                        email_queue.append((
+                            ethics_grade_record.instructor,
+                            "GradeNotValidated",
+                            ethics_grade_record.student,
+                            ethics_grade_record.vc_comment
+                        ))
 
-            #not_validated = EthicsGradeRecord.objects.filter(vc_validated=None, instructor__profile__school__id=schoolid)
-            #instr_id = not_validated.values_list('instructor_id')
-            #instructors = User.objects.filter(id__in = instr_id)
-            #for i in instructors:
-            #    send_system_email_from_school(request, i, school, "GradeNotValidated")
+            # Now send all emails with batched connections
+            connection = None
+            for i, (user, message_name, child, extra_message) in enumerate(email_queue):
+                if i % BATCH_SIZE == 0:
+                    if connection:
+                        connection.close()
+                    connection = get_connection(
+                        backend='django.core.mail.backends.smtp.EmailBackend',
+                        host='smtp.gmail.com',
+                        port=587,
+                        username=school.email_address,
+                        password=school.email_password[::-1],
+                        use_tls=True,
+                        fail_silently=False,
+                    )
+                    connection.open()
+
+                send_system_email_from_school(
+                    request, user, school, message_name,
+                    child=child, extra_message=extra_message,
+                    connection=connection
+                )
+
+            if connection:
+                connection.close()
 
             return redirect('grade_list', request.user.id)
         else:
             errors = formset.non_form_errors()
     else:
         formset = VCValidationFormSet(queryset=page_obj.object_list)
+
+
 
     context = dict(formset=formset, errors=errors, schoolid=schoolid, page_obj=page_obj)
     return render(request, 'vocational/vc_validate_grades.html', context)
