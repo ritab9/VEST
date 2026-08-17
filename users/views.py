@@ -27,6 +27,8 @@ from django.views.decorators.csrf import csrf_exempt
 from openpyxl import load_workbook
 from io import BytesIO
 
+from datetime import date
+
 
 # landing page for everyone. Introduced it to allow for role transition
 @login_required(login_url='login')
@@ -500,16 +502,43 @@ def delete_school_staff(request, userid):
     return render(request, 'users/delete_school_staff.html', context)
 
 
+def deactivate_graduated_students(students):
+    today = date.today()
+
+    if today.month < 7:
+        graduation_cutoff = today.year - 1
+    else:
+        graduation_cutoff = today.year
+
+    graduated_user_ids = students.filter(
+        graduation_year__lt=graduation_cutoff,
+    ).values_list("user_id", flat=True)
+
+    return User.objects.filter(
+        id__in=graduated_user_ids
+    ).update(is_active=False)
+
+
 # Student Data Administration
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin'])
 def manage_students(request, schoolid):
     school = School.objects.get(id=schoolid)
 
-    student = Student.objects.filter(user__profile__school=school, user__is_active=True,
-                                     user__groups__name="student").order_by('-graduation_year','user__last_name')
+    student = Student.objects.filter(
+        user__profile__school=school,
+        user__is_active=True,
+        user__groups__name="student"
+    ).order_by(
+        '-graduation_year',
+        'user__last_name'
+    )
+
+    deactivate_graduated_students(student)
+
     student_filter = StudentFilter(request.GET, queryset=student)
     student = student_filter.qs
+
 
     context = dict(school=school, student=student, active=True, student_filter=student_filter)
     return render(request, 'users/manage_students.html', context)
