@@ -27,7 +27,7 @@
     
 <div class="d-flex justify-content-between">
     <div class="col">
-        <h6>{{ assignment.department }}, {% now "F j" %} <br>{{ quarter }}</h6>
+        <h6>{{ assignment.department }}, {{ today_school|date:"F j" }} <br>{{ quarter }}</h6>
     </div>
 </div>
     

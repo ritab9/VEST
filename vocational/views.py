@@ -1600,7 +1600,9 @@ def time_card_view(request, quarter_id, department_id):
         return redirect(redirect_url)
 
     # --- Build context ---
-    context = dict()
+    school_tz = pytz_timezone(school.timezone or settings.TIME_ZONE)
+    today_school = timezone.localtime(timezone.now(), school_tz).date()
+    context = dict(today_school=today_school)
 
     if assignment:
         # Include temporary students only if show_temp is True
@@ -1791,9 +1793,6 @@ def time_card_manual(request, quarter_id, department_id):
 
 
 
-
-
-
 #manual time card entry by instructor or vocational coordinator
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['isei_admin', 'school_admin','instructor', 'vocational_coordinator'])
@@ -1804,7 +1803,9 @@ def time_card_edit(request, pk):
         form = TimeCardEditForm(request.POST, instance=timecard, timezone=local_timezone)
         if form.is_valid():
             form.save()
-            messages.success(request, "Your changes were successfully saved.")
+            #messages.success(request, "Your changes were successfully saved.")
+            return redirect('time_card_dashboard', request.user.id, "yes")
+
     else:
         form = TimeCardEditForm(instance=timecard, timezone=local_timezone)
 
