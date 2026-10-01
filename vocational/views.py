@@ -1265,7 +1265,10 @@ def time_card_dashboard(request, userid, vc='no'):
 
     # Fetch the profile, assignments, departments, and active quarter as before
     profile = Profile.objects.get(user=userid)
-    school_id = profile.school.id
+    #school_id = profile.school.id
+    school = profile.school
+    school_id = school.id
+    school_tz = pytz_timezone(school.timezone or settings.TIME_ZONE)
     #school_year_id = SchoolYear.objects.values_list('id', flat=True).filter(school_id=school_id, active=True).first()
 
 
@@ -1311,14 +1314,43 @@ def time_card_dashboard(request, userid, vc='no'):
 
         potential_duplicates = filter.cleaned_data.get('potential_duplicates')
 
+        #timecards = TimeCard.objects.filter(
+        #    Q(student_assignment__quarter=quarter) if quarter else Q(),
+        #    Q(student_assignment__department=department) if department else Q(),
+        #    Q(student=student) if student else Q(),
+        #    Q(time_in__range=(from_date, to_date)) if (from_date and to_date) else Q(),
+        #    Q(time_in__isnull=True) if missing_time_in else Q(),
+        #    Q(time_out__isnull=True) if missing_time_out else Q(),
+        #).order_by('-time_in','student_assignment__department')
+
+        date_filter = Q()
+
+        if from_date:
+            start_datetime = timezone.make_aware(
+                datetime.combine(from_date, datetime.min.time()),
+                school_tz
+            )
+            date_filter &= Q(time_in__gte=start_datetime)
+
+        if to_date:
+            end_date = to_date + timedelta(days=1)
+            end_datetime = timezone.make_aware(
+                datetime.combine(end_date, datetime.min.time()),
+                school_tz
+            )
+            date_filter &= Q(time_in__lt=end_datetime)
+
         timecards = TimeCard.objects.filter(
             Q(student_assignment__quarter=quarter) if quarter else Q(),
             Q(student_assignment__department=department) if department else Q(),
             Q(student=student) if student else Q(),
-            Q(time_in__range=(from_date, to_date)) if (from_date and to_date) else Q(),
+            date_filter,
             Q(time_in__isnull=True) if missing_time_in else Q(),
             Q(time_out__isnull=True) if missing_time_out else Q(),
-        ).order_by('-time_in','student_assignment__department')
+        ).order_by('-time_in', 'student_assignment__department')
+
+
+
 
         if potential_duplicates:
             # Annotate duplicates and filter
