@@ -1836,7 +1836,8 @@ def time_card_edit(request, pk):
         if form.is_valid():
             form.save()
             #messages.success(request, "Your changes were successfully saved.")
-            return redirect('time_card_dashboard', request.user.id, "yes")
+            vc = "yes" if request.user.groups.filter(name="vocational_coordinator").exists() else "no"
+            return redirect('time_card_dashboard', request.user.id, vc)
 
     else:
         form = TimeCardEditForm(instance=timecard, timezone=local_timezone)
